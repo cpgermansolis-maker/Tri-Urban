@@ -1,0 +1,1386 @@
+<!doctype html>
+<html lang="es-MX">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0c0c0b">
+<meta name="robots" content="noindex,nofollow">
+<title>Tri-Urban · Comunidad Trikles</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Fraunces:ital,opsz,wght@0,9..144,400;1,9..144,400;1,9..144,600&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0c0c0b; --bg2:#141413; --bg3:#1c1c1a; --line:#2b2b28; --text:#f1ede4; --mute:#8f8b82;
+  --accent:#ff4d1a; --gold:#c9a86a; --acid:#d7ff3d; --ok:#4ade80; --bad:#f87171;
+  --display:'Anton',Impact,sans-serif; --serif:'Fraunces',Georgia,serif; --sans:'Space Grotesk',system-ui,sans-serif;
+  --r:4px; --gut:16px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font:400 15px/1.5 var(--sans);-webkit-font-smoothing:antialiased;overflow-x:hidden;min-height:100vh}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:1;opacity:.07;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+a{color:inherit}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+input,textarea,select{font:inherit;color:var(--text);background:var(--bg2);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;width:100%;outline:none}
+input:focus,textarea:focus,select:focus{border-color:var(--text)}
+img{display:block;max-width:100%}
+[hidden]{display:none!important}
+:focus-visible{outline:2px solid var(--acid);outline-offset:2px}
+
+/* ---------- tipografía ---------- */
+.disp{font-family:var(--display);text-transform:uppercase;letter-spacing:.01em;line-height:.92;font-weight:400}
+.it{font-family:var(--serif);font-style:italic;font-weight:400;text-transform:none;letter-spacing:0}
+.kicker{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--mute)}
+.mute{color:var(--mute)}
+.price{font-variant-numeric:tabular-nums;font-weight:500}
+
+/* ---------- botones ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:13px 22px;border-radius:var(--r);
+  font-weight:700;font-size:13px;letter-spacing:.12em;text-transform:uppercase;transition:transform .15s,background .15s,color .15s}
+.btn:active{transform:scale(.97)}
+.btn-solid{background:var(--text);color:var(--bg)}
+.btn-solid:hover{background:var(--acid)}
+.btn-accent{background:var(--accent);color:#fff}
+.btn-accent:hover{background:#ff6a3d}
+.btn-ghost{border:1px solid var(--line)}
+.btn-ghost:hover{border-color:var(--text)}
+.btn-gold{background:var(--gold);color:#17120b}
+.btn[disabled]{opacity:.4;pointer-events:none}
+.btn-block{width:100%}
+
+/* ---------- puerta (login) ---------- */
+#gate{position:relative;z-index:2;min-height:100vh;display:grid;grid-template-columns:1.1fr 1fr}
+.gate-art{position:relative;overflow:hidden;border-right:1px solid var(--line);display:flex;flex-direction:column;justify-content:space-between;padding:40px}
+.gate-art .big{font-size:clamp(64px,10vw,150px)}
+.gate-art .big span{display:block}
+.gate-art .big .stroke{color:transparent;-webkit-text-stroke:1.5px var(--text)}
+.gate-art .tag{font-family:var(--serif);font-style:italic;font-size:22px;max-width:420px;color:#d8d3c8}
+.gate-tape{position:absolute;left:-10%;right:-10%;top:58%;transform:rotate(-6deg);background:var(--acid);color:var(--bg);
+  font:700 13px var(--sans);letter-spacing:.3em;padding:10px 0;white-space:nowrap;overflow:hidden}
+.gate-tape div{display:inline-block;animation:marq 22s linear infinite}
+@keyframes marq{to{transform:translateX(-50%)}}
+.gate-form{display:flex;flex-direction:column;justify-content:center;padding:40px clamp(20px,6vw,80px);gap:22px;max-width:560px;width:100%}
+.tabs2{display:flex;border-bottom:1px solid var(--line)}
+.tabs2 button{padding:12px 0;margin-right:26px;font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:var(--mute);border-bottom:2px solid transparent;margin-bottom:-1px}
+.tabs2 button.on{color:var(--text);border-color:var(--accent)}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--mute)}
+.lock-note{display:flex;gap:10px;align-items:flex-start;font-size:13px;color:var(--mute);border-left:2px solid var(--gold);padding:4px 0 4px 12px}
+.err{color:var(--bad);font-size:13px;min-height:1em}
+.demo-hint{font-size:12px;background:var(--bg3);border:1px dashed var(--line);padding:10px 12px;border-radius:var(--r);color:var(--mute)}
+.demo-hint b{color:var(--acid)}
+
+/* ---------- app ---------- */
+#app{position:relative;z-index:2}
+.top{position:sticky;top:0;z-index:30;background:rgba(12,12,11,.86);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.top-in{max-width:1320px;margin:0 auto;display:flex;align-items:center;gap:24px;padding:14px var(--gut)}
+.logo{font-family:var(--display);font-size:24px;letter-spacing:.02em;text-decoration:none;white-space:nowrap}
+.logo em{font-family:var(--serif);font-style:italic;font-size:15px;color:var(--gold);margin-left:6px;letter-spacing:0;text-transform:none}
+.nav{display:flex;gap:4px;flex:1;overflow-x:auto;scrollbar-width:none}
+.nav::-webkit-scrollbar{display:none}
+.nav a{text-decoration:none;font-size:12px;letter-spacing:.16em;text-transform:uppercase;padding:8px 12px;color:var(--mute);white-space:nowrap;border-radius:99px}
+.nav a:hover{color:var(--text)}
+.nav a.on{color:var(--bg);background:var(--text)}
+.nav a .dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--accent);margin-left:6px;vertical-align:middle;animation:pulse 1.4s infinite}
+@keyframes pulse{50%{opacity:.3}}
+.top-act{display:flex;gap:6px;align-items:center}
+.icon-btn{position:relative;width:40px;height:40px;display:grid;place-items:center;border:1px solid var(--line);border-radius:50%}
+.icon-btn:hover{border-color:var(--text)}
+.badge{position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;padding:0 4px;border-radius:9px;background:var(--accent);color:#fff;font-size:11px;font-weight:700;display:grid;place-items:center}
+.avatar{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;font-weight:700;background:var(--gold);color:#17120b;font-size:14px}
+
+main{max-width:1320px;margin:0 auto;padding:0 var(--gut) 120px}
+.sec{padding:56px 0 8px}
+.sec-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:26px;flex-wrap:wrap}
+.sec-head h2{font-size:clamp(40px,6vw,78px)}
+.sec-head p{max-width:440px;color:var(--mute)}
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px}
+.chip{padding:8px 14px;border:1px solid var(--line);border-radius:99px;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute)}
+.chip.on,.chip:hover{color:var(--text);border-color:var(--text)}
+
+/* ---------- hero ---------- */
+.hero{display:grid;grid-template-columns:1.25fr 1fr;gap:0;border:1px solid var(--line);margin-top:28px;min-height:540px}
+.hero-txt{padding:clamp(24px,4vw,56px);display:flex;flex-direction:column;justify-content:space-between;gap:30px;border-right:1px solid var(--line)}
+.hero-txt h1{font-size:clamp(56px,9vw,132px)}
+.hero-txt h1 .it{color:var(--gold);font-size:.62em;display:block;margin:6px 0}
+.hero-txt h1 .stroke{color:transparent;-webkit-text-stroke:1.5px var(--text)}
+.hero-media{position:relative;overflow:hidden;background:var(--bg2);cursor:pointer}
+.hero-media svg,.hero-media img{width:100%;height:100%;object-fit:cover}
+.hero-cap{position:absolute;left:0;right:0;bottom:0;padding:18px 20px;background:linear-gradient(transparent,rgba(0,0,0,.85))}
+.ticker{border-top:1px solid var(--line);border-bottom:1px solid var(--line);overflow:hidden;white-space:nowrap;margin-top:-1px;padding:12px 0;font-family:var(--display);font-size:22px;letter-spacing:.04em}
+.ticker div{display:inline-block;animation:marq 40s linear infinite}
+.ticker span{margin:0 22px}
+.ticker span.a{color:var(--accent)}
+.live-strip{display:flex;align-items:center;gap:14px;padding:14px 18px;border:1px solid var(--accent);margin-top:22px;cursor:pointer;background:linear-gradient(90deg,rgba(255,77,26,.14),transparent)}
+.live-strip:hover{background:linear-gradient(90deg,rgba(255,77,26,.24),transparent)}
+.pill-live{display:inline-flex;align-items:center;gap:6px;background:var(--accent);color:#fff;font-weight:700;font-size:11px;letter-spacing:.16em;padding:5px 9px;border-radius:3px}
+.pill-live::before{content:"";width:7px;height:7px;border-radius:50%;background:#fff;animation:pulse 1.2s infinite}
+
+/* ---------- grid de producto ---------- */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:28px 18px}
+.card{cursor:pointer;display:flex;flex-direction:column;gap:12px}
+.card .media{position:relative;aspect-ratio:4/5;background:var(--bg2);overflow:hidden;border-radius:var(--r)}
+.card .media>svg,.card .media>img{width:100%;height:100%;object-fit:cover;transition:transform .6s cubic-bezier(.2,.7,.2,1)}
+.card:hover .media>svg,.card:hover .media>img{transform:scale(1.04)}
+.card .meta{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.card .name{font-size:13px;letter-spacing:.12em;text-transform:uppercase}
+.card .sub{font-size:13px;color:var(--mute)}
+.tag-mini{position:absolute;top:10px;left:10px;font-size:10px;letter-spacing:.18em;text-transform:uppercase;background:var(--bg);padding:5px 8px;border-radius:2px}
+.tag-mini.sold{background:var(--text);color:var(--bg)}
+
+/* ---------- COLAB (prenda + artista) ---------- */
+.colab-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:26px}
+.colab{cursor:pointer;position:relative;border:1px solid var(--line);background:var(--bg2);border-radius:var(--r);overflow:hidden;display:flex;flex-direction:column}
+.colab .media{position:relative;aspect-ratio:4/5;overflow:hidden}
+.colab .media>svg,.colab .media>img{width:100%;height:100%;object-fit:cover;transition:transform .7s cubic-bezier(.2,.7,.2,1)}
+.colab:hover .media>svg,.colab:hover .media>img{transform:scale(1.035)}
+.corner-price{position:absolute;top:0;right:0;z-index:3;background:var(--gold);color:#17120b;padding:9px 14px 9px 18px;
+  clip-path:polygon(12px 0,100% 0,100% 100%,0 100%);font-weight:700;font-size:14px;letter-spacing:.04em}
+.corner-price small{display:block;font-size:9px;letter-spacing:.2em;font-weight:500;opacity:.75}
+.edition{position:absolute;top:12px;left:12px;z-index:3;font-size:10px;letter-spacing:.2em;text-transform:uppercase;border:1px solid rgba(241,237,228,.6);padding:5px 8px;background:rgba(12,12,11,.5);backdrop-filter:blur(4px)}
+.colab-artist{position:absolute;left:0;right:0;bottom:0;z-index:2;padding:60px 18px 16px;background:linear-gradient(transparent,rgba(8,8,7,.94));display:flex;align-items:flex-end;gap:12px}
+.colab-artist .ava{width:46px;height:46px;border-radius:50%;flex:none;border:2px solid var(--gold);overflow:hidden;background:var(--bg3)}
+.colab-artist .ava svg,.colab-artist .ava img{width:100%;height:100%;object-fit:cover}
+.colab-artist .by{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold)}
+.colab-artist .who{font-family:var(--serif);font-style:italic;font-size:24px;line-height:1.1}
+.colab-body{padding:16px 18px 18px;display:flex;flex-direction:column;gap:6px}
+.colab-body .piece{font-family:var(--display);font-size:22px;text-transform:uppercase;letter-spacing:.02em}
+.colab-body .obra{font-size:13px;color:var(--mute);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+
+/* ---------- subastas ---------- */
+.auc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:22px}
+.auc{cursor:pointer;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:var(--bg2)}
+.auc .media{position:relative;aspect-ratio:1;overflow:hidden}
+.auc .media>svg,.auc .media>img{width:100%;height:100%;object-fit:cover}
+.auc-info{padding:16px;display:grid;grid-template-columns:1fr auto;gap:4px 12px;align-items:end}
+.auc-info .t{grid-column:1/-1;font-family:var(--display);font-size:22px;text-transform:uppercase}
+.bid-now{font-size:26px;font-weight:700}
+.cd{font-variant-numeric:tabular-nums;font-weight:700;color:var(--acid);font-size:15px;text-align:right}
+.cd.urgent{color:var(--accent)}
+.cd.done{color:var(--mute)}
+.bids{max-height:220px;overflow:auto;border-top:1px solid var(--line);margin-top:6px}
+.bids li{list-style:none;display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line);font-size:14px}
+.bids li:first-child{color:var(--acid)}
+
+/* ---------- artistas ---------- */
+.art-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:22px}
+.artist{cursor:pointer;text-align:left;display:flex;flex-direction:column;gap:10px}
+.artist .ph{aspect-ratio:1;border-radius:50%;overflow:hidden;border:1px solid var(--line);transition:border-color .2s}
+.artist:hover .ph{border-color:var(--gold)}
+.artist .ph svg,.artist .ph img{width:100%;height:100%;object-fit:cover}
+.artist .n{font-family:var(--serif);font-style:italic;font-size:24px;line-height:1.1}
+.org{display:inline-block;font-size:10px;letter-spacing:.18em;text-transform:uppercase;padding:4px 8px;border-radius:2px;width:max-content}
+.org.tu{background:var(--text);color:var(--bg)}
+.org.ct{background:transparent;border:1px solid var(--gold);color:var(--gold)}
+.stars{color:var(--gold);letter-spacing:2px;font-size:14px}
+.stars .off{color:#4a4741}
+.social{display:flex;gap:8px;flex-wrap:wrap}
+.social a{display:inline-flex;align-items:center;gap:6px;text-decoration:none;font-size:12px;letter-spacing:.1em;text-transform:uppercase;border:1px solid var(--line);padding:8px 12px;border-radius:99px}
+.social a:hover{border-color:var(--text)}
+.review{border-top:1px solid var(--line);padding:14px 0}
+.review .h{display:flex;justify-content:space-between;gap:10px;font-size:13px}
+.rec{color:var(--acid);font-size:11px;letter-spacing:.12em;text-transform:uppercase}
+.star-in{display:flex;gap:4px}
+.star-in button{font-size:28px;color:#4a4741;line-height:1}
+.star-in button.on{color:var(--gold)}
+.toggle{display:flex;align-items:center;gap:10px;cursor:pointer;font-size:14px;user-select:none}
+.toggle input{width:auto;accent-color:var(--acid)}
+
+/* ---------- en vivo ---------- */
+.live-room{display:grid;grid-template-columns:1fr 360px;gap:0;border:1px solid var(--line);margin-top:24px;min-height:70vh}
+.stage{position:relative;background:#000;overflow:hidden;min-height:300px}
+.stage iframe,.stage .ph-live{position:absolute;inset:0;width:100%;height:100%;border:0}
+.ph-live{display:grid;place-items:center;background:radial-gradient(circle at 30% 30%,#2a1a12,#000 70%)}
+.ph-live .sig{font-family:var(--display);font-size:clamp(28px,5vw,60px);text-transform:uppercase;opacity:.85;text-align:center;line-height:1}
+.watermark{position:absolute;z-index:4;pointer-events:none;font-size:12px;letter-spacing:.14em;color:rgba(255,255,255,.22);text-transform:uppercase;transition:top 4s ease,left 4s ease;white-space:nowrap}
+.stage-top{position:absolute;z-index:5;top:12px;left:12px;right:12px;display:flex;justify-content:space-between;align-items:center;pointer-events:none}
+.viewers{background:rgba(0,0,0,.6);padding:5px 10px;border-radius:3px;font-size:12px}
+.floaters{position:absolute;right:16px;bottom:70px;width:80px;height:60%;pointer-events:none;z-index:6}
+.floaters span{position:absolute;bottom:0;font-size:30px;animation:floatUp 2.6s ease-out forwards}
+@keyframes floatUp{0%{transform:translate(0,0) scale(.6);opacity:0}15%{opacity:1;transform:translate(0,-20px) scale(1.1)}100%{transform:translate(var(--dx),-340px) scale(1);opacity:0}}
+.react-bar{position:absolute;z-index:6;bottom:14px;left:50%;transform:translateX(-50%);display:flex;gap:6px;background:rgba(12,12,11,.7);backdrop-filter:blur(8px);padding:6px;border-radius:99px;border:1px solid var(--line)}
+.react-bar button{font-size:24px;width:46px;height:46px;border-radius:50%;transition:transform .12s,background .12s}
+.react-bar button:hover{background:rgba(255,255,255,.08);transform:translateY(-3px) scale(1.1)}
+.react-bar button:active{transform:scale(.9)}
+.chat{display:flex;flex-direction:column;border-left:1px solid var(--line);background:var(--bg2);min-height:0;max-height:78vh}
+.chat-head{padding:14px 16px;border-bottom:1px solid var(--line)}
+.chat-list{flex:1;overflow:auto;padding:10px 16px;display:flex;flex-direction:column;gap:10px;min-height:200px}
+.msg{font-size:14px;line-height:1.4;animation:fadeIn .25s}
+.msg b{color:var(--gold);font-weight:500;margin-right:6px}
+.msg.mine b{color:var(--acid)}
+.msg.artist b::after{content:" · artista";font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}}
+.chat-form{display:flex;gap:8px;padding:12px;border-top:1px solid var(--line)}
+.chat-form input{padding:11px 12px}
+.priv{font-size:11px;color:var(--mute);padding:0 16px 12px;letter-spacing:.04em}
+.live-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px}
+.live-card{cursor:pointer;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:var(--bg2)}
+.live-card .media{position:relative;aspect-ratio:16/9;overflow:hidden}
+.live-card .media>svg{width:100%;height:100%;object-fit:cover}
+.live-card .info{padding:14px 16px}
+
+/* ---------- modal ---------- */
+.modal{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.72);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:20px;animation:fadeIn .2s}
+.sheet{position:relative;background:var(--bg);border:1px solid var(--line);border-radius:6px;width:min(1080px,100%);max-height:92vh;overflow:auto}
+.sheet.narrow{width:min(520px,100%)}
+.x{position:sticky;float:right;top:10px;margin:10px 10px 0 0;z-index:5;width:40px;height:40px;border-radius:50%;background:var(--bg2);border:1px solid var(--line);font-size:20px}
+.detail{display:grid;grid-template-columns:1.1fr 1fr}
+.detail .media{position:relative;background:var(--bg2);aspect-ratio:4/5}
+.detail .media>svg,.detail .media>img{width:100%;height:100%;object-fit:cover}
+.detail .body{padding:clamp(20px,3vw,40px);display:flex;flex-direction:column;gap:18px}
+.detail h3{font-size:clamp(34px,4vw,54px)}
+.artist-box{display:flex;gap:14px;align-items:center;padding:14px;border:1px solid var(--gold);border-radius:var(--r);background:rgba(201,168,106,.06);cursor:pointer}
+.artist-box .ava{width:62px;height:62px;border-radius:50%;overflow:hidden;flex:none}
+.artist-box .ava svg,.artist-box .ava img{width:100%;height:100%}
+.sizes{display:flex;gap:8px;flex-wrap:wrap}
+.sizes button{min-width:48px;padding:10px;border:1px solid var(--line);border-radius:var(--r);font-weight:500}
+.sizes button.on{background:var(--text);color:var(--bg);border-color:var(--text)}
+.sizes button[disabled]{opacity:.3;text-decoration:line-through}
+.quote{font-family:var(--serif);font-style:italic;font-size:19px;line-height:1.45;color:#ddd7cb;border-left:2px solid var(--gold);padding-left:16px}
+.specs{display:grid;grid-template-columns:auto 1fr;gap:6px 18px;font-size:13px}
+.specs dt{color:var(--mute);letter-spacing:.1em;text-transform:uppercase;font-size:11px;padding-top:2px}
+.pad{padding:clamp(20px,3vw,36px);display:flex;flex-direction:column;gap:16px}
+
+/* ---------- carrito ---------- */
+.cart-line{display:grid;grid-template-columns:64px 1fr auto;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}
+.cart-line .th{width:64px;height:80px;overflow:hidden;border-radius:3px;background:var(--bg2)}
+.cart-line .th svg,.cart-line .th img{width:100%;height:100%;object-fit:cover}
+.qty{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:99px}
+.qty button{width:30px;height:30px}
+.total-row{display:flex;justify-content:space-between;font-size:20px;font-weight:700;padding-top:10px}
+.pay-box{border:1px solid var(--line);background:var(--bg2);border-radius:var(--r);padding:16px;display:grid;gap:8px}
+.pay-box .row{display:flex;justify-content:space-between;gap:10px;font-size:14px}
+.wa{background:#25D366;color:#06210f}
+
+/* ---------- panel admin ---------- */
+.btn-sm{padding:8px 12px;font-size:11px}
+.st{display:inline-block;font-size:10px;letter-spacing:.16em;text-transform:uppercase;padding:4px 8px;border-radius:2px;font-weight:700}
+.st-pend{background:var(--accent);color:#fff}.st-pag{background:var(--acid);color:var(--bg)}.st-ent{background:var(--text);color:var(--bg)}.st-can{border:1px solid var(--line);color:var(--mute)}
+.ord{border:1px solid var(--line);border-radius:var(--r);padding:14px;display:grid;gap:8px;background:var(--bg2);margin-bottom:10px}
+.ord-h{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.ord-items{list-style:none;font-size:14px;display:grid;gap:3px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:8px 0}
+.adm-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+.adm-cards .ord{margin:0}
+.adm-list{display:grid;gap:8px}
+.adm-row{display:grid;grid-template-columns:56px 1fr auto;gap:14px;align-items:center;padding:10px;border:1px solid var(--line);border-radius:var(--r);background:var(--bg2)}
+.adm-row.off{opacity:.5}
+.adm-row .th{width:56px;height:70px;overflow:hidden;border-radius:3px;background:var(--bg3)}
+.adm-row .th svg,.adm-row .th img{width:100%;height:100%;object-fit:cover}
+.adm-act{display:flex;gap:6px;flex-wrap:wrap;align-items:center;justify-content:flex-end}
+.adm-act select{width:auto;padding:8px 10px;font-size:13px}
+.img-up{display:flex;gap:12px;align-items:center}
+.img-up .th{width:80px;height:100px;flex:none;border:1px dashed var(--line);border-radius:3px;overflow:hidden;background:var(--bg2)}
+.img-up .th img{width:100%;height:100%;object-fit:cover}
+.mod-x{color:var(--mute);font-size:11px;padding:0 4px}
+.mod-x:hover{color:var(--bad)}
+@media (max-width:900px){.adm-row{grid-template-columns:48px 1fr}.adm-row .adm-act{grid-column:1/-1;justify-content:flex-start}}
+
+/* ---------- toast + tabbar ---------- */
+#toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%) translateY(20px);opacity:0;z-index:60;background:var(--text);color:var(--bg);padding:12px 18px;border-radius:var(--r);font-weight:500;font-size:14px;transition:.25s;pointer-events:none;max-width:90vw;text-align:center}
+#toast.show{opacity:1;transform:translateX(-50%)}
+.tabbar{display:none}
+.empty{padding:50px 20px;text-align:center;color:var(--mute);border:1px dashed var(--line);border-radius:var(--r)}
+.demo-flag{position:fixed;right:12px;top:76px;z-index:40;font-size:10px;letter-spacing:.18em;text-transform:uppercase;background:var(--acid);color:var(--bg);padding:5px 9px;border-radius:3px;font-weight:700}
+footer{border-top:1px solid var(--line);margin-top:70px;padding:30px 0;display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;color:var(--mute);font-size:13px}
+
+@media (max-width:900px){
+  #gate{grid-template-columns:1fr}
+  .gate-art{min-height:42vh;border-right:0;border-bottom:1px solid var(--line);padding:24px}
+  .gate-art .tag{font-size:17px}
+  .hero{grid-template-columns:1fr}
+  .hero-txt{border-right:0;border-bottom:1px solid var(--line)}
+  .hero-media{aspect-ratio:4/5}
+  .detail{grid-template-columns:1fr}
+  .live-room{grid-template-columns:1fr}
+  .stage{aspect-ratio:16/10}
+  .chat{border-left:0;border-top:1px solid var(--line);max-height:60vh}
+  .nav{display:none}
+  .tabbar{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:30;background:rgba(12,12,11,.94);backdrop-filter:blur(14px);border-top:1px solid var(--line);padding:6px 4px calc(6px + env(safe-area-inset-bottom))}
+  .tabbar a{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);padding:6px 0}
+  .tabbar a i{font-style:normal;font-size:19px;line-height:1}
+  .tabbar a.on{color:var(--text)}
+  .tabbar a.on i{color:var(--acid)}
+  .grid{grid-template-columns:repeat(2,1fr);gap:22px 12px}
+  .colab-grid,.auc-grid,.live-list{grid-template-columns:1fr}
+  .art-grid{grid-template-columns:repeat(2,1fr)}
+  .modal{padding:0;align-items:flex-end}
+  .sheet{max-height:94vh;border-radius:14px 14px 0 0}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<!-- ===================== PUERTA: solo comunidad ===================== -->
+<section id="gate">
+  <div class="gate-art">
+    <div class="kicker">Comunidad privada · Trikles</div>
+    <h1 class="disp big"><span>Tri</span><span class="stroke">Urban</span></h1>
+    <div class="gate-tape"><div>ARTE · CALLE · CINE · COMUNIDAD · PIEZAS ÚNICAS · SUBASTAS · EN VIVO · ARTE · CALLE · CINE · COMUNIDAD · PIEZAS ÚNICAS · SUBASTAS · EN VIVO ·&nbsp;</div></div>
+    <p class="tag">Ropa de calle con alma de galería. Hecha entre Tri-Urban y los artistas de Cineteca Trikles.</p>
+  </div>
+  <div class="gate-form">
+    <div>
+      <div class="kicker">Acceso para miembros</div>
+      <h2 class="disp" style="font-size:44px;margin-top:8px">Bienvenido <span class="it" style="color:var(--gold)">a casa</span></h2>
+    </div>
+    <div class="tabs2" role="tablist">
+      <button class="on" data-gtab="login" role="tab">Entrar</button>
+      <button data-gtab="registro" role="tab">Soy nuevo</button>
+    </div>
+    <form id="fLogin" class="field" style="gap:14px" autocomplete="on">
+      <div class="field"><label for="lEmail">Correo</label><input id="lEmail" type="email" required autocomplete="email"></div>
+      <div class="field"><label for="lPass">Contraseña</label><input id="lPass" type="password" required autocomplete="current-password"></div>
+      <div class="err" id="lErr"></div>
+      <button class="btn btn-solid btn-block" type="submit">Entrar</button>
+    </form>
+    <form id="fReg" class="field" style="gap:14px" hidden autocomplete="on">
+      <div class="lock-note">🔑 <span>Para registrarte necesitas la <b style="color:var(--text)">clave de la Comunidad Trikles</b>. Pídela en Cineteca o en Tri-Urban.</span></div>
+      <div class="field"><label for="rClave">Clave de la comunidad</label><input id="rClave" required autocomplete="off" spellcheck="false"></div>
+      <div class="field"><label for="rNombre">Nombre</label><input id="rNombre" required autocomplete="name" maxlength="60"></div>
+      <div class="field"><label for="rEmail">Correo</label><input id="rEmail" type="email" required autocomplete="email"></div>
+      <div class="field"><label for="rPass">Contraseña (mín. 8)</label><input id="rPass" type="password" required minlength="8" autocomplete="new-password"></div>
+      <div class="err" id="rErr"></div>
+      <button class="btn btn-accent btn-block" type="submit">Unirme</button>
+    </form>
+    <div class="demo-hint" id="demoHint" hidden>Modo demo (sin backend): la clave de la comunidad es <b>TRIKLES-DEMO</b>. Los datos viven solo en este navegador.</div>
+  </div>
+</section>
+
+<!-- ===================== APP ===================== -->
+<div id="app" hidden>
+  <header class="top">
+    <div class="top-in">
+      <a class="logo" href="#inicio">TRI—URBAN<em>× Trikles</em></a>
+      <nav class="nav" id="nav"></nav>
+      <div class="top-act">
+        <button class="icon-btn" id="cartBtn" aria-label="Carrito">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 7h14l-1.2 12.2a2 2 0 0 1-2 1.8H8.2a2 2 0 0 1-2-1.8L5 7Z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg>
+          <span class="badge" id="cartCount" hidden>0</span>
+        </button>
+        <button class="avatar" id="meBtn" aria-label="Mi cuenta">·</button>
+      </div>
+    </div>
+  </header>
+  <main id="view"></main>
+  <nav class="tabbar" id="tabbar"></nav>
+</div>
+
+<div id="modal" class="modal" hidden><div class="sheet" id="sheet" role="dialog" aria-modal="true"><button class="x" id="modalX" aria-label="Cerrar">×</button><div id="modalBody"></div></div></div>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* =====================================================================
+   CONFIGURACIÓN
+   API_URL vacío = modo demo (localStorage). Al desplegar el Apps Script,
+   pegar aquí la URL /exec.
+   ===================================================================== */
+const API_URL = 'https://script.google.com/macros/s/AKfycbwv0KWDcV6mtmfW1wxmivmP7gOrjLj2yyERuP-n4k43DnxRKs11O49O6zcp2yEg9W4Z/exec';
+const DEMO = !API_URL || (/^(localhost|127\.0\.0\.1)$/.test(location.hostname) && new URLSearchParams(location.search).has('demo'));
+const LS = DEMO ? { token:'tu_demo_token', cart:'tu_demo_cart', db:'tu_demo_db' } : { token:'tu_token', cart:'tu_cart', db:'tu_demo_db' };
+const REACCIONES = ['🔥','❤️','👏','😮','🎨'];
+
+/* ---------------- utilidades ---------------- */
+const $ = (s, el = document) => el.querySelector(s);
+const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const money = n => '$' + Number(n || 0).toLocaleString('es-MX', { maximumFractionDigits: 0 });
+const lsGet = (k, d) => { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (_) { return d; } };
+const lsSet = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (_) {} };
+const uid = p => p + Math.random().toString(36).slice(2, 9);
+function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('show'), 2600); }
+function stars(n) { n = Math.round(n || 0); let s = ''; for (let i = 1; i <= 5; i++) s += i <= n ? '★' : '<span class="off">★</span>'; return '<span class="stars">' + s + '</span>'; }
+function iniciales(n) { return String(n || '?').trim().split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase(); }
+function nombreCorto(n) { const p = String(n || '').trim().split(/\s+/); return p[0] + (p[1] ? ' ' + p[1][0] + '.' : ''); }
+function fmtRest(ms) {
+  if (ms <= 0) return 'Cerrada';
+  const s = Math.floor(ms / 1000), d = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600), m = Math.floor(s % 3600 / 60), ss = s % 60;
+  return d ? `${d}d ${h}h ${m}m` : `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(ss).padStart(2,'0')}`;
+}
+function ytId(u) {
+  u = String(u || '').trim(); if (/^[\w-]{11}$/.test(u)) return u;
+  const m = u.match(/(?:youtu\.be\/|v=|\/live\/|\/embed\/|\/shorts\/)([\w-]{11})/); return m ? m[1] : '';
+}
+
+/* ---------------- arte generativo (placeholders hasta subir fotos) ---------------- */
+function rng(seed) {
+  let h = 2166136261; for (const c of String(seed)) h = Math.imul(h ^ c.charCodeAt(0), 16777619);
+  return () => { h = Math.imul(h ^ h >>> 15, 2246822507); h = Math.imul(h ^ h >>> 13, 3266489909); return ((h ^= h >>> 16) >>> 0) / 4294967296; };
+}
+const PAL = [['#ff4d1a','#f1ede4','#1b1b1a'],['#d7ff3d','#151514','#6b6b66'],['#c9a86a','#2b2118','#f1ede4'],['#3d5afe','#f1ede4','#ff4d1a'],['#8a1c1c','#e9dcc5','#111'],['#2f6b4f','#d7ff3d','#efe9dc'],['#f1ede4','#0c0c0b','#c9a86a']];
+function artShapes(r, p, w, h, n) {
+  let s = '';
+  for (let i = 0; i < n; i++) {
+    const c = p[Math.floor(r() * p.length)], x = r() * w, y = r() * h, k = r();
+    if (k < .33) s += `<circle cx="${x}" cy="${y}" r="${8 + r() * w * .28}" fill="${c}" opacity="${.55 + r() * .45}"/>`;
+    else if (k < .66) s += `<rect x="${x - 30}" y="${y - 30}" width="${20 + r() * w * .4}" height="${6 + r() * 40}" fill="${c}" transform="rotate(${r() * 90 - 45} ${x} ${y})"/>`;
+    else s += `<path d="M${x} ${y} q ${r() * 80 - 40} ${r() * 80 - 40} ${r() * 120 - 60} ${r() * 120 - 60}" stroke="${c}" stroke-width="${3 + r() * 9}" fill="none" stroke-linecap="round"/>`;
+  }
+  return s;
+}
+const TEE = 'M60 46 L86 32 Q100 46 114 32 L140 46 L176 76 L156 102 L140 92 L140 228 L60 228 L60 92 L44 102 L24 76 Z';
+function garmentSVG(seed, intervenida, base) {
+  const r = rng(seed), p = PAL[Math.floor(r() * PAL.length)], id = 'c' + String(seed).replace(/\W/g, '');
+  const col = base || ['#1b1b1a','#e9e4d8','#3a3a37','#5b4b3a','#20283a'][Math.floor(r() * 5)];
+  const hood = r() < .45 ? `<path d="M86 32 Q100 6 114 32" fill="none" stroke="${col}" stroke-width="10"/>` : '';
+  return `<svg viewBox="0 0 200 250" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <defs><linearGradient id="g${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a2a27"/><stop offset="1" stop-color="#121211"/></linearGradient>
+    <clipPath id="${id}"><path d="${TEE}"/></clipPath></defs>
+    <rect width="200" height="250" fill="url(#g${id})"/>
+    <ellipse cx="100" cy="236" rx="70" ry="6" fill="#000" opacity=".5"/>
+    ${hood}<path d="${TEE}" fill="${col}"/>
+    <g clip-path="url(#${id})">${intervenida ? artShapes(r, p, 200, 250, 14) : `<text x="100" y="98" text-anchor="middle" font-family="Anton,Impact" font-size="17" fill="${col === '#e9e4d8' ? '#1b1b1a' : '#f1ede4'}" letter-spacing="1">TRI—URBAN</text>`}</g>
+    <path d="${TEE}" fill="none" stroke="#000" stroke-opacity=".25"/>
+  </svg>`;
+}
+function artworkSVG(seed) {
+  const r = rng(seed), p = PAL[Math.floor(r() * PAL.length)];
+  return `<svg viewBox="0 0 200 250" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <rect width="200" height="250" fill="#d9d4ca"/><rect x="22" y="22" width="156" height="206" fill="#111"/>
+    <rect x="30" y="30" width="140" height="190" fill="${p[1]}"/>
+    <svg x="30" y="30" width="140" height="190">${artShapes(r, p, 140, 190, 12)}</svg>
+  </svg>`;
+}
+function portraitSVG(seed) {
+  const r = rng(seed), p = PAL[Math.floor(r() * PAL.length)];
+  return `<svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <rect width="100" height="100" fill="${p[2]}"/>${artShapes(r, p, 100, 100, 5)}
+    <circle cx="50" cy="40" r="17" fill="#0c0c0b" opacity=".85"/><path d="M18 100 Q50 52 82 100Z" fill="#0c0c0b" opacity=".85"/>
+  </svg>`;
+}
+function liveSVG(seed) {
+  const r = rng(seed), p = PAL[Math.floor(r() * PAL.length)];
+  return `<svg viewBox="0 0 320 180" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect width="320" height="180" fill="#111"/>${artShapes(r, p, 320, 180, 10)}<rect width="320" height="180" fill="#000" opacity=".35"/></svg>`;
+}
+function imgUrl(u) {
+  u = String(u || '').trim(); if (!u) return '';
+  const m = u.match(/(?:\/d\/|id=)([\w-]{20,})/); // Drive
+  return m ? 'https://lh3.googleusercontent.com/d/' + m[1] + '=w1200' : u;
+}
+function media(item, kind) {
+  const u = imgUrl(item.Imagen || item.Foto);
+  if (u) return `<img src="${esc(u)}" alt="${esc(item.Nombre || item.Titulo || '')}" loading="lazy">`;
+  if (kind === 'artista') return portraitSVG(item.id);
+  if (kind === 'live') return liveSVG(item.id);
+  if (item.Tipo === 'obra' || kind === 'obra') return artworkSVG(item.id);
+  return garmentSVG(item.id, item.Tipo === 'colab' || kind === 'colab');
+}
+
+/* =====================================================================
+   CAPA DE DATOS
+   ===================================================================== */
+let S = { token: lsGet(LS.token, ''), me: null, data: null, cart: lsGet(LS.cart, []) };
+
+async function api(action, data = {}) {
+  if (DEMO) { await new Promise(r => setTimeout(r, 120)); return Demo.run(action, data, S.token); }
+  const res = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action, token: S.token, ...data }) });
+  const j = await res.json();
+  if (j.error === 'SESION') { logout(true); throw new Error(j.msg || 'Sesión expirada'); }
+  return j;
+}
+
+/* ---------- Backend simulado (mismas acciones que el Apps Script) ---------- */
+const Demo = (() => {
+  const CLAVE = 'TRIKLES-DEMO';
+  const H = 3600e3, now = Date.now();
+  function seed() {
+    return {
+      miembros: [], sesiones: {},
+      artistas: [
+        { id:'a1', Nombre:'Valeria Nox', Origen:'Tri-Urban', Disciplina:'Grafiti · stencil', Bio:'Pinta muros desde los 15. Su línea mezcla tipografía callejera con bordado tradicional tlaxcalteca.', Instagram:'https://instagram.com/', Facebook:'', Foto:'' },
+        { id:'a2', Nombre:'Emiliano Ríos', Origen:'Cineteca Trikles', Disciplina:'Pintura · cartel de cine', Bio:'Reinterpreta carteles de cine clásico en acrílico. Residente de Cineteca Trikles desde su apertura.', Instagram:'https://instagram.com/', Facebook:'https://facebook.com/', Foto:'' },
+        { id:'a3', Nombre:'Kira Mendoza', Origen:'Tri-Urban', Disciplina:'Ilustración textil', Bio:'Diseñadora textil. Interviene prendas a mano, pieza por pieza; ninguna se repite.', Instagram:'https://instagram.com/', Facebook:'', Foto:'' },
+        { id:'a4', Nombre:'Colectivo Maguey', Origen:'Cineteca Trikles', Disciplina:'Grabado · serigrafía', Bio:'Cuatro grabadores de San Pedro Muñoztla que trabajan con tintas de origen vegetal.', Instagram:'', Facebook:'https://facebook.com/', Foto:'' },
+        { id:'a5', Nombre:'Santi Ocre', Origen:'Cineteca Trikles', Disciplina:'Fotografía', Bio:'Fotografía analógica de la vida nocturna en Tlaxcala y Puebla.', Instagram:'https://instagram.com/', Facebook:'', Foto:'' },
+      ],
+      productos: [
+        { id:'p1', Tipo:'prenda', Nombre:'Hoodie Asfalto', Descripcion:'Felpa francesa 420 g, corte oversize, bordado TRI—URBAN en pecho.', Precio:1290, Tallas:'S,M,L,XL', Stock:12 },
+        { id:'p2', Tipo:'prenda', Nombre:'Tee Trikles Core', Descripcion:'Algodón peinado 240 g, cuello grueso, serigrafía a base agua.', Precio:590, Tallas:'S,M,L,XL', Stock:30 },
+        { id:'p3', Tipo:'prenda', Nombre:'Cargo Ruta 119', Descripcion:'Gabardina pesada, seis bolsas, ajuste en tobillo.', Precio:1450, Tallas:'28,30,32,34', Stock:8 },
+        { id:'p4', Tipo:'prenda', Nombre:'Tee Concreto', Descripcion:'Lavado piedra, caída boxy. Cada pieza toma un tono distinto.', Precio:620, Tallas:'S,M,L', Stock:15 },
+        { id:'p5', Tipo:'prenda', Nombre:'Chamarra Noche Tlaxcala', Descripcion:'Coach jacket impermeable con forro de malla, estampado reflejante.', Precio:2400, Tallas:'M,L,XL', Stock:5 },
+        { id:'p6', Tipo:'prenda', Nombre:'Crewneck Sala 2', Descripcion:'Sudadera de cuello redondo inspirada en la sala 2 de Cineteca.', Precio:1100, Tallas:'S,M,L,XL', Stock:0 },
+        { id:'c1', Tipo:'colab', Nombre:'Ruido Blanco', Artista_ID:'a1', Precio:4800, Edicion:'1/5', Tallas:'M,L', Stock:3,
+          Descripcion:'Tee Tri-Urban intervenida a mano con stencil y aerosol.', Obra_Desc:'“Escribí sobre la tela lo que la ciudad me grita de noche. Cada capa de pintura es una calle que caminé.” Tres capas de stencil, aerosol y marcador textil. Firmada por dentro.' },
+        { id:'c2', Tipo:'colab', Nombre:'Fotograma 24', Artista_ID:'a2', Precio:6500, Edicion:'1/3', Tallas:'L', Stock:1,
+          Descripcion:'Hoodie Asfalto con pintura acrílica en espalda completa.', Obra_Desc:'Un cuadro de cine detenido: el fotograma 24 de una película que nunca se filmó. Acrílico sellado para lavado en frío.' },
+        { id:'c3', Tipo:'colab', Nombre:'Raíz', Artista_ID:'a4', Precio:3900, Edicion:'1/10', Tallas:'S,M,L,XL', Stock:7,
+          Descripcion:'Tee Core con serigrafía manual de tintas vegetales.', Obra_Desc:'El maguey como raíz común entre el campo y la calle. Impresión manual con tinta de grana cochinilla; el color madura con cada lavado.' },
+        { id:'c4', Tipo:'colab', Nombre:'Hilo Rojo', Artista_ID:'a3', Precio:5600, Edicion:'Pieza única', Tallas:'M', Stock:1,
+          Descripcion:'Coach jacket bordada a mano durante 40 horas.', Obra_Desc:'Bordado en hilo rojo que recorre la espalda como un mapa de las rutas de combi entre Tlaxcala y Puebla.' },
+        { id:'o1', Tipo:'obra', Nombre:'Cartel imposible', Artista_ID:'a2', Precio:8500, Tecnica:'Acrílico sobre lienzo', Medidas:'60 × 90 cm', Stock:1, Descripcion:'Cartel para una película que solo existe en la cabeza del artista.' },
+        { id:'o2', Tipo:'obra', Nombre:'Tlaxcala en stencil', Artista_ID:'a1', Precio:5200, Tecnica:'Aerosol sobre madera', Medidas:'50 × 70 cm', Stock:1, Descripcion:'La catedral de Tlaxcala vista desde un muro de la periferia.' },
+        { id:'o3', Tipo:'obra', Nombre:'Sal de mar', Artista_ID:'a5', Precio:3200, Tecnica:'Impresión en plata sobre gelatina', Medidas:'40 × 50 cm', Stock:2, Descripcion:'Edición de 3. Revelado en cuarto oscuro.' },
+        { id:'o4', Tipo:'obra', Nombre:'Maguey azul', Artista_ID:'a4', Precio:2800, Tecnica:'Grabado en linóleo', Medidas:'30 × 40 cm', Stock:4, Descripcion:'Tiraje de 12, numerado y firmado.' },
+      ],
+      subastas: [
+        { id:'s1', Titulo:'Chamarra intervenida “Combi 33”', Artista_ID:'a3', Tipo:'colab', Descripcion:'Pieza única: denim vintage bordado y pintado. Talla L.', Precio_Inicial:3000, Incremento:200, Inicio:now - 24*H, Fin:now + 46*H, Estado:'Activa' },
+        { id:'s2', Titulo:'Obra “Silencio en sala”', Artista_ID:'a2', Tipo:'obra', Descripcion:'Óleo 80 × 100 cm. Lo recaudado apoya el programa de cine comunitario.', Precio_Inicial:6000, Incremento:500, Inicio:now - 48*H, Fin:now + 5*H, Estado:'Activa' },
+        { id:'s3', Titulo:'Tee prototipo #000', Artista_ID:'a1', Tipo:'colab', Descripcion:'La primera tee que intervino Valeria para Tri-Urban.', Precio_Inicial:1500, Incremento:100, Inicio:now - 96*H, Fin:now - 2*H, Estado:'Activa' },
+      ],
+      pujas: [
+        { id:'b1', Subasta_ID:'s1', Nombre:'Diego R.', Miembro_ID:'x', Monto:3400, Fecha:now - 20*H },
+        { id:'b2', Subasta_ID:'s1', Nombre:'Mariana L.', Miembro_ID:'y', Monto:3800, Fecha:now - 6*H },
+        { id:'b3', Subasta_ID:'s2', Nombre:'Pablo T.', Miembro_ID:'z', Monto:7500, Fecha:now - 10*H },
+        { id:'b4', Subasta_ID:'s3', Nombre:'Mariana L.', Miembro_ID:'y', Monto:2600, Fecha:now - 3*H },
+      ],
+      opiniones: [
+        { id:'r1', Artista_ID:'a1', Nombre:'Mariana L.', Miembro_ID:'y', Estrellas:5, Texto:'Su tee “Ruido Blanco” es lo más bonito que tengo en el clóset.', Recomienda:true, Fecha:now - 72*H },
+        { id:'r2', Artista_ID:'a2', Nombre:'Diego R.', Miembro_ID:'x', Estrellas:5, Texto:'Lo vi pintar en la Cineteca, impresionante.', Recomienda:true, Fecha:now - 30*H },
+        { id:'r3', Artista_ID:'a2', Nombre:'Pablo T.', Miembro_ID:'z', Estrellas:4, Texto:'Gran trabajo, ojalá más formatos pequeños.', Recomienda:true, Fecha:now - 10*H },
+      ],
+      vivos: [
+        { id:'v1', Artista_ID:'a1', Miembro_ID:'', Titulo:'Interviniendo una chamarra en vivo', YouTube:'', Estado:'envivo', Inicio:now - 0.4*H },
+        { id:'v2', Artista_ID:'a2', Miembro_ID:'', Titulo:'Pintando el cartel de noviembre', YouTube:'', Estado:'programado', Inicio:now + 50*H },
+      ],
+      comentarios: [], reacciones: [], pedidos: [],
+      config: { Pago_Banco:'(por definir)', Pago_Titular:'Tri-Urban', Pago_Numero:'(CLABE por definir)', Pago_WhatsApp:'2461794919' },
+    };
+  }
+  let db = lsGet(LS.db, null);
+  if (!db) { db = seed(); save(); }
+  function save() { lsSet(LS.db, db); }
+  const pub = m => m && ({ id: m.id, Nombre: m.Nombre, Email: m.Email, Rol: m.Rol, Artista_ID: m.Artista_ID || '' });
+  const who = t => db.miembros.find(m => m.id === db.sesiones[t]);
+  const ratings = id => { const o = db.opiniones.filter(x => x.Artista_ID === id); return { prom: o.length ? o.reduce((a, b) => a + +b.Estrellas, 0) / o.length : 0, n: o.length, recs: o.filter(x => x.Recomienda).length }; };
+  const topBid = id => db.pujas.filter(b => b.Subasta_ID === id).sort((a, b) => b.Monto - a.Monto)[0];
+  const subPub = s => { const t = topBid(s.id); return { ...s, Actual: t ? t.Monto : 0, Pujas: db.pujas.filter(b => b.Subasta_ID === s.id).length, Lider: t ? t.Nombre : '' }; };
+
+  // comentarios simulados para que el vivo demo se sienta vivo
+  const BOTS = ['Diego R.','Mariana L.','Pablo T.','Fer S.','Lu M.'], FRASES = ['qué colores 🔥','¿qué aerosol usas?','esa chamarra ya es mía','saludos desde Puebla','👏👏👏','me encanta el proceso','¿la van a subastar?'];
+  setInterval(() => {
+    const v = db.vivos.find(x => x.Estado === 'envivo'); if (!v || document.hidden) return;
+    if (Math.random() < .5) db.comentarios.push({ id: uid('m'), Vivo_ID: v.id, Nombre: BOTS[Math.floor(Math.random() * 5)], Miembro_ID: 'bot', Texto: FRASES[Math.floor(Math.random() * FRASES.length)], Fecha: Date.now() });
+    db.reacciones.push({ Vivo_ID: v.id, Emoji: REACCIONES[Math.floor(Math.random() * 5)], Miembro_ID: 'bot', Fecha: Date.now() });
+    save();
+  }, 3500);
+
+  const A = {
+    register(d) {
+      if (String(d.clave || '').trim().toUpperCase() !== CLAVE) return { ok: false, error: 'La clave de la comunidad no es correcta.' };
+      const email = String(d.email || '').trim().toLowerCase();
+      if (db.miembros.some(m => m.Email === email)) return { ok: false, error: 'Ese correo ya está registrado. Entra con tu contraseña.' };
+      const m = { id: uid('u'), Nombre: String(d.nombre).trim(), Email: email, Pass: d.password, Rol: db.miembros.length ? 'miembro' : 'admin', Artista_ID: db.miembros.length ? '' : 'a1' };
+      db.miembros.push(m); const t = uid('t'); db.sesiones[t] = m.id; save();
+      return { ok: true, token: t, me: pub(m) };
+    },
+    login(d) {
+      const m = db.miembros.find(x => x.Email === String(d.email || '').trim().toLowerCase() && x.Pass === d.password);
+      if (!m) return { ok: false, error: 'Correo o contraseña incorrectos.' };
+      const t = uid('t'); db.sesiones[t] = m.id; save(); return { ok: true, token: t, me: pub(m) };
+    },
+    me(d, m) { return { ok: true, me: pub(m) }; },
+    logout(d, m, t) { delete db.sesiones[t]; save(); return { ok: true }; },
+    catalog() {
+      return { ok: true,
+        productos: db.productos.filter(p => p.Activo !== false), config: db.config,
+        artistas: db.artistas.filter(a => a.Activo !== false).map(a => ({ ...a, ...ratings(a.id) })),
+        subastas: db.subastas.filter(x => x.Estado !== 'Oculta').map(subPub),
+        vivos: db.vivos.filter(v => v.Estado !== 'terminado') };
+    },
+    artista(d) {
+      const a = db.artistas.find(x => x.id === d.id); if (!a) return { ok: false, error: 'No encontrado' };
+      return { ok: true, artista: { ...a, ...ratings(a.id) }, opiniones: db.opiniones.filter(o => o.Artista_ID === a.id).sort((x, y) => y.Fecha - x.Fecha) };
+    },
+    opinar(d, m) {
+      const e = Math.max(1, Math.min(5, +d.estrellas || 0)), txt = String(d.texto || '').trim().slice(0, 500);
+      let o = db.opiniones.find(x => x.Artista_ID === d.artista_id && x.Miembro_ID === m.id);
+      if (!o) { o = { id: uid('r'), Artista_ID: d.artista_id, Miembro_ID: m.id }; db.opiniones.push(o); }
+      Object.assign(o, { Nombre: nombreCorto(m.Nombre), Estrellas: e, Texto: txt, Recomienda: !!d.recomienda, Fecha: Date.now() }); save();
+      return { ok: true };
+    },
+    subasta(d) {
+      const s = db.subastas.find(x => x.id === d.id); if (!s) return { ok: false, error: 'No encontrada' };
+      return { ok: true, subasta: subPub(s), pujas: db.pujas.filter(b => b.Subasta_ID === s.id).sort((a, b) => b.Monto - a.Monto).map(b => ({ Nombre: b.Nombre, Monto: b.Monto, Fecha: b.Fecha })) };
+    },
+    pujar(d, m) {
+      const s = db.subastas.find(x => x.id === d.id); if (!s) return { ok: false, error: 'No encontrada' };
+      if (Date.now() > s.Fin) return { ok: false, error: 'La subasta ya cerró.' };
+      const t = topBid(s.id), min = t ? t.Monto + +s.Incremento : +s.Precio_Inicial, monto = Math.floor(+d.monto || 0);
+      if (monto < min) return { ok: false, error: 'La puja mínima es ' + money(min) };
+      if (t && t.Miembro_ID === m.id) return { ok: false, error: 'Ya vas ganando esta subasta.' };
+      db.pujas.push({ id: uid('b'), Subasta_ID: s.id, Miembro_ID: m.id, Nombre: nombreCorto(m.Nombre), Monto: monto, Fecha: Date.now() });
+      if (s.Fin - Date.now() < 120e3) s.Fin = Date.now() + 120e3; // anti-francotirador
+      save(); return { ok: true };
+    },
+    vivoFeed(d) {
+      const v = db.vivos.find(x => x.id === d.id); if (!v) return { ok: false, error: 'No encontrado' };
+      const since = +d.since || 0;
+      const reac = {}; db.reacciones.filter(r => r.Vivo_ID === v.id && r.Fecha > since).forEach(r => reac[r.Emoji] = (reac[r.Emoji] || 0) + 1);
+      return { ok: true, vivo: v, ahora: Date.now(), comentarios: db.comentarios.filter(c => c.Vivo_ID === v.id && c.Fecha > since).slice(-60), reacciones: reac, espectadores: 12 + Math.floor(Math.random() * 6) };
+    },
+    vivoComentar(d, m) {
+      const txt = String(d.texto || '').trim().slice(0, 280); if (!txt) return { ok: false, error: 'Escribe algo' };
+      db.comentarios.push({ id: uid('m'), Vivo_ID: d.id, Nombre: nombreCorto(m.Nombre), Miembro_ID: m.id, Artista_ID: m.Artista_ID, Texto: txt, Fecha: Date.now() }); save();
+      return { ok: true };
+    },
+    vivoReaccionar(d, m) { if (!REACCIONES.includes(d.emoji)) return { ok: false }; db.reacciones.push({ Vivo_ID: d.id, Emoji: d.emoji, Miembro_ID: m.id, Fecha: Date.now() }); save(); return { ok: true }; },
+    vivoIniciar(d, m) {
+      if (!['artista', 'admin'].includes(m.Rol)) return { ok: false, error: 'Solo artistas pueden transmitir.' };
+      const v = { id: uid('v'), Artista_ID: m.Artista_ID || d.artista_id || '', Miembro_ID: m.id, Titulo: String(d.titulo || 'En vivo').slice(0, 90), YouTube: ytId(d.youtube), Estado: 'envivo', Inicio: Date.now() };
+      db.vivos.unshift(v); save(); return { ok: true, vivo: v };
+    },
+    vivoTerminar(d, m) { const v = db.vivos.find(x => x.id === d.id); if (v && (v.Miembro_ID === m.id || m.Rol === 'admin')) { v.Estado = 'terminado'; save(); } return { ok: true }; },
+    pedido(d, m) {
+      let total = 0; const items = [];
+      for (const it of d.items || []) {
+        const p = db.productos.find(x => x.id === it.id); if (!p) continue;
+        const q = Math.max(1, Math.floor(+it.qty || 1));
+        if (+p.Stock < q) return { ok: false, error: 'Ya no hay suficiente de “' + p.Nombre + '”.' };
+        total += p.Precio * q; items.push({ id: p.id, Nombre: p.Nombre, Talla: it.talla || '', qty: q, Precio: p.Precio });
+      }
+      if (!items.length) return { ok: false, error: 'Tu carrito está vacío.' };
+      items.forEach(it => { db.productos.find(x => x.id === it.id).Stock -= it.qty; });
+      const folio = 'TU-' + String(db.pedidos.length + 1).padStart(4, '0');
+      db.pedidos.push({ folio, Miembro_ID: m.id, items, total, Estado: 'Pendiente', Fecha: Date.now() }); save();
+      return { ok: true, folio, total, config: db.config };
+    },
+  };
+  /* ---- miembro: mis pedidos ---- */
+  A.misPedidos = (d, m) => ({ ok: true, pedidos: db.pedidos.filter(p => p.Miembro_ID === m.id).slice().reverse(), config: db.config });
+  /* ---- administración ---- */
+  const TAB = { Productos: 'productos', Artistas: 'artistas', Subastas: 'subastas', Opiniones: 'opiniones', Comentarios: 'comentarios' };
+  const ADM = {
+    adminData() {
+      return { ok: true, productos: db.productos, artistas: db.artistas, subastas: db.subastas.map(subPub),
+        pedidos: db.pedidos.slice().reverse().map(p => ({ ...p, Nombre: (db.miembros.find(x => x.id === p.Miembro_ID) || {}).Nombre || p.Nombre || '', Email: (db.miembros.find(x => x.id === p.Miembro_ID) || {}).Email || '' })),
+        miembros: db.miembros.map(m => ({ ...pub(m), Activo: m.Activo !== false })), config: db.config };
+    },
+    adminSave(d) {
+      const arr = db[TAB[d.tabla]]; if (!arr || d.tabla === 'Opiniones') return { ok: false, error: 'Tabla no editable' };
+      const o = { ...d.obj }; let it = o.id && arr.find(x => x.id === o.id);
+      if (it) Object.assign(it, o); else { it = { ...o, id: uid(d.tabla[0].toLowerCase()) }; if (d.tabla === 'Subastas' && !it.Estado) it.Estado = 'Activa'; arr.push(it); }
+      save(); return { ok: true, id: it.id };
+    },
+    adminDelete(d) { const k = TAB[d.tabla]; if (!k) return { ok: false }; db[k] = db[k].filter(x => x.id !== d.id); save(); return { ok: true }; },
+    adminPedido(d) {
+      const p = db.pedidos.find(x => x.folio === d.folio); if (!p) return { ok: false, error: 'No encontrado' };
+      if (d.estado === 'Cancelado' && p.Estado !== 'Cancelado') p.items.forEach(it => { const pr = db.productos.find(x => x.id === it.id); if (pr) pr.Stock = +pr.Stock + it.qty; });
+      p.Estado = d.estado; save(); return { ok: true };
+    },
+    adminMiembro(d, m) {
+      const x = db.miembros.find(y => y.id === d.id); if (!x) return { ok: false };
+      if (d.id === m.id && ((d.Rol && d.Rol !== 'admin') || d.Activo === false)) return { ok: false, error: 'No puedes quitarte tu propio acceso de administrador.' };
+      ['Rol', 'Artista_ID', 'Activo'].forEach(k => { if (d[k] !== undefined) x[k] = d[k]; }); save(); return { ok: true };
+    },
+    adminConfig(d) { Object.assign(db.config, d.config || {}); save(); return { ok: true }; },
+    adminUpload(d) { return { ok: true, url: 'data:' + d.mime + ';base64,' + d.data }; },
+    adminCerrarSubasta(d) {
+      const s = db.subastas.find(x => x.id === d.id); if (!s || s.Estado === 'Cerrada') return { ok: false, error: 'Ya estaba cerrada.' };
+      s.Estado = 'Cerrada'; s.Fin = Math.min(Date.now(), s.Fin);
+      const t = topBid(s.id); if (!t) { save(); return { ok: true, folio: '' }; }
+      const g = db.miembros.find(x => x.id === t.Miembro_ID) || {}, folio = 'TU-' + String(db.pedidos.length + 1).padStart(4, '0');
+      db.pedidos.push({ folio, Miembro_ID: t.Miembro_ID, Nombre: g.Nombre || t.Nombre, items: [{ id: s.id, Nombre: 'Subasta: ' + s.Titulo, Talla: '', qty: 1, Precio: t.Monto }], total: t.Monto, Estado: 'Pendiente', Fecha: Date.now() });
+      save(); return { ok: true, folio, ganador: g.Nombre || t.Nombre, email: g.Email || '' };
+    },
+  };
+  Object.keys(ADM).forEach(k => A[k] = (d, m) => m.Rol === 'admin' ? ADM[k](d, m) : { ok: false, error: 'Solo administradores.' });
+
+  return {
+    run(action, d, token) {
+      const fn = A[action]; if (!fn) return { ok: false, error: 'Acción desconocida' };
+      if (['register', 'login'].includes(action)) return fn(d);
+      const m = who(token); if (!m) { logout(true); return { ok: false, error: 'SESION' }; }
+      return fn(d, m, token);
+    }
+  };
+})();
+
+/* =====================================================================
+   SESIÓN
+   ===================================================================== */
+function showGate() { $('#gate').hidden = false; $('#app').hidden = true; $('#demoHint').hidden = !DEMO; }
+async function enterApp() {
+  $('#gate').hidden = true; $('#app').hidden = false;
+  $('#meBtn').textContent = iniciales(S.me.Nombre);
+  if (DEMO && !$('.demo-flag')) document.body.insertAdjacentHTML('beforeend', '<div class="demo-flag">Demo</div>');
+  await loadCatalog();
+  route();
+}
+async function loadCatalog() {
+  const j = await api('catalog');
+  if (j.ok) S.data = j;
+}
+function logout(silent) {
+  if (!silent && S.token) api('logout').catch(() => {});
+  S.token = ''; S.me = null; lsSet(LS.token, ''); stopTimers(); closeModal(); showGate();
+}
+$$('[data-gtab]').forEach(b => b.onclick = () => {
+  $$('[data-gtab]').forEach(x => x.classList.toggle('on', x === b));
+  $('#fLogin').hidden = b.dataset.gtab !== 'login'; $('#fReg').hidden = b.dataset.gtab !== 'registro';
+});
+$('#fLogin').onsubmit = async e => {
+  e.preventDefault(); const btn = e.submitter; btn.disabled = true; $('#lErr').textContent = '';
+  try {
+    const j = await api('login', { email: $('#lEmail').value, password: $('#lPass').value });
+    if (!j.ok) { $('#lErr').textContent = j.error; return; }
+    S.token = j.token; S.me = j.me; lsSet(LS.token, j.token); $('#lPass').value = ''; enterApp();
+  } catch (err) { $('#lErr').textContent = 'No hay conexión. Intenta de nuevo.'; } finally { btn.disabled = false; }
+};
+$('#fReg').onsubmit = async e => {
+  e.preventDefault(); const btn = e.submitter; btn.disabled = true; $('#rErr').textContent = '';
+  try {
+    const j = await api('register', { clave: $('#rClave').value, nombre: $('#rNombre').value, email: $('#rEmail').value, password: $('#rPass').value });
+    if (!j.ok) { $('#rErr').textContent = j.error; return; }
+    S.token = j.token; S.me = j.me; lsSet(LS.token, j.token); $('#rPass').value = ''; $('#rClave').value = '';
+    toast('¡Bienvenido a la comunidad, ' + S.me.Nombre.split(' ')[0] + '!'); enterApp();
+  } catch (err) { $('#rErr').textContent = 'No hay conexión. Intenta de nuevo.'; } finally { btn.disabled = false; }
+};
+
+/* =====================================================================
+   NAVEGACIÓN
+   ===================================================================== */
+const SECCIONES = [
+  ['inicio', 'Inicio', '◐'], ['tienda', 'Tri-Urban', '▲'], ['colabs', 'Arte × Urban', '✦'],
+  ['galeria', 'Galería', '▣'], ['subastas', 'Subastas', '⚑'], ['artistas', 'Artistas', '☺'], ['vivo', 'En vivo', '●'],
+];
+let timers = [];
+function stopTimers() { timers.forEach(clearInterval); timers = []; }
+function renderNav(cur) {
+  const live = (S.data?.vivos || []).some(v => v.Estado === 'envivo');
+  $('#nav').innerHTML = SECCIONES.map(([k, l]) => `<a href="#${k}" class="${k === cur ? 'on' : ''}">${l}${k === 'vivo' && live ? '<span class="dot"></span>' : ''}</a>`).join('') + (S.me.Rol === 'admin' ? `<a href="#admin" class="${cur === 'admin' ? 'on' : ''}">⚙ Panel</a>` : '');
+  $('#tabbar').innerHTML = SECCIONES.filter(s => s[0] !== 'galeria').map(([k, l, i]) => `<a href="#${k}" class="${k === cur ? 'on' : ''}"><i>${k === 'vivo' && live ? '🔴' : i}</i>${l.replace('Arte × Urban', 'Colabs')}</a>`).join('');
+}
+function route() {
+  if (!S.me) return;
+  stopTimers();
+  const [sec, arg] = (location.hash.slice(1) || 'inicio').split('/');
+  const esAdmin = S.me.Rol === 'admin' && sec === 'admin';
+  const k = esAdmin ? 'admin' : SECCIONES.some(s => s[0] === sec) ? sec : 'inicio';
+  renderNav(k);
+  const V = { inicio: vInicio, tienda: vTienda, colabs: vColabs, galeria: vGaleria, subastas: vSubastas, artistas: vArtistas, vivo: vVivo, admin: vAdmin }[k];
+  $('#view').innerHTML = V(arg) + footer();
+  window.scrollTo(0, 0);
+  tickCountdowns(); timers.push(setInterval(tickCountdowns, 1000));
+  if (k === 'vivo' && arg) startLive(arg);
+  if (k === 'admin') loadAdmin();
+}
+window.addEventListener('hashchange', route);
+function footer() {
+  return `<footer><span>TRI—URBAN × Cineteca Trikles · San Pedro Muñoztla, Tlaxcala</span><span>Comunidad privada — lo que pasa aquí, se queda aquí.</span></footer>`;
+}
+
+/* ---------- helpers de datos ---------- */
+const P = () => S.data?.productos || [];
+const artistaById = id => (S.data?.artistas || []).find(a => a.id === id) || { id, Nombre: 'Artista', Origen: '' };
+const orgTag = o => o ? `<span class="org ${o === 'Tri-Urban' ? 'tu' : 'ct'}">${esc(o)}</span>` : '';
+
+/* =====================================================================
+   VISTAS
+   ===================================================================== */
+function vInicio() {
+  const colabs = P().filter(p => p.Tipo === 'colab'), star = colabs[0];
+  const live = (S.data.vivos || []).find(v => v.Estado === 'envivo');
+  const sub = (S.data.subastas || []).filter(s => s.Fin > Date.now()).sort((a, b) => a.Fin - b.Fin)[0];
+  const a = star ? artistaById(star.Artista_ID) : null;
+  const tick = ['Arte que se viste', 'Piezas únicas', 'Hecho en Tlaxcala', 'Subastas abiertas', 'Artistas de la comunidad', 'Solo miembros'];
+  return `
+  <section class="hero">
+    <div class="hero-txt">
+      <div class="kicker">Temporada otoño · Colección 01</div>
+      <h1 class="disp">La calle <span class="it">se vuelve</span><span class="stroke">galería</span></h1>
+      <div style="display:flex;flex-direction:column;gap:18px">
+        <p class="mute" style="max-width:440px">Hola, ${esc(S.me.Nombre.split(' ')[0])}. Prendas Tri-Urban, piezas intervenidas por artistas de la comunidad y obra original. Todo en un solo lugar, solo para la comunidad Trikles.</p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap"><a class="btn btn-solid" href="#colabs">Ver Arte × Urban</a><a class="btn btn-ghost" href="#tienda">Tienda</a></div>
+      </div>
+    </div>
+    ${star ? `<div class="hero-media" onclick="openProducto('${star.id}')">${media(star, 'colab')}
+      <div class="corner-price"><small>PIEZA</small>${money(star.Precio)}</div>
+      <div class="hero-cap"><div class="kicker" style="color:var(--gold)">Intervenida por</div><div class="it" style="font-size:30px">${esc(a.Nombre)}</div><div class="disp" style="font-size:20px;margin-top:4px">${esc(star.Nombre)}</div></div>
+    </div>` : '<div class="hero-media"></div>'}
+  </section>
+  <div class="ticker"><div>${[...tick, ...tick].map((t, i) => `<span class="${i % 2 ? 'a' : ''}">${t}</span>`).join('')}</div></div>
+  ${live ? `<div class="live-strip" onclick="location.hash='#vivo/${live.id}'"><span class="pill-live">EN VIVO</span><div style="flex:1"><b>${esc(artistaById(live.Artista_ID).Nombre)}</b> · <span class="mute">${esc(live.Titulo)}</span></div><span>Entrar →</span></div>` : ''}
+  <section class="sec">
+    <div class="sec-head"><h2 class="disp">Arte <span class="it" style="color:var(--gold)">×</span> Urban</h2><p>Prendas Tri-Urban intervenidas por artistas. Ediciones cortas, firmadas, con historia.</p></div>
+    <div class="colab-grid">${colabs.slice(0, 3).map(colabCard).join('')}</div>
+  </section>
+  ${sub ? `<section class="sec"><div class="sec-head"><h2 class="disp">Cierra pronto</h2><a class="btn btn-ghost" href="#subastas">Todas las subastas</a></div><div class="auc-grid">${aucCard(sub)}</div></section>` : ''}
+  <section class="sec">
+    <div class="sec-head"><h2 class="disp">Galería</h2><a class="btn btn-ghost" href="#galeria">Ver obra</a></div>
+    <div class="grid">${P().filter(p => p.Tipo === 'obra').slice(0, 4).map(o => `<article class="card" onclick="openProducto('${o.id}')"><div class="media">${media(o, 'obra')}</div><div class="meta"><span class="it" style="font-size:18px">${esc(o.Nombre)}</span><span class="price">${money(o.Precio)}</span></div></article>`).join('')}</div>
+  </section>
+  <section class="sec">
+    <div class="sec-head"><h2 class="disp">Nuestros artistas</h2><a class="btn btn-ghost" href="#artistas">Conócelos</a></div>
+    <div class="art-grid">${(S.data.artistas || []).slice(0, 4).map(artistCard).join('')}</div>
+  </section>`;
+}
+
+function prodCard(p) {
+  const agot = +p.Stock <= 0;
+  return `<article class="card" onclick="openProducto('${p.id}')" tabindex="0" onkeydown="if(event.key==='Enter')this.click()">
+    <div class="media">${media(p)}${agot ? '<span class="tag-mini sold">Agotado</span>' : +p.Stock <= 3 ? '<span class="tag-mini">Últimas piezas</span>' : ''}</div>
+    <div class="meta"><span class="name">${esc(p.Nombre)}</span><span class="price">${money(p.Precio)}</span></div>
+  </article>`;
+}
+let tiendaFiltro = 'todo';
+function vTienda() {
+  const prendas = P().filter(p => p.Tipo === 'prenda');
+  return `<section class="sec">
+    <div class="sec-head"><h2 class="disp">Tri—Urban</h2><p>Básicos pesados, cortes amplios y detalles que se notan de cerca. Hechos para durar.</p></div>
+    <div class="grid">${prendas.map(prodCard).join('') || '<div class="empty">Pronto nueva colección.</div>'}</div>
+  </section>`;
+}
+function colabCard(p) {
+  const a = artistaById(p.Artista_ID);
+  return `<article class="colab" onclick="openProducto('${p.id}')" tabindex="0" onkeydown="if(event.key==='Enter')this.click()">
+    <div class="media">${media(p, 'colab')}
+      <div class="corner-price"><small>PRECIO</small>${money(p.Precio)}</div>
+      ${p.Edicion ? `<span class="edition">${esc(p.Edicion)}</span>` : ''}
+      <div class="colab-artist"><div class="ava">${media(a, 'artista')}</div><div><div class="by">Intervenida por</div><div class="who">${esc(a.Nombre)}</div></div></div>
+    </div>
+    <div class="colab-body"><div class="piece">${esc(p.Nombre)}</div><div class="obra">${esc(p.Obra_Desc || p.Descripcion)}</div></div>
+  </article>`;
+}
+function vColabs() {
+  return `<section class="sec">
+    <div class="sec-head"><h2 class="disp">Arte <span class="it" style="color:var(--gold)">×</span> Urban</h2><p>Cada prenda pasa por las manos de un artista de la comunidad. La pieza y quien la creó van primero; el precio, en la esquina.</p></div>
+    <div class="colab-grid">${P().filter(p => p.Tipo === 'colab').map(colabCard).join('') || '<div class="empty">Próximas colaboraciones en camino.</div>'}</div>
+  </section>`;
+}
+function vGaleria() {
+  const obras = P().filter(p => p.Tipo === 'obra');
+  return `<section class="sec">
+    <div class="sec-head"><h2 class="disp">Galería</h2><p>Obra original de los artistas de Cineteca Trikles y Tri-Urban. Lo que compras aquí apoya directo al artista.</p></div>
+    <div class="grid">${obras.map(o => { const a = artistaById(o.Artista_ID); return `<article class="card" onclick="openProducto('${o.id}')" tabindex="0" onkeydown="if(event.key==='Enter')this.click()">
+      <div class="media">${media(o, 'obra')}${+o.Stock <= 0 ? '<span class="tag-mini sold">Vendida</span>' : ''}</div>
+      <div><div class="it" style="font-size:20px">${esc(o.Nombre)}</div><div class="meta"><span class="sub">${esc(a.Nombre)}</span><span class="price">${money(o.Precio)}</span></div></div>
+    </article>`; }).join('') || '<div class="empty">La galería se está montando.</div>'}</div>
+  </section>`;
+}
+function aucCard(s) {
+  const a = artistaById(s.Artista_ID), actual = s.Actual || s.Precio_Inicial;
+  return `<article class="auc" onclick="openSubasta('${s.id}')" tabindex="0" onkeydown="if(event.key==='Enter')this.click()">
+    <div class="media">${media({ ...s, id: s.id }, s.Tipo === 'obra' ? 'obra' : 'colab')}${s.Fin <= Date.now() ? '<span class="tag-mini sold">Cerrada</span>' : ''}</div>
+    <div class="auc-info">
+      <div class="t">${esc(s.Titulo)}</div>
+      <div class="kicker" style="grid-column:1/-1">${esc(a.Nombre)} · ${s.Pujas || 0} pujas</div>
+      <div><div class="kicker">${s.Actual ? 'Puja actual' : 'Precio de salida'}</div><div class="bid-now">${money(actual)}</div></div>
+      <div><div class="kicker" style="text-align:right">Cierra en</div><div class="cd" data-end="${s.Fin}"></div></div>
+    </div>
+  </article>`;
+}
+function vSubastas() {
+  const ss = (S.data.subastas || []).slice().sort((a, b) => (a.Fin <= Date.now()) - (b.Fin <= Date.now()) || a.Fin - b.Fin);
+  return `<section class="sec">
+    <div class="sec-head"><h2 class="disp">Subastas</h2><p>Prendas y obras únicas. Si alguien puja en los últimos 2 minutos, el reloj se extiende 2 minutos más: gana quien de verdad la quiere.</p></div>
+    <div class="auc-grid">${ss.map(aucCard).join('') || '<div class="empty">No hay subastas abiertas.</div>'}</div>
+  </section>`;
+}
+function artistCard(a) {
+  return `<button class="artist" onclick="openArtista('${a.id}')">
+    <div class="ph">${media(a, 'artista')}</div>
+    ${orgTag(a.Origen)}
+    <div class="n">${esc(a.Nombre)}</div>
+    <div class="mute" style="font-size:13px">${esc(a.Disciplina || '')}</div>
+    <div style="display:flex;gap:10px;align-items:center;font-size:12px">${stars(a.prom)} <span class="mute">${a.n || 0} opiniones · ${a.recs || 0} lo recomiendan</span></div>
+  </button>`;
+}
+let artFiltro = 'Todos';
+function vArtistas() {
+  const all = S.data.artistas || [];
+  const list = artFiltro === 'Todos' ? all : all.filter(a => a.Origen === artFiltro);
+  return `<section class="sec">
+    <div class="sec-head"><h2 class="disp">Artistas</h2><p>Las personas detrás de cada pieza. Síguelos, opina y recomiéndalos dentro de la comunidad.</p></div>
+    <div class="filters">${['Todos', 'Tri-Urban', 'Cineteca Trikles'].map(f => `<button class="chip ${f === artFiltro ? 'on' : ''}" onclick="artFiltro='${f}';route()">${f}</button>`).join('')}</div>
+    <div class="art-grid">${list.map(artistCard).join('')}</div>
+  </section>`;
+}
+function vVivo(id) {
+  if (id) {
+    const v = (S.data.vivos || []).find(x => x.id === id);
+    if (!v) return `<section class="sec"><div class="empty">Esta transmisión ya terminó. <a href="#vivo">Ver otras</a></div></section>`;
+    const a = artistaById(v.Artista_ID), yt = ytId(v.YouTube), mine = v.Miembro_ID === S.me.id || S.me.Rol === 'admin';
+    return `<section style="padding-top:24px">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+        <div><a href="#vivo" class="kicker" style="text-decoration:none">← En vivo</a><h2 class="disp" style="font-size:clamp(28px,4vw,46px);margin-top:6px">${esc(v.Titulo)}</h2>
+        <div class="it" style="font-size:20px;color:var(--gold);cursor:pointer" onclick="openArtista('${a.id}')">${esc(a.Nombre)}</div></div>
+        ${mine && v.Estado === 'envivo' ? `<button class="btn btn-ghost" onclick="terminarVivo('${v.id}')">Terminar transmisión</button>` : ''}
+      </div>
+      <div class="live-room">
+        <div class="stage" oncontextmenu="return false">
+          ${v.Estado === 'programado' ? `<div class="ph-live"><div><div class="sig">Próximamente</div><div class="cd" data-end="${v.Inicio}" style="text-align:center;margin-top:12px;font-size:22px"></div></div></div>`
+            : yt ? `<iframe src="https://www.youtube-nocookie.com/embed/${yt}?autoplay=1&rel=0&modestbranding=1&playsinline=1" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen title="Transmisión en vivo"></iframe>`
+            : `<div class="ph-live"><div class="sig">Señal demo<br><span class="it" style="font-size:.45em;color:var(--gold)">aquí se verá la transmisión</span></div></div>`}
+          <div class="watermark" id="wm">${esc(S.me.Nombre)} · Comunidad Trikles</div>
+          <div class="stage-top">${v.Estado === 'envivo' ? '<span class="pill-live">EN VIVO</span>' : '<span></span>'}<span class="viewers" id="viewers">👁 —</span></div>
+          <div class="floaters" id="floaters"></div>
+          ${v.Estado === 'envivo' ? `<div class="react-bar">${REACCIONES.map(e => `<button onclick="reaccionar('${e}')" aria-label="Reaccionar ${e}">${e}</button>`).join('')}</div>` : ''}
+        </div>
+        <aside class="chat">
+          <div class="chat-head"><div class="kicker">Chat de la comunidad</div></div>
+          <div class="chat-list" id="chatList"><div class="mute" style="font-size:13px">Sé el primero en comentar.</div></div>
+          <form class="chat-form" id="chatForm" onsubmit="comentar(event)"><input id="chatIn" maxlength="280" placeholder="Escribe un comentario…" autocomplete="off" ${v.Estado !== 'envivo' ? 'disabled' : ''}><button class="btn btn-accent" style="padding:0 16px" ${v.Estado !== 'envivo' ? 'disabled' : ''}>↑</button></form>
+          <div class="priv">🔒 Privado: solo miembros. Sin opción de compartir.</div>
+        </aside>
+      </div>
+    </section>`;
+  }
+  const vivos = S.data.vivos || [], ahora = vivos.filter(v => v.Estado === 'envivo'), prox = vivos.filter(v => v.Estado === 'programado');
+  const card = v => { const a = artistaById(v.Artista_ID); return `<article class="live-card" onclick="location.hash='#vivo/${v.id}'">
+    <div class="media">${media(v, 'live')}<div style="position:absolute;top:10px;left:10px">${v.Estado === 'envivo' ? '<span class="pill-live">EN VIVO</span>' : `<span class="tag-mini" style="position:static">${new Date(+v.Inicio).toLocaleString('es-MX', { weekday: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>`}</div></div>
+    <div class="info"><div class="it" style="font-size:20px;color:var(--gold)">${esc(a.Nombre)}</div><div>${esc(v.Titulo)}</div></div></article>`; };
+  const puede = ['artista', 'admin'].includes(S.me.Rol);
+  return `<section class="sec">
+    <div class="sec-head"><h2 class="disp">En vivo</h2><p>Los artistas transmiten su proceso solo para la comunidad. Reacciona y comenta en tiempo real.</p>
+      ${puede ? '<button class="btn btn-accent" onclick="openIniciarVivo()">● Iniciar transmisión</button>' : ''}</div>
+    ${ahora.length ? `<div class="kicker" style="margin-bottom:12px">Ahora</div><div class="live-list">${ahora.map(card).join('')}</div>` : '<div class="empty">Nadie está transmitiendo en este momento.</div>'}
+    ${prox.length ? `<div class="kicker" style="margin:34px 0 12px">Próximamente</div><div class="live-list">${prox.map(card).join('')}</div>` : ''}
+  </section>`;
+}
+
+/* ---------- countdowns ---------- */
+function tickCountdowns() {
+  $$('[data-end]').forEach(el => {
+    const ms = +el.dataset.end - Date.now();
+    el.textContent = fmtRest(ms);
+    el.classList.toggle('urgent', ms > 0 && ms < 3600e3);
+    el.classList.toggle('done', ms <= 0);
+  });
+}
+
+/* =====================================================================
+   MODALES
+   ===================================================================== */
+function openModal(html, narrow) {
+  $('#modalBody').innerHTML = html; $('#sheet').classList.toggle('narrow', !!narrow);
+  $('#modal').hidden = false; document.body.style.overflow = 'hidden'; tickCountdowns();
+}
+function closeModal() { $('#modal').hidden = true; document.body.style.overflow = ''; if (modalTimer) { clearInterval(modalTimer); modalTimer = null; } }
+let modalTimer = null;
+$('#modalX').onclick = closeModal;
+$('#modal').onclick = e => { if (e.target.id === 'modal') closeModal(); };
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#modal').hidden) closeModal(); });
+
+let selTalla = '';
+function openProducto(id) {
+  const p = P().find(x => x.id === id); if (!p) return;
+  const tallas = String(p.Tallas || '').split(',').map(t => t.trim()).filter(Boolean);
+  selTalla = tallas.length === 1 ? tallas[0] : '';
+  const agot = +p.Stock <= 0, a = p.Artista_ID ? artistaById(p.Artista_ID) : null;
+  const artistBox = a ? `<div class="artist-box" onclick="openArtista('${a.id}')"><div class="ava">${media(a, 'artista')}</div>
+      <div style="flex:1"><div class="kicker" style="color:var(--gold)">${p.Tipo === 'obra' ? 'Obra de' : 'Intervenida por'}</div><div class="it" style="font-size:24px">${esc(a.Nombre)}</div><div class="mute" style="font-size:13px">${esc(a.Disciplina || '')}</div></div><span>→</span></div>` : '';
+  openModal(`<div class="detail">
+    <div class="media">${media(p)}${p.Tipo === 'colab' ? `<div class="corner-price"><small>PRECIO</small>${money(p.Precio)}</div>` : ''}${p.Edicion ? `<span class="edition">${esc(p.Edicion)}</span>` : ''}</div>
+    <div class="body">
+      <div class="kicker">${{ prenda: 'Tri-Urban', colab: 'Arte × Urban', obra: 'Galería' }[p.Tipo]}</div>
+      ${p.Tipo === 'colab' ? artistBox : ''}
+      <h3 class="disp">${esc(p.Nombre)}</h3>
+      ${p.Tipo === 'colab' ? `<p class="quote">${esc(p.Obra_Desc || '')}</p><p class="mute">${esc(p.Descripcion || '')}</p>`
+        : p.Tipo === 'obra' ? `<p class="mute">${esc(p.Descripcion || '')}</p><dl class="specs"><dt>Técnica</dt><dd>${esc(p.Tecnica || '—')}</dd><dt>Medidas</dt><dd>${esc(p.Medidas || '—')}</dd><dt>Disponibles</dt><dd>${Math.max(0, +p.Stock)}</dd></dl>`
+        : `<div class="price" style="font-size:26px">${money(p.Precio)}</div><p class="mute">${esc(p.Descripcion || '')}</p>`}
+      ${p.Tipo === 'obra' ? `<div class="price" style="font-size:26px">${money(p.Precio)}</div>${artistBox}` : ''}
+      ${tallas.length ? `<div><div class="kicker" style="margin-bottom:8px">Talla</div><div class="sizes">${tallas.map(t => `<button class="${t === selTalla ? 'on' : ''}" onclick="selTalla='${esc(t)}';$$('.sizes button').forEach(b=>b.classList.toggle('on',b.textContent==='${esc(t)}'))">${esc(t)}</button>`).join('')}</div></div>` : ''}
+      <button class="btn ${p.Tipo === 'colab' ? 'btn-gold' : 'btn-solid'} btn-block" ${agot ? 'disabled' : ''} onclick="addCart('${p.id}',${tallas.length ? 'true' : 'false'})">${agot ? (p.Tipo === 'obra' ? 'Vendida' : 'Agotado') : 'Agregar al carrito'}</button>
+      ${+p.Stock > 0 && +p.Stock <= 3 ? `<div class="mute" style="font-size:13px">Quedan ${p.Stock}.</div>` : ''}
+    </div></div>`);
+}
+
+async function openArtista(id) {
+  openModal('<div class="pad"><div class="mute">Cargando…</div></div>');
+  const j = await api('artista', { id }); if (!j.ok) return openModal(`<div class="pad">${esc(j.error)}</div>`, true);
+  const a = j.artista, mia = j.opiniones.find(o => o.Miembro_ID === S.me.id);
+  const obras = P().filter(p => p.Artista_ID === a.id);
+  let est = mia ? +mia.Estrellas : 0;
+  openModal(`<div class="detail">
+    <div class="media" style="aspect-ratio:1">${media(a, 'artista')}</div>
+    <div class="body">
+      ${orgTag(a.Origen)}
+      <h3 class="it" style="font-size:clamp(34px,4vw,50px);line-height:1">${esc(a.Nombre)}</h3>
+      <div class="mute">${esc(a.Disciplina || '')}</div>
+      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">${stars(a.prom)}<span>${a.prom ? a.prom.toFixed(1) : '—'}</span><span class="mute" style="font-size:13px">${a.n} opiniones · <b style="color:var(--acid)">${a.recs}</b> lo recomiendan</span></div>
+      <p>${esc(a.Bio || '')}</p>
+      <div class="social">${a.Instagram ? `<a href="${esc(a.Instagram)}" target="_blank" rel="noopener">Instagram ↗</a>` : ''}${a.Facebook ? `<a href="${esc(a.Facebook)}" target="_blank" rel="noopener">Facebook ↗</a>` : ''}</div>
+      ${obras.length ? `<div><div class="kicker" style="margin-bottom:10px">Sus piezas</div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">${obras.map(o => `<div style="cursor:pointer;aspect-ratio:4/5;overflow:hidden;border-radius:3px" onclick="openProducto('${o.id}')" title="${esc(o.Nombre)}">${media(o)}</div>`).join('')}</div></div>` : ''}
+    </div></div>
+    <div class="pad" style="border-top:1px solid var(--line)">
+      <h4 class="disp" style="font-size:30px">Opiniones de la comunidad</h4>
+      <form id="opForm" style="display:grid;gap:12px;padding:16px;border:1px solid var(--line);border-radius:var(--r)">
+        <div class="kicker">${mia ? 'Tu opinión (puedes editarla)' : 'Deja tu opinión'}</div>
+        <div class="star-in" id="starIn">${[1, 2, 3, 4, 5].map(n => `<button type="button" data-n="${n}" class="${n <= est ? 'on' : ''}" aria-label="${n} estrellas">★</button>`).join('')}</div>
+        <textarea id="opTxt" rows="3" maxlength="500" placeholder="¿Qué te transmite su trabajo?">${esc(mia?.Texto || '')}</textarea>
+        <label class="toggle"><input type="checkbox" id="opRec" ${!mia || mia.Recomienda ? 'checked' : ''}> Lo recomiendo a la comunidad</label>
+        <button class="btn btn-solid" type="submit">${mia ? 'Actualizar' : 'Publicar'} opinión</button>
+      </form>
+      <div>${j.opiniones.map(o => `<div class="review"><div class="h"><span><b>${esc(o.Nombre)}</b> ${stars(o.Estrellas)}</span><span class="mute">${new Date(+o.Fecha).toLocaleDateString('es-MX', { day: 'numeric', month: 'short' })}${S.me.Rol === 'admin' ? ` <button class="mod-x" title="Borrar opinión" onclick="admBorrarOpinion('${o.id}','${a.id}')">✕</button>` : ''}</span></div>
+        ${o.Texto ? `<p style="margin-top:6px">${esc(o.Texto)}</p>` : ''}${o.Recomienda ? '<div class="rec" style="margin-top:6px">✓ Lo recomienda</div>' : ''}</div>`).join('') || '<div class="mute">Aún no hay opiniones. ¡Sé el primero!</div>'}</div>
+    </div>`);
+  $$('#starIn button').forEach(b => b.onclick = () => { est = +b.dataset.n; $$('#starIn button').forEach(x => x.classList.toggle('on', +x.dataset.n <= est)); });
+  $('#opForm').onsubmit = async e => {
+    e.preventDefault(); if (!est) return toast('Elige de 1 a 5 estrellas');
+    const r = await api('opinar', { artista_id: a.id, estrellas: est, texto: $('#opTxt').value, recomienda: $('#opRec').checked });
+    if (!r.ok) return toast(r.error || 'No se pudo guardar');
+    toast('¡Gracias por tu opinión!'); await loadCatalog(); openArtista(a.id);
+  };
+}
+
+async function openSubasta(id) {
+  const load = async () => {
+    const j = await api('subasta', { id }); if (!j.ok) return;
+    const s = j.subasta, a = artistaById(s.Artista_ID), cerrada = s.Fin <= Date.now();
+    const min = s.Actual ? s.Actual + +s.Incremento : +s.Precio_Inicial, lider = j.pujas[0];
+    const yoGano = lider && lider.Nombre === nombreCorto(S.me.Nombre);
+    const prev = $('#bidIn')?.value;
+    openModal(`<div class="detail">
+      <div class="media" style="aspect-ratio:1">${media(s, s.Tipo === 'obra' ? 'obra' : 'colab')}</div>
+      <div class="body">
+        <div class="kicker">Subasta · ${esc(a.Nombre)}</div>
+        <h3 class="disp">${esc(s.Titulo)}</h3>
+        <p class="mute">${esc(s.Descripcion || '')}</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:16px;border:1px solid var(--line);border-radius:var(--r)">
+          <div><div class="kicker">${s.Actual ? 'Puja actual' : 'Salida'}</div><div class="bid-now">${money(s.Actual || s.Precio_Inicial)}</div></div>
+          <div><div class="kicker" style="text-align:right">${cerrada ? 'Estado' : 'Cierra en'}</div><div class="cd" data-end="${s.Fin}" style="font-size:22px"></div></div>
+        </div>
+        ${cerrada ? `<div class="pay-box">${lider ? `Ganó <b>${esc(lider.Nombre)}</b> con ${money(lider.Monto)}.${yoGano ? ' <b style="color:var(--acid)">¡Eres tú! Te contactaremos para el pago.</b>' : ''}` : 'Cerró sin pujas.'}</div>`
+          : `${yoGano ? '<div class="rec">✓ Vas ganando</div>' : ''}
+          <form id="bidForm" style="display:flex;gap:8px"><input id="bidIn" type="number" inputmode="numeric" min="${min}" step="${s.Incremento}" value="${prev && +prev >= min ? prev : min}" aria-label="Monto de tu puja"><button class="btn btn-accent" style="white-space:nowrap">Pujar</button></form>
+          <div class="mute" style="font-size:12px">Puja mínima ${money(min)} · incrementos de ${money(s.Incremento)}. Tu puja es un compromiso de compra.</div>`}
+        <div><div class="kicker">Historial (${j.pujas.length})</div><ul class="bids">${j.pujas.map(b => `<li><span>${esc(b.Nombre)}</span><span class="price">${money(b.Monto)}</span></li>`).join('') || '<li class="mute">Sin pujas todavía</li>'}</ul></div>
+      </div></div>`);
+    const f = $('#bidForm');
+    if (f) f.onsubmit = async e => {
+      e.preventDefault(); const monto = +$('#bidIn').value;
+      if (!confirm('¿Confirmas tu puja de ' + money(monto) + '?')) return;
+      const r = await api('pujar', { id, monto });
+      if (!r.ok) return toast(r.error);
+      toast('¡Puja registrada!'); $('#bidIn').value = ''; await loadCatalog(); load();
+    };
+  };
+  await load();
+  modalTimer = setInterval(() => { if (!$('#modal').hidden && document.activeElement?.id !== 'bidIn') load(); }, 6000);
+}
+
+/* =====================================================================
+   CARRITO
+   ===================================================================== */
+function saveCart() { lsSet(LS.cart, S.cart); const n = S.cart.reduce((a, b) => a + b.qty, 0); $('#cartCount').textContent = n; $('#cartCount').hidden = !n; }
+function addCart(id, needTalla) {
+  if (needTalla && !selTalla) return toast('Elige una talla');
+  const p = P().find(x => x.id === id), key = id + '|' + (needTalla ? selTalla : '');
+  const it = S.cart.find(x => x.key === key), enCarrito = S.cart.filter(x => x.id === id).reduce((a, b) => a + b.qty, 0);
+  if (enCarrito >= +p.Stock) return toast('No hay más piezas disponibles');
+  if (it) it.qty++; else S.cart.push({ key, id, talla: needTalla ? selTalla : '', qty: 1 });
+  saveCart(); closeModal(); toast('Agregado: ' + p.Nombre);
+}
+function openCart() {
+  const lines = S.cart.map((it, i) => { const p = P().find(x => x.id === it.id); return p ? { ...it, p, i } : null; }).filter(Boolean);
+  const total = lines.reduce((a, l) => a + l.p.Precio * l.qty, 0);
+  openModal(`<div class="pad"><h3 class="disp" style="font-size:40px">Tu carrito</h3>
+    ${lines.length ? lines.map(l => `<div class="cart-line"><div class="th">${media(l.p)}</div>
+      <div><div style="font-weight:500">${esc(l.p.Nombre)}</div><div class="mute" style="font-size:13px">${l.talla ? 'Talla ' + esc(l.talla) + ' · ' : ''}${money(l.p.Precio)}</div>
+      <div class="qty" style="margin-top:6px"><button onclick="cartQty(${l.i},-1)" aria-label="Menos">−</button><span style="min-width:22px;text-align:center">${l.qty}</span><button onclick="cartQty(${l.i},1)" aria-label="Más">+</button></div></div>
+      <div class="price">${money(l.p.Precio * l.qty)}</div></div>`).join('') + `<div class="total-row"><span>Total</span><span>${money(total)}</span></div>
+      <button class="btn btn-accent btn-block" onclick="checkout(this)">Hacer pedido</button>
+      <div class="mute" style="font-size:12px">Apartamos tus piezas y te damos los datos para transferir. Entrega en Cineteca Trikles o en Tri-Urban.</div>`
+      : '<div class="empty">Tu carrito está vacío.</div>'}</div>`, true);
+}
+function cartQty(i, d) {
+  const it = S.cart[i], p = P().find(x => x.id === it.id);
+  if (d > 0 && S.cart.filter(x => x.id === it.id).reduce((a, b) => a + b.qty, 0) >= +p.Stock) return toast('No hay más piezas disponibles');
+  it.qty += d; if (it.qty <= 0) S.cart.splice(i, 1); saveCart(); openCart();
+}
+async function checkout(btn) {
+  btn.disabled = true;
+  const r = await api('pedido', { items: S.cart.map(({ id, talla, qty }) => ({ id, talla, qty })) });
+  if (!r.ok) { btn.disabled = false; return toast(r.error); }
+  S.cart = []; saveCart(); await loadCatalog();
+  const c = r.config || {}, wa = String(c.Pago_WhatsApp || '').replace(/\D/g, '').slice(-10);
+  const msg = encodeURIComponent(`Hola Tri-Urban, envío comprobante de mi pedido ${r.folio} por ${money(r.total)}.`);
+  openModal(`<div class="pad"><div class="kicker">Pedido apartado</div><h3 class="disp" style="font-size:44px">${esc(r.folio)}</h3>
+    <p>Transfiere <b>${money(r.total)}</b> y mándanos tu comprobante. Tus piezas quedan apartadas 48 horas.</p>
+    <div class="pay-box"><div class="row"><span class="mute">Banco</span><b>${esc(c.Pago_Banco || '')}</b></div><div class="row"><span class="mute">Titular</span><b>${esc(c.Pago_Titular || '')}</b></div>
+      <div class="row"><span class="mute">Cuenta</span><b>${esc(c.Pago_Numero || '')}</b></div><div class="row"><span class="mute">Concepto</span><b>${esc(r.folio)}</b></div></div>
+    ${wa ? `<a class="btn wa btn-block" href="https://wa.me/52${wa}?text=${msg}" target="_blank" rel="noopener">Enviar comprobante por WhatsApp</a>` : ''}
+    <button class="btn btn-ghost btn-block" onclick="closeModal()">Listo</button></div>`, true);
+  route();
+}
+$('#cartBtn').onclick = openCart;
+$('#meBtn').onclick = () => openModal(`<div class="pad"><div class="avatar" style="width:64px;height:64px;font-size:22px">${iniciales(S.me.Nombre)}</div>
+  <h3 class="it" style="font-size:30px">${esc(S.me.Nombre)}</h3><div class="mute">${esc(S.me.Email)}</div>
+  <div><span class="org ${S.me.Rol === 'miembro' ? 'ct' : 'tu'}">${{ miembro: 'Miembro', artista: 'Artista', admin: 'Administrador' }[S.me.Rol] || S.me.Rol}</span></div>
+  <button class="btn btn-solid btn-block" onclick="openMisPedidos()">Mis pedidos</button>
+  ${S.me.Rol === 'admin' ? '<a class="btn btn-gold btn-block" href="#admin" onclick="closeModal()">⚙ Panel de administración</a>' : ''}
+  <button class="btn btn-ghost btn-block" onclick="logout()">Cerrar sesión</button></div>`, true);
+
+/* =====================================================================
+   EN VIVO: comentarios + reacciones (sondeo)
+   ===================================================================== */
+let liveId = null, liveSince = 0, seenMsg = new Set();
+function startLive(id) {
+  liveId = id; liveSince = Date.now() - 10 * 60e3; seenMsg = new Set();
+  pollLive(true); timers.push(setInterval(pollLive, 3000));
+  const wm = $('#wm'); if (wm) { const mv = () => { wm.style.top = (10 + Math.random() * 75) + '%'; wm.style.left = (5 + Math.random() * 55) + '%'; }; mv(); timers.push(setInterval(mv, 5000)); }
+}
+async function pollLive(first) {
+  if (!liveId || document.hidden) return;
+  const j = await api('vivoFeed', { id: liveId, since: liveSince }).catch(() => null);
+  if (!j || !j.ok || !$('#chatList')) return;
+  liveSince = j.ahora;
+  const v = $('#viewers'); if (v) v.textContent = '👁 ' + j.espectadores;
+  const list = $('#chatList'), atBottom = list.scrollHeight - list.scrollTop - list.clientHeight < 60;
+  const nuevos = j.comentarios.filter(c => !seenMsg.has(c.id));
+  if (nuevos.length && !seenMsg.size) list.innerHTML = '';
+  nuevos.forEach(c => { seenMsg.add(c.id); appendMsg(c); });
+  if (atBottom || first) list.scrollTop = list.scrollHeight;
+  if (!first) Object.entries(j.reacciones || {}).forEach(([e, n]) => { for (let i = 0; i < Math.min(n, 6); i++) setTimeout(() => floatEmoji(e), i * 220); });
+  if (j.vivo.Estado === 'terminado') { toast('La transmisión terminó'); stopTimers(); }
+}
+function appendMsg(c) {
+  const list = $('#chatList'); if (!list) return;
+  list.insertAdjacentHTML('beforeend', `<div class="msg ${c.Miembro_ID === S.me.id ? 'mine' : ''} ${c.Artista_ID ? 'artist' : ''}"><b>${esc(c.Nombre)}</b>${esc(c.Texto)}${S.me.Rol === 'admin' ? ` <button class="mod-x" title="Borrar" onclick="admBorrarComentario('${c.id}',this)">✕</button>` : ''}</div>`);
+}
+function floatEmoji(e) {
+  const f = $('#floaters'); if (!f) return;
+  const s = document.createElement('span'); s.textContent = e; s.style.left = (Math.random() * 40) + 'px'; s.style.setProperty('--dx', (Math.random() * 60 - 30) + 'px');
+  f.appendChild(s); setTimeout(() => s.remove(), 2700);
+}
+let lastReact = 0;
+function reaccionar(e) {
+  floatEmoji(e); if (navigator.vibrate) navigator.vibrate(15);
+  if (Date.now() - lastReact < 400) return; lastReact = Date.now();
+  api('vivoReaccionar', { id: liveId, emoji: e }).catch(() => {});
+}
+async function comentar(ev) {
+  ev.preventDefault(); const inp = $('#chatIn'), txt = inp.value.trim(); if (!txt) return;
+  inp.value = ''; const r = await api('vivoComentar', { id: liveId, texto: txt });
+  if (!r.ok) return toast(r.error || 'No se pudo enviar');
+  pollLive(); setTimeout(() => { const l = $('#chatList'); if (l) l.scrollTop = l.scrollHeight; }, 150);
+}
+function openIniciarVivo() {
+  openModal(`<form class="pad" id="ivForm"><h3 class="disp" style="font-size:36px">Iniciar transmisión</h3>
+    <div class="field"><label for="ivT">Título</label><input id="ivT" required maxlength="90" placeholder="Ej. Pintando en vivo una chamarra"></div>
+    <div class="field"><label for="ivY">Enlace de tu transmisión de YouTube</label><input id="ivY" placeholder="https://youtube.com/live/…"></div>
+    <div class="lock-note">En YouTube Studio crea la transmisión como <b style="color:var(--text)">“No listado”</b> y pega aquí el enlace. Así solo la ve la comunidad desde esta app.</div>
+    <button class="btn btn-accent btn-block">● Salir en vivo</button></form>`, true);
+  $('#ivForm').onsubmit = async e => {
+    e.preventDefault(); const r = await api('vivoIniciar', { titulo: $('#ivT').value, youtube: $('#ivY').value });
+    if (!r.ok) return toast(r.error); closeModal(); await loadCatalog(); location.hash = '#vivo/' + r.vivo.id;
+  };
+}
+async function terminarVivo(id) {
+  if (!confirm('¿Terminar la transmisión para todos?')) return;
+  await api('vivoTerminar', { id }); await loadCatalog(); location.hash = '#vivo';
+}
+
+/* =====================================================================
+   MIS PEDIDOS (miembro)
+   ===================================================================== */
+const ESTADO_CLS = { Pendiente: 'st-pend', Pagado: 'st-pag', Entregado: 'st-ent', Cancelado: 'st-can' };
+const pillEstado = e => `<span class="st ${ESTADO_CLS[e] || ''}">${esc(e)}</span>`;
+async function openMisPedidos() {
+  openModal('<div class="pad mute">Cargando…</div>', true);
+  const j = await api('misPedidos'); if (!j.ok) return toast(j.error);
+  openModal(`<div class="pad"><h3 class="disp" style="font-size:40px">Mis pedidos</h3>
+    ${j.pedidos.map(p => `<div class="ord"><div class="ord-h"><b>${esc(p.folio)}</b>${pillEstado(p.Estado)}</div>
+      <div class="mute" style="font-size:13px">${new Date(+p.Fecha).toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
+      <ul class="ord-items">${p.items.map(i => `<li>${i.qty}× ${esc(i.Nombre)}${i.Talla ? ' · ' + esc(i.Talla) : ''}</li>`).join('')}</ul>
+      <div class="ord-h"><span class="mute">Total</span><b>${money(p.total)}</b></div>
+      ${p.Estado === 'Pendiente' ? `<div class="mute" style="font-size:12px">Transfiere a ${esc(j.config.Pago_Banco || '')} · ${esc(j.config.Pago_Numero || '')} con concepto ${esc(p.folio)}.</div>` : ''}</div>`).join('') || '<div class="empty">Aún no tienes pedidos.</div>'}
+  </div>`, true);
+}
+
+/* =====================================================================
+   PANEL DE ADMINISTRACIÓN (#admin) — el backend valida Rol = admin
+   ===================================================================== */
+let ADM = null, admTab = 'pedidos', pedFiltro = 'Pendiente';
+const ADM_TABS = [['pedidos', 'Pedidos'], ['productos', 'Productos'], ['artistas', 'Artistas'], ['subastas', 'Subastas'], ['miembros', 'Miembros'], ['ajustes', 'Pagos']];
+const FORMS = {
+  Productos: [
+    ['Tipo', 'Tipo', 'select', [['prenda', 'Prenda Tri-Urban'], ['colab', 'Arte × Urban (colab)'], ['obra', 'Obra de galería']]],
+    ['Nombre', 'Nombre de la pieza', 'text'], ['Precio', 'Precio (MXN)', 'number'], ['Stock', 'Piezas disponibles', 'number'],
+    ['Imagen', 'Foto', 'image'],
+    ['Artista_ID', 'Artista', 'artista', null, 'colab,obra'],
+    ['Descripcion', 'Descripción de la prenda / obra', 'textarea'],
+    ['Obra_Desc', 'Sobre la obra (texto del artista)', 'textarea', null, 'colab'],
+    ['Edicion', 'Edición (ej. 1/5, Pieza única)', 'text', null, 'colab'],
+    ['Tecnica', 'Técnica', 'text', null, 'obra'], ['Medidas', 'Medidas', 'text', null, 'obra'],
+    ['Tallas', 'Tallas separadas por coma (ej. S,M,L)', 'text', null, 'prenda,colab'],
+    ['Orden', 'Orden (menor = primero)', 'number'], ['Activo', 'Visible en la tienda', 'bool'],
+  ],
+  Artistas: [
+    ['Nombre', 'Nombre artístico', 'text'], ['Origen', 'Comunidad', 'select', [['Tri-Urban', 'Tri-Urban'], ['Cineteca Trikles', 'Cineteca Trikles']]],
+    ['Disciplina', 'Disciplina (ej. Grafiti · stencil)', 'text'], ['Foto', 'Foto', 'image'], ['Bio', 'Biografía', 'textarea'],
+    ['Instagram', 'Enlace de Instagram', 'text'], ['Facebook', 'Enlace de Facebook', 'text'],
+    ['Orden', 'Orden (menor = primero)', 'number'], ['Activo', 'Visible', 'bool'],
+  ],
+  Subastas: [
+    ['Titulo', 'Título', 'text'], ['Tipo', 'Tipo', 'select', [['colab', 'Prenda intervenida'], ['obra', 'Obra'], ['prenda', 'Prenda']]],
+    ['Artista_ID', 'Artista', 'artista'], ['Imagen', 'Foto', 'image'], ['Descripcion', 'Descripción', 'textarea'],
+    ['Precio_Inicial', 'Precio de salida (MXN)', 'number'], ['Incremento', 'Incremento mínimo (MXN)', 'number'],
+    ['Inicio', 'Abre', 'datetime'], ['Fin', 'Cierra', 'datetime'],
+    ['Estado', 'Estado', 'select', [['Activa', 'Activa'], ['Cerrada', 'Cerrada'], ['Oculta', 'Oculta']]],
+  ],
+};
+const toLocalDT = ms => { if (!ms) return ''; const d = new Date(+ms); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 16); };
+
+function vAdmin() {
+  return `<section class="sec">
+    <div class="sec-head"><h2 class="disp">Panel</h2><p>Administra la tienda, los artistas, las subastas y la comunidad.</p></div>
+    <div class="filters" id="admTabs">${ADM_TABS.map(([k, l]) => `<button class="chip ${k === admTab ? 'on' : ''}" onclick="admTab='${k}';renderAdmin()">${l}</button>`).join('')}</div>
+    <div id="admBody"><div class="mute">Cargando…</div></div>
+  </section>`;
+}
+async function loadAdmin() {
+  const j = await api('adminData'); if (!j.ok) { $('#admBody').innerHTML = `<div class="empty">${esc(j.error)}</div>`; return; }
+  ADM = j; renderAdmin();
+}
+async function refreshAll() { await Promise.all([loadAdmin(), loadCatalog()]); }
+function renderAdmin() {
+  if (!ADM || !$('#admBody')) return;
+  $$('#admTabs .chip').forEach((b, i) => b.classList.toggle('on', ADM_TABS[i][0] === admTab));
+  const R = { pedidos: admPedidos, productos: admProductos, artistas: admArtistas, subastas: admSubastas, miembros: admMiembros, ajustes: admAjustes }[admTab];
+  $('#admBody').innerHTML = R(); tickCountdowns();
+}
+const nombreArtista = id => (ADM.artistas.find(a => a.id === id) || {}).Nombre || '—';
+
+function admPedidos() {
+  const cuenta = e => ADM.pedidos.filter(p => p.Estado === e).length;
+  const lista = pedFiltro === 'Todos' ? ADM.pedidos : ADM.pedidos.filter(p => p.Estado === pedFiltro);
+  const btn = (p, e, l, cls = 'btn-ghost') => `<button class="btn ${cls} btn-sm" onclick="admPedido('${p.folio}','${e}')">${l}</button>`;
+  return `<div class="filters">${['Pendiente', 'Pagado', 'Entregado', 'Cancelado', 'Todos'].map(f => `<button class="chip ${f === pedFiltro ? 'on' : ''}" onclick="pedFiltro='${f}';renderAdmin()">${f}${f !== 'Todos' ? ' · ' + cuenta(f) : ''}</button>`).join('')}</div>
+    <div class="adm-cards">${lista.map(p => `<div class="ord">
+      <div class="ord-h"><b style="font-size:18px">${esc(p.folio)}</b>${pillEstado(p.Estado)}</div>
+      <div><b>${esc(p.Nombre)}</b> <span class="mute">· ${esc(p.Email || '')}</span></div>
+      <div class="mute" style="font-size:12px">${new Date(+p.Fecha).toLocaleString('es-MX', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</div>
+      <ul class="ord-items">${p.items.map(i => `<li>${i.qty}× ${esc(i.Nombre)}${i.Talla ? ' · ' + esc(i.Talla) : ''} <span class="mute">${money(i.Precio * i.qty)}</span></li>`).join('')}</ul>
+      <div class="ord-h"><span class="mute">Total</span><b>${money(p.total)}</b></div>
+      <div class="adm-act">${p.Estado === 'Pendiente' ? btn(p, 'Pagado', 'Marcar pagado', 'btn-solid') : ''}${p.Estado === 'Pagado' ? btn(p, 'Entregado', 'Marcar entregado', 'btn-solid') : ''}${p.Estado !== 'Cancelado' && p.Estado !== 'Entregado' ? btn(p, 'Cancelado', 'Cancelar') : ''}</div>
+    </div>`).join('') || '<div class="empty">No hay pedidos aquí.</div>'}</div>`;
+}
+async function admPedido(folio, estado) {
+  if (estado === 'Cancelado' && !confirm('¿Cancelar el pedido ' + folio + '? Las piezas regresan al inventario.')) return;
+  const r = await api('adminPedido', { folio, estado }); if (!r.ok) return toast(r.error);
+  toast(folio + ' → ' + estado); refreshAll();
+}
+function admLista(tabla, rows, cols) {
+  return `<div style="margin-bottom:16px"><button class="btn btn-accent" onclick="admEditar('${tabla}')">+ Nuevo</button></div>
+    <div class="adm-list">${rows.map(r => `<div class="adm-row ${r.Activo === false || r.Estado === 'Oculta' ? 'off' : ''}">
+      <div class="th">${media(r, tabla === 'Artistas' ? 'artista' : r.Tipo === 'obra' ? 'obra' : r.Tipo === 'colab' ? 'colab' : '')}</div>
+      <div style="min-width:0">${cols(r)}</div>
+      <div class="adm-act">${tabla === 'Subastas' && r.Estado === 'Activa' && r.Fin <= Date.now() ? `<button class="btn btn-solid btn-sm" onclick="admCerrar('${r.id}')">Cerrar y cobrar</button>` : ''}
+        <button class="btn btn-ghost btn-sm" onclick="admEditar('${tabla}','${r.id}')">Editar</button>
+        <button class="btn btn-ghost btn-sm" onclick="admBorrar('${tabla}','${r.id}')" aria-label="Borrar">✕</button></div>
+    </div>`).join('') || '<div class="empty">Nada por aquí todavía.</div>'}</div>`;
+}
+const admProductos = () => admLista('Productos', ADM.productos, p => `<b>${esc(p.Nombre)}</b><div class="mute" style="font-size:13px">${{ prenda: 'Prenda', colab: 'Colab', obra: 'Obra' }[p.Tipo] || p.Tipo} · ${money(p.Precio)} · ${p.Stock} pzas${p.Artista_ID ? ' · ' + esc(nombreArtista(p.Artista_ID)) : ''}${p.Activo === false ? ' · oculto' : ''}</div>`);
+const admArtistas = () => admLista('Artistas', ADM.artistas, a => `<b>${esc(a.Nombre)}</b><div class="mute" style="font-size:13px">${esc(a.Origen || '')} · ${esc(a.Disciplina || '')}${a.Activo === false ? ' · oculto' : ''}</div>`);
+const admSubastas = () => admLista('Subastas', ADM.subastas, s => `<b>${esc(s.Titulo)}</b><div class="mute" style="font-size:13px">${esc(s.Estado)} · ${s.Actual ? 'va en ' + money(s.Actual) + ' (' + esc(s.Lider) + ')' : 'salida ' + money(s.Precio_Inicial)} · ${s.Pujas} pujas</div><div class="cd" data-end="${s.Fin}" style="text-align:left;font-size:13px"></div>`);
+async function admCerrar(id) {
+  if (!confirm('¿Cerrar la subasta y generar el pedido para quien ganó?')) return;
+  const r = await api('adminCerrarSubasta', { id }); if (!r.ok) return toast(r.error);
+  toast(r.folio ? `Pedido ${r.folio} para ${r.ganador}` : 'Cerrada sin pujas'); refreshAll();
+}
+async function admBorrar(tabla, id) {
+  if (!confirm('¿Borrar definitivamente? No se puede deshacer. (Si solo quieres esconderlo, usa “Visible” al editar.)')) return;
+  const r = await api('adminDelete', { tabla, id }); if (!r.ok) return toast(r.error || 'No se pudo borrar');
+  toast('Borrado'); refreshAll();
+}
+function admEditar(tabla, id) {
+  const lista = { Productos: ADM.productos, Artistas: ADM.artistas, Subastas: ADM.subastas }[tabla];
+  const o = id ? lista.find(x => x.id === id) : { Activo: true, Tipo: tabla === 'Subastas' ? 'colab' : 'prenda', Origen: 'Tri-Urban', Estado: 'Activa', Incremento: 100, Inicio: Date.now(), Fin: Date.now() + 3 * 864e5, Stock: 1 };
+  const campo = ([k, label, type, opts, show]) => {
+    const v = o[k] ?? '', sh = show ? ` data-show="${show}"` : '';
+    let inp;
+    if (type === 'textarea') inp = `<textarea name="${k}" rows="3">${esc(v)}</textarea>`;
+    else if (type === 'select') inp = `<select name="${k}">${opts.map(([val, l]) => `<option value="${val}" ${val === v ? 'selected' : ''}>${l}</option>`).join('')}</select>`;
+    else if (type === 'artista') inp = `<select name="${k}"><option value="">—</option>${ADM.artistas.map(a => `<option value="${a.id}" ${a.id === v ? 'selected' : ''}>${esc(a.Nombre)}</option>`).join('')}</select>`;
+    else if (type === 'bool') return `<label class="toggle"${sh}><input type="checkbox" name="${k}" ${v !== false ? 'checked' : ''}> ${label}</label>`;
+    else if (type === 'datetime') inp = `<input type="datetime-local" name="${k}" value="${toLocalDT(v)}">`;
+    else if (type === 'image') inp = `<div class="img-up"><div class="th" id="prev_${k}">${v ? `<img src="${esc(imgUrl(v))}" alt="">` : ''}</div>
+        <div style="flex:1;display:grid;gap:8px"><label class="btn btn-ghost btn-sm" style="cursor:pointer">Subir foto<input type="file" accept="image/*" hidden onchange="admSubir(this,'${k}')"></label>
+        <input name="${k}" value="${esc(v)}" placeholder="o pega un enlace de imagen" oninput="$('#prev_${k}').innerHTML=this.value?'<img src=&quot;'+imgUrl(this.value)+'&quot; alt=&quot;&quot;>':''"></div></div>`;
+    else inp = `<input name="${k}" type="${type === 'number' ? 'number' : 'text'}" value="${esc(v)}" ${type === 'number' ? 'inputmode="decimal" step="any"' : ''}>`;
+    return `<div class="field"${sh}><label>${label}</label>${inp}</div>`;
+  };
+  openModal(`<form class="pad" id="admForm"><h3 class="disp" style="font-size:34px">${id ? 'Editar' : 'Nuevo'} · ${{ Productos: 'pieza', Artistas: 'artista', Subastas: 'subasta' }[tabla]}</h3>
+    ${FORMS[tabla].map(campo).join('')}
+    <button class="btn btn-solid btn-block" type="submit">Guardar</button></form>`, true);
+  const f = $('#admForm'), tipo = f.elements.Tipo;
+  const vis = () => $$('[data-show]', f).forEach(el => el.hidden = tabla === 'Productos' && !el.dataset.show.split(',').includes(tipo.value));
+  if (tipo) { tipo.onchange = vis; vis(); }
+  f.onsubmit = async e => {
+    e.preventDefault(); const obj = { id: id || '' };
+    FORMS[tabla].forEach(([k, , type]) => {
+      const el = f.elements[k]; if (!el) return;
+      obj[k] = type === 'bool' ? el.checked : type === 'number' ? (el.value === '' ? 0 : +el.value) : type === 'datetime' ? (el.value ? new Date(el.value).getTime() : 0) : el.value.trim();
+    });
+    if (!obj.Nombre && !obj.Titulo) return toast('Falta el nombre');
+    if (tabla === 'Subastas' && obj.Fin <= obj.Inicio) return toast('El cierre debe ser después de la apertura');
+    e.submitter.disabled = true;
+    const r = await api('adminSave', { tabla, obj });
+    if (!r.ok) { e.submitter.disabled = false; return toast(r.error); }
+    closeModal(); toast('Guardado'); refreshAll();
+  };
+}
+function resizeImage(file, max = 1600) {
+  return new Promise((ok, bad) => {
+    const img = new Image(), url = URL.createObjectURL(file);
+    img.onload = () => {
+      const k = Math.min(1, max / Math.max(img.width, img.height)), c = document.createElement('canvas');
+      c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(url);
+      ok(c.toDataURL('image/jpeg', .85).split(',')[1]);
+    };
+    img.onerror = bad; img.src = url;
+  });
+}
+async function admSubir(inp, k) {
+  const file = inp.files[0]; if (!file) return;
+  toast('Subiendo foto…');
+  try {
+    const data = await resizeImage(file);
+    const r = await api('adminUpload', { data, mime: 'image/jpeg', name: file.name.replace(/\.\w+$/, '') + '.jpg' });
+    if (!r.ok) return toast(r.error);
+    const f = $('#admForm'); f.elements[k].value = r.url; $('#prev_' + k).innerHTML = `<img src="${esc(imgUrl(r.url))}" alt="">`; toast('Foto lista');
+  } catch (_) { toast('No se pudo leer la imagen'); }
+}
+function admMiembros() {
+  return `<p class="mute" style="margin-bottom:16px">Para que alguien pueda transmitir en vivo: rol <b>Artista</b> y elige su perfil de artista.</p>
+    <div class="adm-list">${ADM.miembros.map(m => `<div class="adm-row ${m.Activo ? '' : 'off'}" style="grid-template-columns:44px 1fr auto">
+      <div class="avatar" style="width:44px;height:44px">${iniciales(m.Nombre)}</div>
+      <div style="min-width:0"><b>${esc(m.Nombre)}</b>${m.id === S.me.id ? ' <span class="mute">(tú)</span>' : ''}<div class="mute" style="font-size:13px;overflow:hidden;text-overflow:ellipsis">${esc(m.Email)}</div></div>
+      <div class="adm-act">
+        <select onchange="admMiembro('${m.id}',{Rol:this.value})" aria-label="Rol">${[['miembro', 'Miembro'], ['artista', 'Artista'], ['admin', 'Admin']].map(([v, l]) => `<option value="${v}" ${m.Rol === v ? 'selected' : ''}>${l}</option>`).join('')}</select>
+        <select onchange="admMiembro('${m.id}',{Artista_ID:this.value})" aria-label="Perfil de artista"><option value="">Sin perfil</option>${ADM.artistas.map(a => `<option value="${a.id}" ${a.id === m.Artista_ID ? 'selected' : ''}>${esc(a.Nombre)}</option>`).join('')}</select>
+        <label class="toggle"><input type="checkbox" ${m.Activo ? 'checked' : ''} onchange="admMiembro('${m.id}',{Activo:this.checked})"> Activo</label>
+      </div></div>`).join('')}</div>`;
+}
+async function admMiembro(id, patch) {
+  const r = await api('adminMiembro', { id, ...patch }); if (!r.ok) { toast(r.error); return loadAdmin(); }
+  toast('Actualizado'); loadAdmin();
+}
+function admAjustes() {
+  const c = ADM.config || {}, f = (k, l, ph = '') => `<div class="field"><label>${l}</label><input name="${k}" value="${esc(c[k] || '')}" placeholder="${ph}"></div>`;
+  return `<form id="cfgForm" style="display:grid;gap:14px;max-width:520px">
+    <p class="mute">Estos datos aparecen al cliente cuando hace un pedido.</p>
+    ${f('Pago_Banco', 'Banco')}${f('Pago_Titular', 'Titular')}${f('Pago_Numero', 'CLABE o número de cuenta')}${f('Pago_WhatsApp', 'WhatsApp para comprobantes (10 dígitos)')}
+    <button class="btn btn-solid" type="submit" onclick="event.preventDefault();admGuardarCfg()">Guardar datos de pago</button></form>`;
+}
+async function admGuardarCfg() {
+  const f = $('#cfgForm'), config = {};
+  ['Pago_Banco', 'Pago_Titular', 'Pago_Numero', 'Pago_WhatsApp'].forEach(k => config[k] = f.elements[k].value.trim());
+  const r = await api('adminConfig', { config }); if (!r.ok) return toast(r.error);
+  toast('Datos de pago guardados'); refreshAll();
+}
+async function admBorrarOpinion(id, artistaId) {
+  if (!confirm('¿Borrar esta opinión?')) return;
+  await api('adminDelete', { tabla: 'Opiniones', id }); await loadCatalog(); openArtista(artistaId);
+}
+async function admBorrarComentario(id, btn) {
+  const r = await api('adminDelete', { tabla: 'Comentarios', id }); if (r.ok) btn.closest('.msg').remove();
+}
+
+/* =====================================================================
+   ARRANQUE
+   ===================================================================== */
+(async function init() {
+  saveCart();
+  if (!S.token) return showGate();
+  try { const j = await api('me'); if (j.ok) { S.me = j.me; return enterApp(); } } catch (_) {}
+  showGate();
+})();
+</script>
+</body>
+</html>
