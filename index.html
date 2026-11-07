@@ -272,6 +272,16 @@ main{max-width:1320px;margin:0 auto;padding:0 var(--gut) 120px}
 .pre-box .row{display:flex;justify-content:space-between;gap:10px;font-size:14px}
 .pre-tag{display:inline-block;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--acid);border:1px solid var(--acid);padding:2px 6px;border-radius:2px;margin-left:4px}
 
+/* ---------- perfil de artista ---------- */
+.art-cta{display:flex;gap:14px;align-items:center;padding:16px 18px;border:1px solid var(--gold);border-radius:var(--r);background:rgba(201,168,106,.07);cursor:pointer;margin-bottom:22px}
+.art-cta:hover{background:rgba(201,168,106,.13)}
+.art-cta>span:first-child{font-size:26px}
+.st-box{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border-radius:var(--r);font-size:14px;border:1px solid var(--line)}
+.st-box.pend{border-color:var(--gold);background:rgba(201,168,106,.08)}
+.st-box.ok{border-color:var(--acid);background:rgba(215,255,61,.06)}
+.st-box.can{border-color:var(--bad);background:rgba(248,113,113,.06)}
+.tab-dot{display:inline-grid;place-items:center;min-width:18px;height:18px;padding:0 5px;margin-left:6px;border-radius:9px;background:var(--accent);color:#fff;font-size:10px;font-weight:700;letter-spacing:0}
+
 /* ---------- panel admin ---------- */
 .btn-sm{padding:8px 12px;font-size:11px}
 .st{display:inline-block;font-size:10px;letter-spacing:.16em;text-transform:uppercase;padding:4px 8px;border-radius:2px;font-weight:700}
@@ -454,6 +464,13 @@ function preBar(p, grande) {
 }
 const maxPiezas = p => sobrePedido(p) ? MAX_SOBRE_PEDIDO : Math.max(0, +p.Stock);
 const preTag = i => i.SobrePedido ? ` <span class="pre-tag">Sobre pedido${i.Llegada ? ' · llega ' + fmtDia(i.Llegada) : ''}</span>` : '';
+const safeUrl = u => /^https?:\/\/[^\s"'<>]+$/i.test(String(u || '').trim()) ? String(u).trim() : '';
+// "@usuario" o "usuario" → enlace completo de la red
+function redUrl(v, base) {
+  v = String(v || '').trim(); if (!v) return '';
+  if (safeUrl(v)) return v;
+  return /^@?[\w.]{2,60}$/.test(v) ? base + v.replace(/^@/, '') : null; // null = inválido
+}
 function ytId(u) {
   u = String(u || '').trim(); if (/^[\w-]{11}$/.test(u)) return u;
   const m = u.match(/(?:youtu\.be\/|v=|\/live\/|\/embed\/|\/shorts\/)([\w-]{11})/); return m ? m[1] : '';
@@ -647,7 +664,7 @@ const Demo = (() => {
     catalog() {
       return { ok: true,
         productos: db.productos.filter(p => p.Activo !== false), config: db.config,
-        artistas: db.artistas.filter(a => a.Activo !== false).map(a => ({ ...a, ...ratings(a.id) })),
+        artistas: db.artistas.filter(a => a.Activo !== false && (!a.Estado || a.Estado === 'Aprobado')).map(a => ({ ...a, ...ratings(a.id) })),
         subastas: db.subastas.filter(x => x.Estado !== 'Oculta').map(subPub),
         vivos: db.vivos.filter(v => v.Estado !== 'terminado') };
     },
@@ -710,13 +727,24 @@ const Demo = (() => {
       return { ok: true, folio, total, config: db.config, sobrePedido: items.filter(i => i.SobrePedido) };
     },
   };
+  /* ---- miembro: mi perfil de artista ---- */
+  const miArt = m => db.artistas.find(a => (m.Artista_ID && a.id === m.Artista_ID) || (a.Miembro_ID && a.Miembro_ID === m.id));
+  A.miArtista = (d, m) => { const a = miArt(m); return { ok: true, artista: a ? { ...a, Estado: a.Estado || 'Aprobado' } : null }; };
+  A.guardarMiArtista = (d, m) => {
+    const o = { Nombre: String(d.Nombre || '').trim().slice(0, 60), Origen: d.Origen, Disciplina: d.Disciplina, Bio: d.Bio, Foto: d.Foto, Instagram: d.Instagram, Facebook: d.Facebook };
+    if (!o.Nombre) return { ok: false, error: 'Escribe tu nombre artístico.' };
+    const a = miArt(m); if (a) { Object.assign(a, o); save(); return { ok: true, id: a.id, nuevo: false }; }
+    const id = uid('a'); db.artistas.push({ ...o, id, Activo: true, Miembro_ID: m.id, Estado: 'Pendiente' }); m.Artista_ID = id; save();
+    return { ok: true, id, nuevo: true };
+  };
+  A.subirMiFoto = d => ({ ok: true, url: 'data:' + d.mime + ';base64,' + d.data });
   /* ---- miembro: mis pedidos ---- */
   A.misPedidos = (d, m) => ({ ok: true, pedidos: db.pedidos.filter(p => p.Miembro_ID === m.id).slice().reverse(), config: db.config });
   /* ---- administración ---- */
   const TAB = { Productos: 'productos', Artistas: 'artistas', Subastas: 'subastas', Opiniones: 'opiniones', Comentarios: 'comentarios' };
   const ADM = {
     adminData() {
-      return { ok: true, productos: db.productos, artistas: db.artistas, subastas: db.subastas.map(subPub),
+      return { ok: true, productos: db.productos, artistas: db.artistas.map(a => ({ ...a, Estado: a.Estado || 'Aprobado', Solicitante: a.Miembro_ID ? (db.miembros.find(x => x.id === a.Miembro_ID) || {}).Nombre || '' : '' })), subastas: db.subastas.map(subPub),
         pedidos: db.pedidos.slice().reverse().map(p => ({ ...p, Nombre: (db.miembros.find(x => x.id === p.Miembro_ID) || {}).Nombre || p.Nombre || '', Email: (db.miembros.find(x => x.id === p.Miembro_ID) || {}).Email || '' })),
         miembros: db.miembros.map(m => ({ ...pub(m), Activo: m.Activo !== false })), config: db.config };
     },
@@ -739,6 +767,12 @@ const Demo = (() => {
     },
     adminConfig(d) { Object.assign(db.config, d.config || {}); save(); return { ok: true }; },
     adminUpload(d) { return { ok: true, url: 'data:' + d.mime + ';base64,' + d.data }; },
+    adminArtistaEstado(d) {
+      const a = db.artistas.find(x => x.id === d.id); if (!a) return { ok: false, error: 'No encontrado' };
+      a.Estado = d.estado;
+      if (d.estado === 'Aprobado' && a.Miembro_ID) { const m = db.miembros.find(x => x.id === a.Miembro_ID); if (m) { m.Artista_ID = a.id; if (m.Rol !== 'admin') m.Rol = 'artista'; } }
+      save(); return { ok: true };
+    },
     adminCerrarSubasta(d) {
       const s = db.subastas.find(x => x.id === d.id); if (!s || s.Estado === 'Cerrada') return { ok: false, error: 'Ya estaba cerrada.' };
       s.Estado = 'Cerrada'; s.Fin = Math.min(Date.now(), s.Fin);
@@ -976,6 +1010,7 @@ function vArtistas() {
   const list = artFiltro === 'Todos' ? all : all.filter(a => a.Origen === artFiltro);
   return `<section class="sec">
     <div class="sec-head"><h2 class="disp">Artistas</h2><p>Las personas detrás de cada pieza. Síguelos, opina y recomiéndalos dentro de la comunidad.</p></div>
+    <div class="art-cta" onclick="openMiArtista()"><span>🎨</span><div style="flex:1"><b>${S.me.Artista_ID ? 'Tu perfil de artista' : '¿Eres artista de la comunidad?'}</b><div class="mute" style="font-size:13px">${S.me.Artista_ID ? 'Actualiza tu foto, biografía y redes cuando quieras.' : 'Crea tu perfil con tu foto, tu obra y tus redes.'}</div></div><span>→</span></div>
     <div class="filters">${['Todos', 'Tri-Urban', 'Cineteca Trikles'].map(f => `<button class="chip ${f === artFiltro ? 'on' : ''}" onclick="artFiltro='${f}';route()">${f}</button>`).join('')}</div>
     <div class="art-grid">${list.map(artistCard).join('')}</div>
   </section>`;
@@ -1110,7 +1145,7 @@ async function openArtista(id) {
       <div class="mute">${esc(a.Disciplina || '')}</div>
       <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">${stars(a.prom)}<span>${a.prom ? a.prom.toFixed(1) : '—'}</span><span class="mute" style="font-size:13px">${a.n} opiniones · <b style="color:var(--acid)">${a.recs}</b> lo recomiendan</span></div>
       <p>${esc(a.Bio || '')}</p>
-      <div class="social">${a.Instagram ? `<a href="${esc(a.Instagram)}" target="_blank" rel="noopener">Instagram ↗</a>` : ''}${a.Facebook ? `<a href="${esc(a.Facebook)}" target="_blank" rel="noopener">Facebook ↗</a>` : ''}</div>
+      <div class="social">${safeUrl(a.Instagram) ? `<a href="${esc(safeUrl(a.Instagram))}" target="_blank" rel="noopener">Instagram ↗</a>` : ''}${safeUrl(a.Facebook) ? `<a href="${esc(safeUrl(a.Facebook))}" target="_blank" rel="noopener">Facebook ↗</a>` : ''}</div>
       ${obras.length ? `<div><div class="kicker" style="margin-bottom:10px">Sus piezas</div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">${obras.map(o => `<div style="cursor:pointer;aspect-ratio:4/5;overflow:hidden;border-radius:3px" onclick="openProducto('${o.id}')" title="${esc(o.Nombre)}">${media(o)}</div>`).join('')}</div></div>` : ''}
     </div></div>
     <div class="pad" style="border-top:1px solid var(--line)">
@@ -1220,6 +1255,7 @@ $('#meBtn').onclick = () => openModal(`<div class="pad"><div class="avatar" styl
   <h3 class="it" style="font-size:30px">${esc(S.me.Nombre)}</h3><div class="mute">${esc(S.me.Email)}</div>
   <div><span class="org ${S.me.Rol === 'miembro' ? 'ct' : 'tu'}">${{ miembro: 'Miembro', artista: 'Artista', admin: 'Administrador' }[S.me.Rol] || S.me.Rol}</span></div>
   <button class="btn btn-solid btn-block" onclick="openMisPedidos()">Mis pedidos</button>
+  <button class="btn btn-ghost btn-block" onclick="openMiArtista()">🎨 ${S.me.Artista_ID ? 'Mi perfil de artista' : 'Soy artista: crear mi perfil'}</button>
   ${S.me.Rol === 'admin' ? '<a class="btn btn-gold btn-block" href="#admin" onclick="closeModal()">⚙ Panel de administración</a>' : ''}
   <button class="btn btn-ghost btn-block" onclick="logout()">Cerrar sesión</button></div>`, true);
 
@@ -1301,6 +1337,56 @@ async function openMisPedidos() {
 }
 
 /* =====================================================================
+   MI PERFIL DE ARTISTA (cualquier miembro lo crea; el admin lo aprueba)
+   ===================================================================== */
+async function openMiArtista() {
+  openModal('<div class="pad mute">Cargando…</div>', true);
+  const j = await api('miArtista'); if (!j.ok) return toast(j.error);
+  const a = j.artista || { Origen: 'Tri-Urban' }, estado = j.artista ? j.artista.Estado : '';
+  const aviso = !estado ? `<div class="lock-note">Llena tu perfil y envíalo. El equipo Trikles lo revisa y, al aprobarlo, aparece en <b style="color:var(--text)">Artistas</b> y podrás transmitir en vivo.</div>`
+    : estado === 'Pendiente' ? `<div class="st-box pend">⏳ <span><b>En revisión.</b> Te avisamos al aprobarlo. Mientras, puedes seguir editándolo.</span></div>`
+    : estado === 'Rechazado' ? `<div class="st-box can">Tu perfil no fue aprobado. Escríbenos si tienes dudas; puedes corregirlo y guardarlo de nuevo.</div>`
+    : `<div class="st-box ok">✓ <span><b>Publicado.</b> Tus cambios se ven al instante.</span></div>`;
+  const piezas = P().filter(p => j.artista && p.Artista_ID === j.artista.id);
+  const puedeVivo = estado === 'Aprobado' && ['artista', 'admin'].includes(S.me.Rol);
+  const f = (k, label, extra = '') => `<div class="field"><label for="ma_${k}">${label}</label><input id="ma_${k}" name="${k}" value="${esc(a[k] || '')}" ${extra}></div>`;
+  openModal(`<form class="pad" id="maForm" data-guard>
+    <div class="kicker">Mi perfil de artista</div>
+    <h3 class="it" style="font-size:34px;line-height:1">${esc(a.Nombre || 'Nuevo perfil')}</h3>
+    ${aviso}
+    <div class="field"><label>Foto</label><div class="img-up"><div class="th" id="prev_Foto" style="border-radius:50%;width:96px;height:96px">${a.Foto ? `<img src="${esc(imgUrl(a.Foto))}" alt="">` : ''}</div>
+      <div style="flex:1;display:grid;gap:8px"><label class="btn btn-ghost btn-sm" style="cursor:pointer">${a.Foto ? 'Cambiar foto' : 'Subir foto'}<input type="file" accept="image/*" hidden onchange="subirFoto(this,'Foto','maForm','maSave','subirMiFoto')"></label>
+      <input type="hidden" name="Foto" value="${esc(a.Foto || '')}"></div></div></div>
+    ${f('Nombre', 'Nombre artístico', 'required maxlength="60"')}
+    <div class="field"><label for="ma_Origen">Comunidad</label><select id="ma_Origen" name="Origen">${['Tri-Urban', 'Cineteca Trikles'].map(o => `<option ${o === a.Origen ? 'selected' : ''}>${o}</option>`).join('')}</select></div>
+    ${f('Disciplina', 'Disciplina (ej. Grafiti · stencil, Fotografía)', 'maxlength="80"')}
+    <div class="field"><label for="ma_Bio">Sobre ti y tu obra</label><textarea id="ma_Bio" name="Bio" rows="5" maxlength="1200" placeholder="¿Quién eres, qué haces, qué te mueve?">${esc(a.Bio || '')}</textarea></div>
+    ${f('Instagram', 'Instagram (enlace o @usuario)', 'placeholder="@tuusuario" autocapitalize="off"')}
+    ${f('Facebook', 'Facebook (enlace o usuario)', 'placeholder="https://facebook.com/…" autocapitalize="off"')}
+    <button class="btn btn-gold btn-block" type="submit" id="maSave">${j.artista ? 'Guardar cambios' : 'Enviar mi perfil'}</button>
+    ${estado === 'Aprobado' ? `<button type="button" class="btn btn-ghost btn-block" onclick="openArtista('${j.artista.id}')">Ver cómo lo ve la comunidad →</button>` : ''}
+    ${puedeVivo ? '<button type="button" class="btn btn-accent btn-block" onclick="openIniciarVivo()">● Iniciar transmisión en vivo</button>' : ''}
+    ${piezas.length ? `<div><div class="kicker" style="margin:6px 0 10px">Mis piezas en la tienda</div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">${piezas.map(o => `<div style="cursor:pointer;aspect-ratio:4/5;overflow:hidden;border-radius:3px" onclick="openProducto('${o.id}')" title="${esc(o.Nombre)}">${media(o)}</div>`).join('')}</div></div>` : ''}
+  </form>`, true);
+  $('#maForm').onsubmit = async e => {
+    e.preventDefault();
+    const fm = e.target; if (fm.dataset.subiendo === '1') return toast('Espera a que termine de subir la foto');
+    const ig = redUrl(fm.elements.Instagram.value, 'https://instagram.com/'), fb = redUrl(fm.elements.Facebook.value, 'https://facebook.com/');
+    if (ig === null) return toast('Revisa tu Instagram: pon tu @usuario o el enlace completo');
+    if (fb === null) return toast('Revisa tu Facebook: pon tu usuario o el enlace completo');
+    const datos = { Nombre: fm.elements.Nombre.value.trim(), Origen: fm.elements.Origen.value, Disciplina: fm.elements.Disciplina.value.trim(),
+      Bio: fm.elements.Bio.value.trim(), Foto: fm.elements.Foto.value, Instagram: ig, Facebook: fb };
+    if (!datos.Nombre) return toast('Escribe tu nombre artístico');
+    const r = await busy($('#maSave'), 'Guardando…', () => api('guardarMiArtista', datos));
+    if (!r.ok) return toast(r.error || 'No se pudo guardar');
+    fm.dataset.dirty = '';
+    if (r.nuevo) { S.me.Artista_ID = r.id; toast('¡Perfil enviado! Te avisamos al aprobarlo.'); }
+    else toast('Perfil guardado ✓');
+    await loadCatalog(); openMiArtista(); if (location.hash.startsWith('#artistas')) route();
+  };
+}
+
+/* =====================================================================
    PANEL DE ADMINISTRACIÓN (#admin) — el backend valida Rol = admin
    ===================================================================== */
 let ADM = null, admTab = 'pedidos', pedFiltro = 'Pendiente';
@@ -1340,7 +1426,7 @@ const toLocalDT = ms => { if (!ms) return ''; const d = new Date(+ms); d.setMinu
 function vAdmin() {
   return `<section class="sec">
     <div class="sec-head"><h2 class="disp">Panel</h2><p>Administra la tienda, los artistas, las subastas y la comunidad.</p></div>
-    <div class="filters" id="admTabs">${ADM_TABS.map(([k, l]) => `<button class="chip ${k === admTab ? 'on' : ''}" onclick="admTab='${k}';renderAdmin()">${l}</button>`).join('')}</div>
+    <div class="filters" id="admTabs">${ADM_TABS.map(([k, l]) => `<button class="chip ${k === admTab ? 'on' : ''}" onclick="admTab='${k}';renderAdmin()">${l}<span class="tab-dot" data-tab="${k}"></span></button>`).join('')}</div>
     <div id="admBody"><div class="mute">Cargando…</div></div>
   </section>`;
 }
@@ -1352,6 +1438,8 @@ async function refreshAll() { await Promise.all([loadAdmin(), loadCatalog()]); }
 function renderAdmin() {
   if (!ADM || !$('#admBody')) return;
   $$('#admTabs .chip').forEach((b, i) => b.classList.toggle('on', ADM_TABS[i][0] === admTab));
+  const pendArt = ADM.artistas.filter(a => a.Estado === 'Pendiente').length, pendPed = ADM.pedidos.filter(p => p.Estado === 'Pendiente').length;
+  $$('#admTabs .tab-dot').forEach(d => { const n = d.dataset.tab === 'artistas' ? pendArt : d.dataset.tab === 'pedidos' ? pendPed : 0; d.textContent = n || ''; d.hidden = !n; });
   const R = { pedidos: admPedidos, productos: admProductos, artistas: admArtistas, subastas: admSubastas, miembros: admMiembros, ajustes: admAjustes }[admTab];
   $('#admBody').innerHTML = R(); tickCountdowns();
 }
@@ -1378,16 +1466,30 @@ async function admPedido(folio, estado) {
 }
 function admLista(tabla, rows, cols) {
   return `<div style="margin-bottom:16px"><button class="btn btn-accent" onclick="admEditar('${tabla}')">+ Nuevo</button></div>
-    <div class="adm-list">${rows.map(r => `<div class="adm-row ${r.Activo === false || r.Estado === 'Oculta' ? 'off' : ''}">
+    <div class="adm-list">${rows.map(r => `<div class="adm-row ${r.Activo === false || r.Estado === 'Oculta' || r.Estado === 'Rechazado' ? 'off' : ''}">
       <div class="th">${media(r, tabla === 'Artistas' ? 'artista' : r.Tipo === 'obra' ? 'obra' : r.Tipo === 'colab' ? 'colab' : '')}</div>
       <div style="min-width:0">${cols(r)}</div>
       <div class="adm-act">${tabla === 'Subastas' && r.Estado === 'Activa' && r.Fin <= Date.now() ? `<button class="btn btn-solid btn-sm" onclick="admCerrar('${r.id}')">Cerrar y cobrar</button>` : ''}
+        ${tabla === 'Artistas' && r.Estado === 'Pendiente' ? `<button class="btn btn-solid btn-sm" onclick="admArtEstado('${r.id}','Aprobado')">✓ Aprobar</button><button class="btn btn-ghost btn-sm" onclick="admArtEstado('${r.id}','Rechazado')">Rechazar</button>` : ''}
+        ${tabla === 'Artistas' && r.Estado === 'Rechazado' ? `<button class="btn btn-ghost btn-sm" onclick="admArtEstado('${r.id}','Aprobado')">Aprobar</button>` : ''}
         <button class="btn btn-ghost btn-sm" onclick="admEditar('${tabla}','${r.id}')">Editar</button>
         <button class="btn btn-ghost btn-sm" onclick="admBorrar('${tabla}','${r.id}')" aria-label="Borrar">✕</button></div>
     </div>`).join('') || '<div class="empty">Nada por aquí todavía.</div>'}</div>`;
 }
 const admProductos = () => admLista('Productos', ADM.productos, p => `<b>${esc(p.Nombre)}</b><div class="mute" style="font-size:13px">${{ prenda: 'Prenda', colab: 'Colab', obra: 'Obra' }[p.Tipo] || p.Tipo} · ${money(p.Precio)} · ${p.Stock} pzas${p.Artista_ID ? ' · ' + esc(nombreArtista(p.Artista_ID)) : ''}${p.Activo === false ? ' · oculto' : ''}${siBool(p.Sobre_Pedido) ? ' · 📦 sobre pedido hasta ' + fmtDia(p.Pedido_Hasta) + (sobrePedido(p) ? '' : +p.Stock > 0 ? ' (hay stock)' : ' (vencido)') : ''}</div>`);
-const admArtistas = () => admLista('Artistas', ADM.artistas, a => `<b>${esc(a.Nombre)}</b><div class="mute" style="font-size:13px">${esc(a.Origen || '')} · ${esc(a.Disciplina || '')}${a.Activo === false ? ' · oculto' : ''}</div>`);
+const ordenEstado = { Pendiente: 0, Aprobado: 1, Rechazado: 2 };
+const admArtistas = () => {
+  const lista = ADM.artistas.slice().sort((x, y) => (ordenEstado[x.Estado] ?? 1) - (ordenEstado[y.Estado] ?? 1));
+  const pend = lista.filter(a => a.Estado === 'Pendiente').length;
+  return (pend ? `<div class="st-box pend" style="margin-bottom:14px">⏳ <span><b>${pend}</b> perfil${pend > 1 ? 'es' : ''} de artista esperando tu aprobación.</span></div>` : '')
+    + admLista('Artistas', lista, a => `<b>${esc(a.Nombre)}</b> ${a.Estado === 'Pendiente' ? '<span class="st st-pend">Pendiente</span>' : a.Estado === 'Rechazado' ? '<span class="st st-can">Rechazado</span>' : ''}
+      <div class="mute" style="font-size:13px">${esc(a.Origen || '')} · ${esc(a.Disciplina || '')}${a.Activo === false ? ' · oculto' : ''}${a.Solicitante ? ' · lo creó ' + esc(a.Solicitante) : ''}</div>`);
+};
+async function admArtEstado(id, estado) {
+  if (estado === 'Rechazado' && !confirm('¿Rechazar este perfil? No se publicará.')) return;
+  const r = await api('adminArtistaEstado', { id, estado }); if (!r.ok) return toast(r.error);
+  toast(estado === 'Aprobado' ? 'Perfil aprobado y publicado ✓' : 'Perfil rechazado'); refreshAll();
+}
 const admSubastas = () => admLista('Subastas', ADM.subastas, s => `<b>${esc(s.Titulo)}</b><div class="mute" style="font-size:13px">${esc(s.Estado)} · ${s.Actual ? 'va en ' + money(s.Actual) + ' (' + esc(s.Lider) + ')' : 'salida ' + money(s.Precio_Inicial)} · ${s.Pujas} pujas</div><div class="cd" data-end="${s.Fin}" style="text-align:left;font-size:13px"></div>`);
 async function admCerrar(id) {
   if (!confirm('¿Cerrar la subasta y generar el pedido para quien ganó?')) return;
@@ -1469,21 +1571,22 @@ function resizeImage(file, max = 1600) {
     img.onerror = bad; img.src = url;
   });
 }
-async function admSubir(inp, k) {
+const admSubir = (inp, k) => subirFoto(inp, k, 'admForm', 'admSave', 'adminUpload');
+async function subirFoto(inp, k, formId, saveId, accion) {
   const file = inp.files[0]; if (!file) return;
-  const f = $('#admForm'), lbl = inp.closest('label'), save = $('#admSave');
+  const f = document.getElementById(formId), lbl = inp.closest('label'), save = document.getElementById(saveId), txtSave = save.textContent;
   f.dataset.subiendo = '1'; f.dataset.dirty = '1'; save.disabled = true; save.textContent = 'Subiendo foto…';
   lbl.firstChild.textContent = 'Subiendo…';
   try {
     const data = await resizeImage(file);
-    const r = await api('adminUpload', { data, mime: 'image/jpeg', name: file.name.replace(/\.\w+$/, '') + '.jpg' });
+    const r = await api(accion, { data, mime: 'image/jpeg', name: file.name.replace(/\.\w+$/, '') + '.jpg' });
     if (!r.ok) return toast(r.error);
     if (!f.isConnected) return;
     f.elements[k].value = r.url; $('#prev_' + k).innerHTML = `<img src="${esc(imgUrl(r.url))}" alt="">`; toast('Foto lista ✓');
   } catch (_) { toast('No se pudo leer la imagen. Prueba con otra (JPG o PNG).'); }
   finally {
     f.dataset.subiendo = ''; inp.value = '';
-    if (f.isConnected) { save.disabled = false; save.textContent = 'Guardar'; lbl.firstChild.textContent = 'Cambiar foto'; }
+    if (f.isConnected) { save.disabled = false; save.textContent = txtSave; lbl.firstChild.textContent = 'Cambiar foto'; }
   }
 }
 function admMiembros() {
