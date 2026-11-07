@@ -783,7 +783,9 @@ function stopTimers() { timers.forEach(clearInterval); timers = []; }
 function renderNav(cur) {
   const live = (S.data?.vivos || []).some(v => v.Estado === 'envivo');
   $('#nav').innerHTML = SECCIONES.map(([k, l]) => `<a href="#${k}" class="${k === cur ? 'on' : ''}">${l}${k === 'vivo' && live ? '<span class="dot"></span>' : ''}</a>`).join('') + (S.me.Rol === 'admin' ? `<a href="#admin" class="${cur === 'admin' ? 'on' : ''}">⚙ Panel</a>` : '');
-  $('#tabbar').innerHTML = SECCIONES.filter(s => s[0] !== 'galeria').map(([k, l, i]) => `<a href="#${k}" class="${k === cur ? 'on' : ''}"><i>${k === 'vivo' && live ? '🔴' : i}</i>${l.replace('Arte × Urban', 'Colabs')}</a>`).join('');
+  const adm = S.me.Rol === 'admin';
+  $('#tabbar').innerHTML = SECCIONES.filter(s => s[0] !== 'galeria' && !(adm && s[0] === 'inicio')).map(([k, l, i]) => `<a href="#${k}" class="${k === cur ? 'on' : ''}"><i>${k === 'vivo' && live ? '🔴' : i}</i>${l.replace('Arte × Urban', 'Colabs')}</a>`).join('')
+    + (adm ? `<a href="#admin" class="${cur === 'admin' ? 'on' : ''}"><i>⚙</i>Panel</a>` : '');
 }
 function route() {
   if (!S.me) return;
