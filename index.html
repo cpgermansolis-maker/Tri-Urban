@@ -256,7 +256,16 @@ main{max-width:1320px;margin:0 auto;padding:0 var(--gut) 120px}
 
 /* ---------- sobre pedido ---------- */
 .tag-mini.pre{background:var(--acid);color:var(--bg);font-weight:700}
-.pre-line{font-size:12px;color:var(--acid);margin-top:-6px}
+.pre-line{font-size:12px;color:var(--acid);margin-top:-4px}
+.pbar-wrap{display:grid;gap:6px}
+.card .pbar-wrap{margin-top:-4px}
+.pbar{height:5px;background:rgba(241,237,228,.1);border-radius:3px;overflow:hidden;display:flex;justify-content:center}
+.pbar-wrap.big .pbar{height:10px;border-radius:5px}
+.pbar i{display:block;height:100%;width:100%;border-radius:inherit;transition:width .9s linear,background-color .9s linear;box-shadow:0 0 10px currentColor}
+.pbar-wrap.urg .pbar i{animation:pulse 1s infinite}
+.pbar-txt{display:flex;justify-content:space-between;gap:10px;font-size:13px;align-items:baseline}
+.pbar-txt b{font-variant-numeric:tabular-nums;font-size:16px}
+.pbar-wrap.urg .pbar-txt b{color:var(--accent)}
 .pre-box{border:1px solid var(--acid);background:rgba(215,255,61,.06);border-radius:var(--r);padding:14px;display:grid;gap:8px}
 .pre-box .row{display:flex;justify-content:space-between;gap:10px;font-size:14px}
 .pre-tag{display:inline-block;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--acid);border:1px solid var(--acid);padding:2px 6px;border-radius:2px;margin-left:4px}
@@ -426,6 +435,21 @@ function fmtDia(iso, largo) {
 const siBool = v => v === true || String(v).toUpperCase() === 'TRUE';
 // agotado + sobre pedido activo + dentro de la fecha máxima (inclusive)
 const sobrePedido = p => +p.Stock <= 0 && siBool(p.Sobre_Pedido) && !!p.Pedido_Hasta && String(p.Pedido_Hasta).slice(0, 10) >= hoyISO();
+// Ventana de reservación: desde el día en que se activó (Pedido_Desde) hasta el fin del día máximo.
+function ventanaPedido(p) {
+  const dia = (iso, fin) => { const [y, m, d] = String(iso).slice(0, 10).split('-').map(Number); return new Date(y, m - 1, d, fin ? 23 : 0, fin ? 59 : 0, fin ? 59 : 0).getTime(); };
+  const fin = dia(p.Pedido_Hasta, true);
+  let ini = p.Pedido_Desde ? dia(p.Pedido_Desde) : fin - 14 * 864e5; // sin fecha de inicio: ventana de 14 días
+  if (ini >= fin) ini = fin - 864e5;
+  return { ini, fin };
+}
+// Barra que se cierra hacia el centro conforme se acaba el tiempo (la anima tickCountdowns).
+function preBar(p, grande) {
+  const { ini, fin } = ventanaPedido(p);
+  return `<div class="pbar-wrap${grande ? ' big' : ''}" data-pre-ini="${ini}" data-pre-fin="${fin}">
+    ${grande ? '<div class="pbar-txt"><span>Las reservaciones se cierran en</span><b class="pre-cd"></b></div>' : ''}
+    <div class="pbar" role="progressbar" aria-label="Tiempo restante para reservar"><i></i></div></div>`;
+}
 const maxPiezas = p => sobrePedido(p) ? MAX_SOBRE_PEDIDO : Math.max(0, +p.Stock);
 const preTag = i => i.SobrePedido ? ` <span class="pre-tag">Sobre pedido${i.Llegada ? ' · llega ' + fmtDia(i.Llegada) : ''}</span>` : '';
 function ytId(u) {
@@ -878,7 +902,7 @@ function prodCard(p) {
   return `<article class="card" onclick="openProducto('${p.id}')" tabindex="0" onkeydown="if(event.key==='Enter')this.click()">
     <div class="media">${media(p)}${pre ? '<span class="tag-mini pre">Sobre pedido</span>' : agot ? '<span class="tag-mini sold">Agotado</span>' : +p.Stock <= 3 ? '<span class="tag-mini">Últimas piezas</span>' : ''}</div>
     <div class="meta"><span class="name">${esc(p.Nombre)}</span><span class="price">${money(p.Precio)}</span></div>
-    ${pre ? `<div class="pre-line">Reserva hasta el ${fmtDia(p.Pedido_Hasta)}${p.Pedido_Llegada ? ' · llega el ' + fmtDia(p.Pedido_Llegada) : ''}</div>` : ''}
+    ${pre ? `${preBar(p)}<div class="pre-line">Reserva hasta el ${fmtDia(p.Pedido_Hasta)}${p.Pedido_Llegada ? ' · llega el ' + fmtDia(p.Pedido_Llegada) : ''}</div>` : ''}
   </article>`;
 }
 let tiendaFiltro = 'todo';
@@ -999,6 +1023,16 @@ function vVivo(id) {
 
 /* ---------- countdowns ---------- */
 function tickCountdowns() {
+  $$('[data-pre-fin]').forEach(el => {
+    const ini = +el.dataset.preIni, fin = +el.dataset.preFin, rest = fin - Date.now();
+    const pct = Math.max(0, Math.min(1, rest / (fin - ini)));
+    const bar = el.querySelector('.pbar i');
+    bar.style.width = (pct * 100).toFixed(2) + '%';
+    bar.style.backgroundColor = 'hsl(' + Math.round(8 + pct * 67) + ',95%,55%)'; // verde → naranja → rojo
+    el.classList.toggle('urg', rest > 0 && rest < 864e5);
+    el.querySelector('.pbar').setAttribute('aria-valuenow', Math.round(pct * 100));
+    const cd = el.querySelector('.pre-cd'); if (cd) cd.textContent = rest > 0 ? fmtRest(rest) : 'Cerradas';
+  });
   $$('[data-end]').forEach(el => {
     const ms = +el.dataset.end - Date.now();
     el.textContent = fmtRest(ms);
@@ -1049,6 +1083,7 @@ function openProducto(id) {
       ${tallas.length ? `<div><div class="kicker" style="margin-bottom:8px">Talla</div><div class="sizes">${tallas.map(t => `<button class="${t === selTalla ? 'on' : ''}" onclick="selTalla='${esc(t)}';$$('.sizes button').forEach(b=>b.classList.toggle('on',b.textContent==='${esc(t)}'))">${esc(t)}</button>`).join('')}</div></div>` : ''}
       ${pre ? `<div class="pre-box"><div class="kicker" style="color:var(--acid)">📦 Sobre pedido</div>
         <p style="font-size:14px">Se agotó, pero puedes reservarla. Te la apartamos en cuanto llegue.</p>
+        ${preBar(p, true)}
         <div class="row"><span class="mute">Reservaciones hasta</span><b>${fmtDia(p.Pedido_Hasta, true)}</b></div>
         ${p.Pedido_Llegada ? `<div class="row"><span class="mute">Llega a la tienda</span><b>${fmtDia(p.Pedido_Llegada, true)}</b></div>` : ''}</div>` : ''}
       <button class="btn ${p.Tipo === 'colab' ? 'btn-gold' : 'btn-solid'} btn-block" ${agot ? 'disabled' : ''} onclick="addCart('${p.id}',${tallas.length ? 'true' : 'false'})">${pre ? 'Reservar sobre pedido' : agot ? (p.Tipo === 'obra' ? 'Vendida' : 'Agotado') : 'Agregar al carrito'}</button>
@@ -1406,6 +1441,10 @@ function admEditar(tabla, id) {
     if (obj.Sobre_Pedido) {
       if (!obj.Pedido_Hasta || !obj.Pedido_Llegada) return toast('Pon la fecha máxima para reservar y la fecha de llegada');
       if (obj.Pedido_Llegada < obj.Pedido_Hasta) return toast('La llegada no puede ser antes de la fecha máxima para reservar');
+      // inicio de la ventana (para la barra): se reinicia al activar o al cambiar la fecha máxima
+      const antes = id ? lista.find(x => x.id === id) : null;
+      const sigue = antes && siBool(antes.Sobre_Pedido) && antes.Pedido_Desde && String(antes.Pedido_Hasta).slice(0, 10) === obj.Pedido_Hasta;
+      obj.Pedido_Desde = sigue ? String(antes.Pedido_Desde).slice(0, 10) : hoyISO();
     }
     const r = await busy($('#admSave'), 'Guardando…', () => api('adminSave', { tabla, obj }));
     if (!r.ok) { BORRADORES[claveBorrador] = obj; return toast(r.error || 'No se pudo guardar'); }
