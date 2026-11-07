@@ -22,8 +22,9 @@ body{background:var(--bg);color:var(--text);font:400 15px/1.5 var(--sans);-webki
 body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:1;opacity:.07;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
 a{color:inherit}
-button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
-input,textarea,select{font:inherit;color:var(--text);background:var(--bg2);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;width:100%;outline:none}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;touch-action:manipulation}
+html{-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%}
+input,textarea,select{font:inherit;font-size:16px;color:var(--text);background:var(--bg2);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;width:100%;outline:none}
 input:focus,textarea:focus,select:focus{border-color:var(--text)}
 img{display:block;max-width:100%}
 [hidden]{display:none!important}
@@ -123,7 +124,7 @@ main{max-width:1320px;margin:0 auto;padding:0 var(--gut) 120px}
 .card{cursor:pointer;display:flex;flex-direction:column;gap:12px}
 .card .media{position:relative;aspect-ratio:4/5;background:var(--bg2);overflow:hidden;border-radius:var(--r)}
 .card .media>svg,.card .media>img{width:100%;height:100%;object-fit:cover;transition:transform .6s cubic-bezier(.2,.7,.2,1)}
-.card:hover .media>svg,.card:hover .media>img{transform:scale(1.04)}
+@media (hover:hover){.card:hover .media>svg,.card:hover .media>img{transform:scale(1.04)}}
 .card .meta{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
 .card .name{font-size:13px;letter-spacing:.12em;text-transform:uppercase}
 .card .sub{font-size:13px;color:var(--mute)}
@@ -135,7 +136,7 @@ main{max-width:1320px;margin:0 auto;padding:0 var(--gut) 120px}
 .colab{cursor:pointer;position:relative;border:1px solid var(--line);background:var(--bg2);border-radius:var(--r);overflow:hidden;display:flex;flex-direction:column}
 .colab .media{position:relative;aspect-ratio:4/5;overflow:hidden}
 .colab .media>svg,.colab .media>img{width:100%;height:100%;object-fit:cover;transition:transform .7s cubic-bezier(.2,.7,.2,1)}
-.colab:hover .media>svg,.colab:hover .media>img{transform:scale(1.035)}
+@media (hover:hover){.colab:hover .media>svg,.colab:hover .media>img{transform:scale(1.035)}}
 .corner-price{position:absolute;top:0;right:0;z-index:3;background:var(--gold);color:#17120b;padding:9px 14px 9px 18px;
   clip-path:polygon(12px 0,100% 0,100% 100%,0 100%);font-weight:700;font-size:14px;letter-spacing:.04em}
 .corner-price small{display:block;font-size:9px;letter-spacing:.2em;font-weight:500;opacity:.75}
@@ -225,9 +226,10 @@ main{max-width:1320px;margin:0 auto;padding:0 var(--gut) 120px}
 .modal{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.72);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:20px;animation:fadeIn .2s}
 .sheet{position:relative;background:var(--bg);border:1px solid var(--line);border-radius:6px;width:min(1080px,100%);max-height:92vh;overflow:auto}
 .sheet.narrow{width:min(520px,100%)}
-.x{position:sticky;float:right;top:10px;margin:10px 10px 0 0;z-index:5;width:40px;height:40px;border-radius:50%;background:var(--bg2);border:1px solid var(--line);font-size:20px}
+.x{position:sticky;top:10px;display:grid;place-items:center;margin:10px 10px -50px auto;z-index:5;width:40px;height:40px;border-radius:50%;background:rgba(20,20,19,.85);backdrop-filter:blur(6px);border:1px solid var(--line);font-size:20px}
 .detail{display:grid;grid-template-columns:1.1fr 1fr}
-.detail .media{position:relative;background:var(--bg2);aspect-ratio:4/5}
+.detail .corner-price{top:60px}
+.detail .media{position:relative;background:var(--bg2);aspect-ratio:4/5;min-width:0;width:100%;overflow:hidden}
 .detail .media>svg,.detail .media>img{width:100%;height:100%;object-fit:cover}
 .detail .body{padding:clamp(20px,3vw,40px);display:flex;flex-direction:column;gap:18px}
 .detail h3{font-size:clamp(34px,4vw,54px)}
@@ -1044,9 +1046,12 @@ function tickCountdowns() {
 /* =====================================================================
    MODALES
    ===================================================================== */
-function openModal(html, narrow) {
-  $('#modalBody').innerHTML = html; $('#sheet').classList.toggle('narrow', !!narrow);
-  $('#modal').hidden = false; document.body.style.overflow = 'hidden'; tickCountdowns();
+function openModal(html, narrow, conservarScroll) {
+  const sh = $('#sheet'), y = sh.scrollTop;
+  $('#modalBody').innerHTML = html; sh.classList.toggle('narrow', !!narrow);
+  $('#modal').hidden = false; document.body.style.overflow = 'hidden';
+  sh.scrollTop = conservarScroll ? y : 0;
+  tickCountdowns();
 }
 function closeModal() { $('#modal').hidden = true; document.body.style.overflow = ''; if (modalTimer) { clearInterval(modalTimer); modalTimer = null; } }
 let modalTimer = null;
@@ -1130,7 +1135,7 @@ async function openArtista(id) {
 }
 
 async function openSubasta(id) {
-  const load = async () => {
+  const load = async (refresco) => {
     const j = await api('subasta', { id }); if (!j.ok) return;
     const s = j.subasta, a = artistaById(s.Artista_ID), cerrada = s.Fin <= Date.now();
     const min = s.Actual ? s.Actual + +s.Incremento : +s.Precio_Inicial, lider = j.pujas[0];
@@ -1151,18 +1156,18 @@ async function openSubasta(id) {
           <form id="bidForm" style="display:flex;gap:8px"><input id="bidIn" type="number" inputmode="numeric" min="${min}" step="${s.Incremento}" value="${prev && +prev >= min ? prev : min}" aria-label="Monto de tu puja"><button class="btn btn-accent" style="white-space:nowrap">Pujar</button></form>
           <div class="mute" style="font-size:12px">Puja mínima ${money(min)} · incrementos de ${money(s.Incremento)}. Tu puja es un compromiso de compra.</div>`}
         <div><div class="kicker">Historial (${j.pujas.length})</div><ul class="bids">${j.pujas.map(b => `<li><span>${esc(b.Nombre)}</span><span class="price">${money(b.Monto)}</span></li>`).join('') || '<li class="mute">Sin pujas todavía</li>'}</ul></div>
-      </div></div>`);
+      </div></div>`, false, refresco);
     const f = $('#bidForm');
     if (f) f.onsubmit = async e => {
       e.preventDefault(); const monto = +$('#bidIn').value;
       if (!confirm('¿Confirmas tu puja de ' + money(monto) + '?')) return;
       const r = await api('pujar', { id, monto });
       if (!r.ok) return toast(r.error);
-      toast('¡Puja registrada!'); $('#bidIn').value = ''; await loadCatalog(); load();
+      toast('¡Puja registrada!'); $('#bidIn').value = ''; await loadCatalog(); load(true);
     };
   };
   await load();
-  modalTimer = setInterval(() => { if (!$('#modal').hidden && document.activeElement?.id !== 'bidIn') load(); }, 6000);
+  modalTimer = setInterval(() => { if (!$('#modal').hidden && document.activeElement?.id !== 'bidIn') load(true); }, 6000);
 }
 
 /* =====================================================================
