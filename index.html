@@ -475,10 +475,22 @@ let S = { token: lsGet(LS.token, ''), me: null, data: null, cart: lsGet(LS.cart,
 
 async function api(action, data = {}) {
   if (DEMO) { await new Promise(r => setTimeout(r, 120)); return Demo.run(action, data, S.token); }
-  const res = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action, token: S.token, ...data }) });
-  const j = await res.json();
-  if (j.error === 'SESION') { logout(true); throw new Error(j.msg || 'Sesión expirada'); }
+  const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), action === 'adminUpload' ? 60000 : 30000);
+  let j;
+  try {
+    const res = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action, token: S.token, ...data }), signal: ctl.signal });
+    j = JSON.parse(await res.text());
+  } catch (err) {
+    // sin conexión, tiempo agotado o respuesta que no es JSON: nunca dejamos la pantalla trabada
+    return { ok: false, error: err.name === 'AbortError' ? 'El servidor tardó demasiado. Revisa tu internet e intenta de nuevo.' : 'No se pudo conectar con el servidor. Intenta de nuevo.' };
+  } finally { clearTimeout(t); }
+  if (j.error === 'SESION') { logout(true); return { ok: false, error: j.msg || 'Tu sesión expiró. Entra de nuevo.' }; }
   return j;
+}
+/* bloquea un botón mientras corre una tarea y siempre lo libera */
+async function busy(btn, label, fn) {
+  const txt = btn.textContent; btn.disabled = true; btn.textContent = label;
+  try { return await fn(); } finally { if (btn.isConnected) { btn.disabled = false; btn.textContent = txt; } }
 }
 
 /* ---------- Backend simulado (mismas acciones que el Apps Script) ---------- */
@@ -950,9 +962,17 @@ function openModal(html, narrow) {
 }
 function closeModal() { $('#modal').hidden = true; document.body.style.overflow = ''; if (modalTimer) { clearInterval(modalTimer); modalTimer = null; } }
 let modalTimer = null;
-$('#modalX').onclick = closeModal;
-$('#modal').onclick = e => { if (e.target.id === 'modal') closeModal(); };
-document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#modal').hidden) closeModal(); });
+// Si hay un formulario con cambios sin guardar, un clic fuera (o Esc / ✕) pregunta antes de cerrar.
+function intentarCerrar() {
+  const f = $('#modalBody form[data-guard]');
+  if (f && f.dataset.dirty === '1' && !confirm('Tienes cambios sin guardar. ¿Salir de todos modos?')) return;
+  if (f && f.dataset.dirty === '1' && f._onDiscard) f._onDiscard();
+  closeModal();
+}
+$('#modalX').onclick = intentarCerrar;
+$('#modal').onclick = e => { if (e.target.id === 'modal') intentarCerrar(); };
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#modal').hidden) intentarCerrar(); });
+document.addEventListener('input', e => { const f = e.target.closest && e.target.closest('form[data-guard]'); if (f) f.dataset.dirty = '1'; });
 
 let selTalla = '';
 function openProducto(id) {
@@ -997,7 +1017,7 @@ async function openArtista(id) {
     </div></div>
     <div class="pad" style="border-top:1px solid var(--line)">
       <h4 class="disp" style="font-size:30px">Opiniones de la comunidad</h4>
-      <form id="opForm" style="display:grid;gap:12px;padding:16px;border:1px solid var(--line);border-radius:var(--r)">
+      <form id="opForm" data-guard style="display:grid;gap:12px;padding:16px;border:1px solid var(--line);border-radius:var(--r)">
         <div class="kicker">${mia ? 'Tu opinión (puedes editarla)' : 'Deja tu opinión'}</div>
         <div class="star-in" id="starIn">${[1, 2, 3, 4, 5].map(n => `<button type="button" data-n="${n}" class="${n <= est ? 'on' : ''}" aria-label="${n} estrellas">★</button>`).join('')}</div>
         <textarea id="opTxt" rows="3" maxlength="500" placeholder="¿Qué te transmite su trabajo?">${esc(mia?.Texto || '')}</textarea>
@@ -1010,7 +1030,7 @@ async function openArtista(id) {
   $$('#starIn button').forEach(b => b.onclick = () => { est = +b.dataset.n; $$('#starIn button').forEach(x => x.classList.toggle('on', +x.dataset.n <= est)); });
   $('#opForm').onsubmit = async e => {
     e.preventDefault(); if (!est) return toast('Elige de 1 a 5 estrellas');
-    const r = await api('opinar', { artista_id: a.id, estrellas: est, texto: $('#opTxt').value, recomienda: $('#opRec').checked });
+    const r = await busy(e.submitter || $('#opForm button[type=submit]'), 'Publicando…', () => api('opinar', { artista_id: a.id, estrellas: est, texto: $('#opTxt').value, recomienda: $('#opRec').checked }));
     if (!r.ok) return toast(r.error || 'No se pudo guardar');
     toast('¡Gracias por tu opinión!'); await loadCatalog(); openArtista(a.id);
   };
@@ -1149,13 +1169,13 @@ async function comentar(ev) {
   pollLive(); setTimeout(() => { const l = $('#chatList'); if (l) l.scrollTop = l.scrollHeight; }, 150);
 }
 function openIniciarVivo() {
-  openModal(`<form class="pad" id="ivForm"><h3 class="disp" style="font-size:36px">Iniciar transmisión</h3>
+  openModal(`<form class="pad" id="ivForm" data-guard><h3 class="disp" style="font-size:36px">Iniciar transmisión</h3>
     <div class="field"><label for="ivT">Título</label><input id="ivT" required maxlength="90" placeholder="Ej. Pintando en vivo una chamarra"></div>
     <div class="field"><label for="ivY">Enlace de tu transmisión de YouTube</label><input id="ivY" placeholder="https://youtube.com/live/…"></div>
     <div class="lock-note">En YouTube Studio crea la transmisión como <b style="color:var(--text)">“No listado”</b> y pega aquí el enlace. Así solo la ve la comunidad desde esta app.</div>
     <button class="btn btn-accent btn-block">● Salir en vivo</button></form>`, true);
   $('#ivForm').onsubmit = async e => {
-    e.preventDefault(); const r = await api('vivoIniciar', { titulo: $('#ivT').value, youtube: $('#ivY').value });
+    e.preventDefault(); const r = await busy($('#ivForm button'), 'Iniciando…', () => api('vivoIniciar', { titulo: $('#ivT').value, youtube: $('#ivY').value }));
     if (!r.ok) return toast(r.error); closeModal(); await loadCatalog(); location.hash = '#vivo/' + r.vivo.id;
   };
 }
@@ -1294,26 +1314,36 @@ function admEditar(tabla, id) {
     else inp = `<input name="${k}" type="${type === 'number' ? 'number' : 'text'}" value="${esc(v)}" ${type === 'number' ? 'inputmode="decimal" step="any"' : ''}>`;
     return `<div class="field"${sh}><label>${label}</label>${inp}</div>`;
   };
-  openModal(`<form class="pad" id="admForm"><h3 class="disp" style="font-size:34px">${id ? 'Editar' : 'Nuevo'} · ${{ Productos: 'pieza', Artistas: 'artista', Subastas: 'subasta' }[tabla]}</h3>
+  const claveBorrador = tabla + '|' + (id || 'nuevo'), borrador = BORRADORES[claveBorrador];
+  if (borrador) Object.assign(o, borrador);
+  openModal(`<form class="pad" id="admForm" data-guard${borrador ? ' data-dirty="1"' : ''}><h3 class="disp" style="font-size:34px">${id ? 'Editar' : 'Nuevo'} · ${{ Productos: 'pieza', Artistas: 'artista', Subastas: 'subasta' }[tabla]}</h3>
+    ${borrador ? '<div class="lock-note">Recuperé lo que llevabas capturado. Revísalo y guarda.</div>' : ''}
     ${FORMS[tabla].map(campo).join('')}
-    <button class="btn btn-solid btn-block" type="submit">Guardar</button></form>`, true);
+    <button class="btn btn-solid btn-block" type="submit" id="admSave">Guardar</button></form>`, true);
   const f = $('#admForm'), tipo = f.elements.Tipo;
   const vis = () => $$('[data-show]', f).forEach(el => el.hidden = tabla === 'Productos' && !el.dataset.show.split(',').includes(tipo.value));
   if (tipo) { tipo.onchange = vis; vis(); }
-  f.onsubmit = async e => {
-    e.preventDefault(); const obj = { id: id || '' };
+  const leer = () => {
+    const obj = { id: id || '' };
     FORMS[tabla].forEach(([k, , type]) => {
       const el = f.elements[k]; if (!el) return;
       obj[k] = type === 'bool' ? el.checked : type === 'number' ? (el.value === '' ? 0 : +el.value) : type === 'datetime' ? (el.value ? new Date(el.value).getTime() : 0) : el.value.trim();
     });
+    return obj;
+  };
+  f._onDiscard = () => { BORRADORES[claveBorrador] = leer(); }; // si sale sin guardar, lo guardamos como borrador
+  f.onsubmit = async e => {
+    e.preventDefault();
+    if (f.dataset.subiendo === '1') return toast('Espera a que termine de subir la foto');
+    const obj = leer();
     if (!obj.Nombre && !obj.Titulo) return toast('Falta el nombre');
     if (tabla === 'Subastas' && obj.Fin <= obj.Inicio) return toast('El cierre debe ser después de la apertura');
-    e.submitter.disabled = true;
-    const r = await api('adminSave', { tabla, obj });
-    if (!r.ok) { e.submitter.disabled = false; return toast(r.error); }
-    closeModal(); toast('Guardado'); refreshAll();
+    const r = await busy($('#admSave'), 'Guardando…', () => api('adminSave', { tabla, obj }));
+    if (!r.ok) { BORRADORES[claveBorrador] = obj; return toast(r.error || 'No se pudo guardar'); }
+    delete BORRADORES[claveBorrador]; f.dataset.dirty = ''; closeModal(); toast('Guardado ✓'); refreshAll();
   };
 }
+const BORRADORES = {};
 function resizeImage(file, max = 1600) {
   return new Promise((ok, bad) => {
     const img = new Image(), url = URL.createObjectURL(file);
@@ -1328,13 +1358,20 @@ function resizeImage(file, max = 1600) {
 }
 async function admSubir(inp, k) {
   const file = inp.files[0]; if (!file) return;
-  toast('Subiendo foto…');
+  const f = $('#admForm'), lbl = inp.closest('label'), save = $('#admSave');
+  f.dataset.subiendo = '1'; f.dataset.dirty = '1'; save.disabled = true; save.textContent = 'Subiendo foto…';
+  lbl.firstChild.textContent = 'Subiendo…';
   try {
     const data = await resizeImage(file);
     const r = await api('adminUpload', { data, mime: 'image/jpeg', name: file.name.replace(/\.\w+$/, '') + '.jpg' });
     if (!r.ok) return toast(r.error);
-    const f = $('#admForm'); f.elements[k].value = r.url; $('#prev_' + k).innerHTML = `<img src="${esc(imgUrl(r.url))}" alt="">`; toast('Foto lista');
-  } catch (_) { toast('No se pudo leer la imagen'); }
+    if (!f.isConnected) return;
+    f.elements[k].value = r.url; $('#prev_' + k).innerHTML = `<img src="${esc(imgUrl(r.url))}" alt="">`; toast('Foto lista ✓');
+  } catch (_) { toast('No se pudo leer la imagen. Prueba con otra (JPG o PNG).'); }
+  finally {
+    f.dataset.subiendo = ''; inp.value = '';
+    if (f.isConnected) { save.disabled = false; save.textContent = 'Guardar'; lbl.firstChild.textContent = 'Cambiar foto'; }
+  }
 }
 function admMiembros() {
   return `<p class="mute" style="margin-bottom:16px">Para que alguien pueda transmitir en vivo: rol <b>Artista</b> y elige su perfil de artista.</p>
