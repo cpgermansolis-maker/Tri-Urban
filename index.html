@@ -326,6 +326,15 @@ footer{border-top:1px solid var(--line);margin-top:70px;padding:30px 0;display:f
       <div class="kicker">Acceso para miembros</div>
       <h2 class="disp" style="font-size:44px;margin-top:8px">Bienvenido <span class="it" style="color:var(--gold)">a casa</span></h2>
     </div>
+    <!-- Paso 1: la llave Trikles se pide en cada visita -->
+    <form id="fLlave" class="field" style="gap:14px" autocomplete="off">
+      <div class="lock-note">🔑 <span>Esta es una comunidad privada. Escribe la <b style="color:var(--text)">llave Trikles</b> para entrar.</span></div>
+      <div class="field"><label for="kLlave">Llave Trikles</label><input id="kLlave" type="password" required autocomplete="off" spellcheck="false" autocapitalize="characters"></div>
+      <div class="err" id="kErr"></div>
+      <button class="btn btn-solid btn-block" type="submit">Abrir</button>
+    </form>
+    <!-- Paso 2: cuenta (solo si no hay sesión) -->
+    <div id="authStep" hidden style="display:flex;flex-direction:column;gap:22px">
     <div class="tabs2" role="tablist">
       <button class="on" data-gtab="login" role="tab">Entrar</button>
       <button data-gtab="registro" role="tab">Soy nuevo</button>
@@ -337,14 +346,14 @@ footer{border-top:1px solid var(--line);margin-top:70px;padding:30px 0;display:f
       <button class="btn btn-solid btn-block" type="submit">Entrar</button>
     </form>
     <form id="fReg" class="field" style="gap:14px" hidden autocomplete="on">
-      <div class="lock-note">🔑 <span>Para registrarte necesitas la <b style="color:var(--text)">clave de la Comunidad Trikles</b>. Pídela en Cineteca o en Tri-Urban.</span></div>
-      <div class="field"><label for="rClave">Clave de la comunidad</label><input id="rClave" required autocomplete="off" spellcheck="false"></div>
+      <input id="rClave" type="hidden">
       <div class="field"><label for="rNombre">Nombre</label><input id="rNombre" required autocomplete="name" maxlength="60"></div>
       <div class="field"><label for="rEmail">Correo</label><input id="rEmail" type="email" required autocomplete="email"></div>
       <div class="field"><label for="rPass">Contraseña (mín. 8)</label><input id="rPass" type="password" required minlength="8" autocomplete="new-password"></div>
       <div class="err" id="rErr"></div>
       <button class="btn btn-accent btn-block" type="submit">Unirme</button>
     </form>
+    </div>
     <div class="demo-hint" id="demoHint" hidden>Modo demo (sin backend): la clave de la comunidad es <b>TRIKLES-DEMO</b>. Los datos viven solo en este navegador.</div>
   </div>
 </section>
@@ -570,6 +579,10 @@ const Demo = (() => {
   }, 3500);
 
   const A = {
+    llave(d) {
+      if (String(d.clave || '').trim().toUpperCase() !== CLAVE) return { ok: false, error: 'Esa no es la llave Trikles.' };
+      const m = who(d.token); return { ok: true, me: m ? pub(m) : null };
+    },
     register(d) {
       if (String(d.clave || '').trim().toUpperCase() !== CLAVE) return { ok: false, error: 'La clave de la comunidad no es correcta.' };
       const email = String(d.email || '').trim().toLowerCase();
@@ -694,6 +707,7 @@ const Demo = (() => {
     run(action, d, token) {
       const fn = A[action]; if (!fn) return { ok: false, error: 'Acción desconocida' };
       if (['register', 'login'].includes(action)) return fn(d);
+      if (action === 'llave') return fn({ ...d, token });
       const m = who(token); if (!m) { logout(true); return { ok: false, error: 'SESION' }; }
       return fn(d, m, token);
     }
@@ -703,7 +717,23 @@ const Demo = (() => {
 /* =====================================================================
    SESIÓN
    ===================================================================== */
-function showGate() { $('#gate').hidden = false; $('#app').hidden = true; $('#demoHint').hidden = !DEMO; }
+// La llave Trikles se pide en cada carga de la página (vive solo en memoria, nunca se guarda).
+let llaveAbierta = false;
+function showGate() {
+  $('#gate').hidden = false; $('#app').hidden = true; $('#demoHint').hidden = !DEMO;
+  $('#fLlave').hidden = llaveAbierta; $('#authStep').hidden = !llaveAbierta;
+  setTimeout(() => (llaveAbierta ? $('#lEmail') : $('#kLlave')).focus(), 50);
+}
+$('#fLlave').onsubmit = async e => {
+  e.preventDefault(); $('#kErr').textContent = '';
+  const clave = $('#kLlave').value;
+  const j = await busy(e.submitter || $('#fLlave button'), 'Abriendo…', () => api('llave', { clave }));
+  if (!j.ok) { $('#kErr').textContent = j.error; $('#kLlave').select(); return; }
+  llaveAbierta = true; $('#kLlave').value = ''; $('#rClave').value = clave;
+  if (j.me) { S.me = j.me; return enterApp(); } // ya tenía sesión: entra directo
+  if (S.token) { S.token = ''; lsSet(LS.token, ''); }   // sesión vencida
+  showGate();
+};
 async function enterApp() {
   $('#gate').hidden = true; $('#app').hidden = false;
   $('#meBtn').textContent = iniciales(S.me.Nombre);
@@ -736,7 +766,7 @@ $('#fReg').onsubmit = async e => {
   try {
     const j = await api('register', { clave: $('#rClave').value, nombre: $('#rNombre').value, email: $('#rEmail').value, password: $('#rPass').value });
     if (!j.ok) { $('#rErr').textContent = j.error; return; }
-    S.token = j.token; S.me = j.me; lsSet(LS.token, j.token); $('#rPass').value = ''; $('#rClave').value = '';
+    S.token = j.token; S.me = j.me; lsSet(LS.token, j.token); $('#rPass').value = '';
     toast('¡Bienvenido a la comunidad, ' + S.me.Nombre.split(' ')[0] + '!'); enterApp();
   } catch (err) { $('#rErr').textContent = 'No hay conexión. Intenta de nuevo.'; } finally { btn.disabled = false; }
 };
@@ -1414,9 +1444,7 @@ async function admBorrarComentario(id, btn) {
    ===================================================================== */
 (async function init() {
   saveCart();
-  if (!S.token) return showGate();
-  try { const j = await api('me'); if (j.ok) { S.me = j.me; return enterApp(); } } catch (_) {}
-  showGate();
+  showGate(); // siempre empieza pidiendo la llave Trikles; si hay sesión, la llave la reanuda
 })();
 </script>
 </body>
