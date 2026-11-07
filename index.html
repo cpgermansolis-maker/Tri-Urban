@@ -254,6 +254,13 @@ main{max-width:1320px;margin:0 auto;padding:0 var(--gut) 120px}
 .pay-box .row{display:flex;justify-content:space-between;gap:10px;font-size:14px}
 .wa{background:#25D366;color:#06210f}
 
+/* ---------- sobre pedido ---------- */
+.tag-mini.pre{background:var(--acid);color:var(--bg);font-weight:700}
+.pre-line{font-size:12px;color:var(--acid);margin-top:-6px}
+.pre-box{border:1px solid var(--acid);background:rgba(215,255,61,.06);border-radius:var(--r);padding:14px;display:grid;gap:8px}
+.pre-box .row{display:flex;justify-content:space-between;gap:10px;font-size:14px}
+.pre-tag{display:inline-block;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--acid);border:1px solid var(--acid);padding:2px 6px;border-radius:2px;margin-left:4px}
+
 /* ---------- panel admin ---------- */
 .btn-sm{padding:8px 12px;font-size:11px}
 .st{display:inline-block;font-size:10px;letter-spacing:.16em;text-transform:uppercase;padding:4px 8px;border-radius:2px;font-weight:700}
@@ -408,6 +415,19 @@ function fmtRest(ms) {
   const s = Math.floor(ms / 1000), d = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600), m = Math.floor(s % 3600 / 60), ss = s % 60;
   return d ? `${d}d ${h}h ${m}m` : `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(ss).padStart(2,'0')}`;
 }
+/* ---------- sobre pedido ---------- */
+const MAX_SOBRE_PEDIDO = 10;
+const hoyISO = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
+function fmtDia(iso, largo) {
+  if (!iso) return '';
+  const [y, m, d] = String(iso).slice(0, 10).split('-').map(Number); if (!y) return '';
+  return new Date(y, m - 1, d).toLocaleDateString('es-MX', largo ? { weekday: 'long', day: 'numeric', month: 'long' } : { day: 'numeric', month: 'short' });
+}
+const siBool = v => v === true || String(v).toUpperCase() === 'TRUE';
+// agotado + sobre pedido activo + dentro de la fecha máxima (inclusive)
+const sobrePedido = p => +p.Stock <= 0 && siBool(p.Sobre_Pedido) && !!p.Pedido_Hasta && String(p.Pedido_Hasta).slice(0, 10) >= hoyISO();
+const maxPiezas = p => sobrePedido(p) ? MAX_SOBRE_PEDIDO : Math.max(0, +p.Stock);
+const preTag = i => i.SobrePedido ? ` <span class="pre-tag">Sobre pedido${i.Llegada ? ' · llega ' + fmtDia(i.Llegada) : ''}</span>` : '';
 function ytId(u) {
   u = String(u || '').trim(); if (/^[\w-]{11}$/.test(u)) return u;
   const m = u.match(/(?:youtu\.be\/|v=|\/live\/|\/embed\/|\/shorts\/)([\w-]{11})/); return m ? m[1] : '';
@@ -522,7 +542,7 @@ const Demo = (() => {
         { id:'p3', Tipo:'prenda', Nombre:'Cargo Ruta 119', Descripcion:'Gabardina pesada, seis bolsas, ajuste en tobillo.', Precio:1450, Tallas:'28,30,32,34', Stock:8 },
         { id:'p4', Tipo:'prenda', Nombre:'Tee Concreto', Descripcion:'Lavado piedra, caída boxy. Cada pieza toma un tono distinto.', Precio:620, Tallas:'S,M,L', Stock:15 },
         { id:'p5', Tipo:'prenda', Nombre:'Chamarra Noche Tlaxcala', Descripcion:'Coach jacket impermeable con forro de malla, estampado reflejante.', Precio:2400, Tallas:'M,L,XL', Stock:5 },
-        { id:'p6', Tipo:'prenda', Nombre:'Crewneck Sala 2', Descripcion:'Sudadera de cuello redondo inspirada en la sala 2 de Cineteca.', Precio:1100, Tallas:'S,M,L,XL', Stock:0 },
+        { id:'p6', Tipo:'prenda', Nombre:'Crewneck Sala 2', Descripcion:'Sudadera de cuello redondo inspirada en la sala 2 de Cineteca.', Precio:1100, Tallas:'S,M,L,XL', Stock:0, Sobre_Pedido:true, Pedido_Hasta:new Date(now + 10*24*H).toISOString().slice(0,10), Pedido_Llegada:new Date(now + 25*24*H).toISOString().slice(0,10) },
         { id:'c1', Tipo:'colab', Nombre:'Ruido Blanco', Artista_ID:'a1', Precio:4800, Edicion:'1/5', Tallas:'M,L', Stock:3,
           Descripcion:'Tee Tri-Urban intervenida a mano con stencil y aerosol.', Obra_Desc:'“Escribí sobre la tela lo que la ciudad me grita de noche. Cada capa de pintura es una calle que caminé.” Tres capas de stencil, aerosol y marcador textil. Firmada por dentro.' },
         { id:'c2', Tipo:'colab', Nombre:'Fotograma 24', Artista_ID:'a2', Precio:6500, Edicion:'1/3', Tallas:'L', Stock:1,
@@ -652,15 +672,16 @@ const Demo = (() => {
       let total = 0; const items = [];
       for (const it of d.items || []) {
         const p = db.productos.find(x => x.id === it.id); if (!p) continue;
-        const q = Math.max(1, Math.floor(+it.qty || 1));
-        if (+p.Stock < q) return { ok: false, error: 'Ya no hay suficiente de “' + p.Nombre + '”.' };
-        total += p.Precio * q; items.push({ id: p.id, Nombre: p.Nombre, Talla: it.talla || '', qty: q, Precio: p.Precio });
+        const q = Math.max(1, Math.floor(+it.qty || 1)), pre = sobrePedido(p);
+        if (pre && q > MAX_SOBRE_PEDIDO) return { ok: false, error: 'Puedes reservar hasta ' + MAX_SOBRE_PEDIDO + ' piezas de “' + p.Nombre + '”.' };
+        if (!pre && +p.Stock < q) return { ok: false, error: 'Ya no hay suficiente de “' + p.Nombre + '”.' };
+        total += p.Precio * q; items.push({ id: p.id, Nombre: p.Nombre, Talla: it.talla || '', qty: q, Precio: p.Precio, ...(pre ? { SobrePedido: true, Llegada: p.Pedido_Llegada } : {}) });
       }
       if (!items.length) return { ok: false, error: 'Tu carrito está vacío.' };
-      items.forEach(it => { db.productos.find(x => x.id === it.id).Stock -= it.qty; });
+      items.filter(it => !it.SobrePedido).forEach(it => { db.productos.find(x => x.id === it.id).Stock -= it.qty; });
       const folio = 'TU-' + String(db.pedidos.length + 1).padStart(4, '0');
       db.pedidos.push({ folio, Miembro_ID: m.id, items, total, Estado: 'Pendiente', Fecha: Date.now() }); save();
-      return { ok: true, folio, total, config: db.config };
+      return { ok: true, folio, total, config: db.config, sobrePedido: items.filter(i => i.SobrePedido) };
     },
   };
   /* ---- miembro: mis pedidos ---- */
@@ -682,7 +703,7 @@ const Demo = (() => {
     adminDelete(d) { const k = TAB[d.tabla]; if (!k) return { ok: false }; db[k] = db[k].filter(x => x.id !== d.id); save(); return { ok: true }; },
     adminPedido(d) {
       const p = db.pedidos.find(x => x.folio === d.folio); if (!p) return { ok: false, error: 'No encontrado' };
-      if (d.estado === 'Cancelado' && p.Estado !== 'Cancelado') p.items.forEach(it => { const pr = db.productos.find(x => x.id === it.id); if (pr) pr.Stock = +pr.Stock + it.qty; });
+      if (d.estado === 'Cancelado' && p.Estado !== 'Cancelado') p.items.filter(it => !it.SobrePedido).forEach(it => { const pr = db.productos.find(x => x.id === it.id); if (pr) pr.Stock = +pr.Stock + it.qty; });
       p.Estado = d.estado; save(); return { ok: true };
     },
     adminMiembro(d, m) {
@@ -853,10 +874,11 @@ function vInicio() {
 }
 
 function prodCard(p) {
-  const agot = +p.Stock <= 0;
+  const agot = +p.Stock <= 0, pre = sobrePedido(p);
   return `<article class="card" onclick="openProducto('${p.id}')" tabindex="0" onkeydown="if(event.key==='Enter')this.click()">
-    <div class="media">${media(p)}${agot ? '<span class="tag-mini sold">Agotado</span>' : +p.Stock <= 3 ? '<span class="tag-mini">Últimas piezas</span>' : ''}</div>
+    <div class="media">${media(p)}${pre ? '<span class="tag-mini pre">Sobre pedido</span>' : agot ? '<span class="tag-mini sold">Agotado</span>' : +p.Stock <= 3 ? '<span class="tag-mini">Últimas piezas</span>' : ''}</div>
     <div class="meta"><span class="name">${esc(p.Nombre)}</span><span class="price">${money(p.Precio)}</span></div>
+    ${pre ? `<div class="pre-line">Reserva hasta el ${fmtDia(p.Pedido_Hasta)}${p.Pedido_Llegada ? ' · llega el ' + fmtDia(p.Pedido_Llegada) : ''}</div>` : ''}
   </article>`;
 }
 let tiendaFiltro = 'todo';
@@ -1011,7 +1033,7 @@ function openProducto(id) {
   const p = P().find(x => x.id === id); if (!p) return;
   const tallas = String(p.Tallas || '').split(',').map(t => t.trim()).filter(Boolean);
   selTalla = tallas.length === 1 ? tallas[0] : '';
-  const agot = +p.Stock <= 0, a = p.Artista_ID ? artistaById(p.Artista_ID) : null;
+  const pre = sobrePedido(p), agot = maxPiezas(p) <= 0, a = p.Artista_ID ? artistaById(p.Artista_ID) : null;
   const artistBox = a ? `<div class="artist-box" onclick="openArtista('${a.id}')"><div class="ava">${media(a, 'artista')}</div>
       <div style="flex:1"><div class="kicker" style="color:var(--gold)">${p.Tipo === 'obra' ? 'Obra de' : 'Intervenida por'}</div><div class="it" style="font-size:24px">${esc(a.Nombre)}</div><div class="mute" style="font-size:13px">${esc(a.Disciplina || '')}</div></div><span>→</span></div>` : '';
   openModal(`<div class="detail">
@@ -1025,7 +1047,11 @@ function openProducto(id) {
         : `<div class="price" style="font-size:26px">${money(p.Precio)}</div><p class="mute">${esc(p.Descripcion || '')}</p>`}
       ${p.Tipo === 'obra' ? `<div class="price" style="font-size:26px">${money(p.Precio)}</div>${artistBox}` : ''}
       ${tallas.length ? `<div><div class="kicker" style="margin-bottom:8px">Talla</div><div class="sizes">${tallas.map(t => `<button class="${t === selTalla ? 'on' : ''}" onclick="selTalla='${esc(t)}';$$('.sizes button').forEach(b=>b.classList.toggle('on',b.textContent==='${esc(t)}'))">${esc(t)}</button>`).join('')}</div></div>` : ''}
-      <button class="btn ${p.Tipo === 'colab' ? 'btn-gold' : 'btn-solid'} btn-block" ${agot ? 'disabled' : ''} onclick="addCart('${p.id}',${tallas.length ? 'true' : 'false'})">${agot ? (p.Tipo === 'obra' ? 'Vendida' : 'Agotado') : 'Agregar al carrito'}</button>
+      ${pre ? `<div class="pre-box"><div class="kicker" style="color:var(--acid)">📦 Sobre pedido</div>
+        <p style="font-size:14px">Se agotó, pero puedes reservarla. Te la apartamos en cuanto llegue.</p>
+        <div class="row"><span class="mute">Reservaciones hasta</span><b>${fmtDia(p.Pedido_Hasta, true)}</b></div>
+        ${p.Pedido_Llegada ? `<div class="row"><span class="mute">Llega a la tienda</span><b>${fmtDia(p.Pedido_Llegada, true)}</b></div>` : ''}</div>` : ''}
+      <button class="btn ${p.Tipo === 'colab' ? 'btn-gold' : 'btn-solid'} btn-block" ${agot ? 'disabled' : ''} onclick="addCart('${p.id}',${tallas.length ? 'true' : 'false'})">${pre ? 'Reservar sobre pedido' : agot ? (p.Tipo === 'obra' ? 'Vendida' : 'Agotado') : 'Agregar al carrito'}</button>
       ${+p.Stock > 0 && +p.Stock <= 3 ? `<div class="mute" style="font-size:13px">Quedan ${p.Stock}.</div>` : ''}
     </div></div>`);
 }
@@ -1112,16 +1138,16 @@ function addCart(id, needTalla) {
   if (needTalla && !selTalla) return toast('Elige una talla');
   const p = P().find(x => x.id === id), key = id + '|' + (needTalla ? selTalla : '');
   const it = S.cart.find(x => x.key === key), enCarrito = S.cart.filter(x => x.id === id).reduce((a, b) => a + b.qty, 0);
-  if (enCarrito >= +p.Stock) return toast('No hay más piezas disponibles');
+  if (enCarrito >= maxPiezas(p)) return toast(sobrePedido(p) ? 'Puedes reservar hasta ' + MAX_SOBRE_PEDIDO + ' piezas' : 'No hay más piezas disponibles');
   if (it) it.qty++; else S.cart.push({ key, id, talla: needTalla ? selTalla : '', qty: 1 });
-  saveCart(); closeModal(); toast('Agregado: ' + p.Nombre);
+  saveCart(); closeModal(); toast((sobrePedido(p) ? 'Reservado: ' : 'Agregado: ') + p.Nombre);
 }
 function openCart() {
   const lines = S.cart.map((it, i) => { const p = P().find(x => x.id === it.id); return p ? { ...it, p, i } : null; }).filter(Boolean);
   const total = lines.reduce((a, l) => a + l.p.Precio * l.qty, 0);
   openModal(`<div class="pad"><h3 class="disp" style="font-size:40px">Tu carrito</h3>
     ${lines.length ? lines.map(l => `<div class="cart-line"><div class="th">${media(l.p)}</div>
-      <div><div style="font-weight:500">${esc(l.p.Nombre)}</div><div class="mute" style="font-size:13px">${l.talla ? 'Talla ' + esc(l.talla) + ' · ' : ''}${money(l.p.Precio)}</div>
+      <div><div style="font-weight:500">${esc(l.p.Nombre)}</div><div class="mute" style="font-size:13px">${l.talla ? 'Talla ' + esc(l.talla) + ' · ' : ''}${money(l.p.Precio)}</div>${sobrePedido(l.p) ? preTag({ SobrePedido: true, Llegada: l.p.Pedido_Llegada }) : ''}
       <div class="qty" style="margin-top:6px"><button onclick="cartQty(${l.i},-1)" aria-label="Menos">−</button><span style="min-width:22px;text-align:center">${l.qty}</span><button onclick="cartQty(${l.i},1)" aria-label="Más">+</button></div></div>
       <div class="price">${money(l.p.Precio * l.qty)}</div></div>`).join('') + `<div class="total-row"><span>Total</span><span>${money(total)}</span></div>
       <button class="btn btn-accent btn-block" onclick="checkout(this)">Hacer pedido</button>
@@ -1130,7 +1156,7 @@ function openCart() {
 }
 function cartQty(i, d) {
   const it = S.cart[i], p = P().find(x => x.id === it.id);
-  if (d > 0 && S.cart.filter(x => x.id === it.id).reduce((a, b) => a + b.qty, 0) >= +p.Stock) return toast('No hay más piezas disponibles');
+  if (d > 0 && S.cart.filter(x => x.id === it.id).reduce((a, b) => a + b.qty, 0) >= maxPiezas(p)) return toast(sobrePedido(p) ? 'Puedes reservar hasta ' + MAX_SOBRE_PEDIDO + ' piezas' : 'No hay más piezas disponibles');
   it.qty += d; if (it.qty <= 0) S.cart.splice(i, 1); saveCart(); openCart();
 }
 async function checkout(btn) {
@@ -1141,7 +1167,8 @@ async function checkout(btn) {
   const c = r.config || {}, wa = String(c.Pago_WhatsApp || '').replace(/\D/g, '').slice(-10);
   const msg = encodeURIComponent(`Hola Tri-Urban, envío comprobante de mi pedido ${r.folio} por ${money(r.total)}.`);
   openModal(`<div class="pad"><div class="kicker">Pedido apartado</div><h3 class="disp" style="font-size:44px">${esc(r.folio)}</h3>
-    <p>Transfiere <b>${money(r.total)}</b> y mándanos tu comprobante. Tus piezas quedan apartadas 48 horas.</p>
+    <p>Transfiere <b>${money(r.total)}</b> y mándanos tu comprobante. ${(r.sobrePedido || []).length < 1 ? 'Tus piezas quedan apartadas 48 horas.' : 'Tu reservación queda confirmada al recibir tu pago.'}</p>
+    ${(r.sobrePedido || []).length ? `<div class="pre-box"><div class="kicker" style="color:var(--acid)">📦 Sobre pedido</div>${r.sobrePedido.map(i => `<div class="row"><span>${i.qty}× ${esc(i.Nombre)}</span><b>${i.Llegada ? 'llega el ' + fmtDia(i.Llegada) : 'por confirmar'}</b></div>`).join('')}<div class="mute" style="font-size:12px">Te avisamos cuando lleguen a la tienda.</div></div>` : ''}
     <div class="pay-box"><div class="row"><span class="mute">Banco</span><b>${esc(c.Pago_Banco || '')}</b></div><div class="row"><span class="mute">Titular</span><b>${esc(c.Pago_Titular || '')}</b></div>
       <div class="row"><span class="mute">Cuenta</span><b>${esc(c.Pago_Numero || '')}</b></div><div class="row"><span class="mute">Concepto</span><b>${esc(r.folio)}</b></div></div>
     ${wa ? `<a class="btn wa btn-block" href="https://wa.me/52${wa}?text=${msg}" target="_blank" rel="noopener">Enviar comprobante por WhatsApp</a>` : ''}
@@ -1227,7 +1254,7 @@ async function openMisPedidos() {
   openModal(`<div class="pad"><h3 class="disp" style="font-size:40px">Mis pedidos</h3>
     ${j.pedidos.map(p => `<div class="ord"><div class="ord-h"><b>${esc(p.folio)}</b>${pillEstado(p.Estado)}</div>
       <div class="mute" style="font-size:13px">${new Date(+p.Fecha).toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
-      <ul class="ord-items">${p.items.map(i => `<li>${i.qty}× ${esc(i.Nombre)}${i.Talla ? ' · ' + esc(i.Talla) : ''}</li>`).join('')}</ul>
+      <ul class="ord-items">${p.items.map(i => `<li>${i.qty}× ${esc(i.Nombre)}${i.Talla ? ' · ' + esc(i.Talla) : ''}${preTag(i)}</li>`).join('')}</ul>
       <div class="ord-h"><span class="mute">Total</span><b>${money(p.total)}</b></div>
       ${p.Estado === 'Pendiente' ? `<div class="mute" style="font-size:12px">Transfiere a ${esc(j.config.Pago_Banco || '')} · ${esc(j.config.Pago_Numero || '')} con concepto ${esc(p.folio)}.</div>` : ''}</div>`).join('') || '<div class="empty">Aún no tienes pedidos.</div>'}
   </div>`, true);
@@ -1249,6 +1276,9 @@ const FORMS = {
     ['Edicion', 'Edición (ej. 1/5, Pieza única)', 'text', null, 'colab'],
     ['Tecnica', 'Técnica', 'text', null, 'obra'], ['Medidas', 'Medidas', 'text', null, 'obra'],
     ['Tallas', 'Tallas separadas por coma (ej. S,M,L)', 'text', null, 'prenda,colab'],
+    ['Sobre_Pedido', 'Permitir “sobre pedido” cuando se agote', 'bool'],
+    ['Pedido_Hasta', 'Fecha máxima para reservar', 'date', null, null, 'pre'],
+    ['Pedido_Llegada', 'Fecha en que llega a la tienda física', 'date', null, null, 'pre'],
     ['Orden', 'Orden (menor = primero)', 'number'], ['Activo', 'Visible en la tienda', 'bool'],
   ],
   Artistas: [
@@ -1296,7 +1326,7 @@ function admPedidos() {
       <div class="ord-h"><b style="font-size:18px">${esc(p.folio)}</b>${pillEstado(p.Estado)}</div>
       <div><b>${esc(p.Nombre)}</b> <span class="mute">· ${esc(p.Email || '')}</span></div>
       <div class="mute" style="font-size:12px">${new Date(+p.Fecha).toLocaleString('es-MX', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</div>
-      <ul class="ord-items">${p.items.map(i => `<li>${i.qty}× ${esc(i.Nombre)}${i.Talla ? ' · ' + esc(i.Talla) : ''} <span class="mute">${money(i.Precio * i.qty)}</span></li>`).join('')}</ul>
+      <ul class="ord-items">${p.items.map(i => `<li>${i.qty}× ${esc(i.Nombre)}${i.Talla ? ' · ' + esc(i.Talla) : ''} <span class="mute">${money(i.Precio * i.qty)}</span>${preTag(i)}</li>`).join('')}</ul>
       <div class="ord-h"><span class="mute">Total</span><b>${money(p.total)}</b></div>
       <div class="adm-act">${p.Estado === 'Pendiente' ? btn(p, 'Pagado', 'Marcar pagado', 'btn-solid') : ''}${p.Estado === 'Pagado' ? btn(p, 'Entregado', 'Marcar entregado', 'btn-solid') : ''}${p.Estado !== 'Cancelado' && p.Estado !== 'Entregado' ? btn(p, 'Cancelado', 'Cancelar') : ''}</div>
     </div>`).join('') || '<div class="empty">No hay pedidos aquí.</div>'}</div>`;
@@ -1316,7 +1346,7 @@ function admLista(tabla, rows, cols) {
         <button class="btn btn-ghost btn-sm" onclick="admBorrar('${tabla}','${r.id}')" aria-label="Borrar">✕</button></div>
     </div>`).join('') || '<div class="empty">Nada por aquí todavía.</div>'}</div>`;
 }
-const admProductos = () => admLista('Productos', ADM.productos, p => `<b>${esc(p.Nombre)}</b><div class="mute" style="font-size:13px">${{ prenda: 'Prenda', colab: 'Colab', obra: 'Obra' }[p.Tipo] || p.Tipo} · ${money(p.Precio)} · ${p.Stock} pzas${p.Artista_ID ? ' · ' + esc(nombreArtista(p.Artista_ID)) : ''}${p.Activo === false ? ' · oculto' : ''}</div>`);
+const admProductos = () => admLista('Productos', ADM.productos, p => `<b>${esc(p.Nombre)}</b><div class="mute" style="font-size:13px">${{ prenda: 'Prenda', colab: 'Colab', obra: 'Obra' }[p.Tipo] || p.Tipo} · ${money(p.Precio)} · ${p.Stock} pzas${p.Artista_ID ? ' · ' + esc(nombreArtista(p.Artista_ID)) : ''}${p.Activo === false ? ' · oculto' : ''}${siBool(p.Sobre_Pedido) ? ' · 📦 sobre pedido hasta ' + fmtDia(p.Pedido_Hasta) + (sobrePedido(p) ? '' : +p.Stock > 0 ? ' (hay stock)' : ' (vencido)') : ''}</div>`);
 const admArtistas = () => admLista('Artistas', ADM.artistas, a => `<b>${esc(a.Nombre)}</b><div class="mute" style="font-size:13px">${esc(a.Origen || '')} · ${esc(a.Disciplina || '')}${a.Activo === false ? ' · oculto' : ''}</div>`);
 const admSubastas = () => admLista('Subastas', ADM.subastas, s => `<b>${esc(s.Titulo)}</b><div class="mute" style="font-size:13px">${esc(s.Estado)} · ${s.Actual ? 'va en ' + money(s.Actual) + ' (' + esc(s.Lider) + ')' : 'salida ' + money(s.Precio_Inicial)} · ${s.Pujas} pujas</div><div class="cd" data-end="${s.Fin}" style="text-align:left;font-size:13px"></div>`);
 async function admCerrar(id) {
@@ -1332,13 +1362,14 @@ async function admBorrar(tabla, id) {
 function admEditar(tabla, id) {
   const lista = { Productos: ADM.productos, Artistas: ADM.artistas, Subastas: ADM.subastas }[tabla];
   const o = id ? lista.find(x => x.id === id) : { Activo: true, Tipo: tabla === 'Subastas' ? 'colab' : 'prenda', Origen: 'Tri-Urban', Estado: 'Activa', Incremento: 100, Inicio: Date.now(), Fin: Date.now() + 3 * 864e5, Stock: 1 };
-  const campo = ([k, label, type, opts, show]) => {
-    const v = o[k] ?? '', sh = show ? ` data-show="${show}"` : '';
+  const campo = ([k, label, type, opts, show, grupo]) => {
+    const v = o[k] ?? '', sh = (show ? ` data-show="${show}"` : '') + (grupo ? ` data-grupo="${grupo}"` : '');
     let inp;
     if (type === 'textarea') inp = `<textarea name="${k}" rows="3">${esc(v)}</textarea>`;
     else if (type === 'select') inp = `<select name="${k}">${opts.map(([val, l]) => `<option value="${val}" ${val === v ? 'selected' : ''}>${l}</option>`).join('')}</select>`;
     else if (type === 'artista') inp = `<select name="${k}"><option value="">—</option>${ADM.artistas.map(a => `<option value="${a.id}" ${a.id === v ? 'selected' : ''}>${esc(a.Nombre)}</option>`).join('')}</select>`;
-    else if (type === 'bool') return `<label class="toggle"${sh}><input type="checkbox" name="${k}" ${v !== false ? 'checked' : ''}> ${label}</label>`;
+    else if (type === 'bool') return `<label class="toggle"${sh}><input type="checkbox" name="${k}" ${(v === '' || v == null ? k === 'Activo' : siBool(v)) ? 'checked' : ''}> ${label}</label>`;
+    else if (type === 'date') inp = `<input type="date" name="${k}" value="${esc(String(v).slice(0, 10))}">`;
     else if (type === 'datetime') inp = `<input type="datetime-local" name="${k}" value="${toLocalDT(v)}">`;
     else if (type === 'image') inp = `<div class="img-up"><div class="th" id="prev_${k}">${v ? `<img src="${esc(imgUrl(v))}" alt="">` : ''}</div>
         <div style="flex:1;display:grid;gap:8px"><label class="btn btn-ghost btn-sm" style="cursor:pointer">Subir foto<input type="file" accept="image/*" hidden onchange="admSubir(this,'${k}')"></label>
@@ -1355,6 +1386,8 @@ function admEditar(tabla, id) {
   const f = $('#admForm'), tipo = f.elements.Tipo;
   const vis = () => $$('[data-show]', f).forEach(el => el.hidden = tabla === 'Productos' && !el.dataset.show.split(',').includes(tipo.value));
   if (tipo) { tipo.onchange = vis; vis(); }
+  const sp = f.elements.Sobre_Pedido, visPre = () => $$('[data-grupo="pre"]', f).forEach(el => el.hidden = !sp.checked);
+  if (sp) { sp.addEventListener('change', visPre); visPre(); }
   const leer = () => {
     const obj = { id: id || '' };
     FORMS[tabla].forEach(([k, , type]) => {
@@ -1370,6 +1403,10 @@ function admEditar(tabla, id) {
     const obj = leer();
     if (!obj.Nombre && !obj.Titulo) return toast('Falta el nombre');
     if (tabla === 'Subastas' && obj.Fin <= obj.Inicio) return toast('El cierre debe ser después de la apertura');
+    if (obj.Sobre_Pedido) {
+      if (!obj.Pedido_Hasta || !obj.Pedido_Llegada) return toast('Pon la fecha máxima para reservar y la fecha de llegada');
+      if (obj.Pedido_Llegada < obj.Pedido_Hasta) return toast('La llegada no puede ser antes de la fecha máxima para reservar');
+    }
     const r = await busy($('#admSave'), 'Guardando…', () => api('adminSave', { tabla, obj }));
     if (!r.ok) { BORRADORES[claveBorrador] = obj; return toast(r.error || 'No se pudo guardar'); }
     delete BORRADORES[claveBorrador]; f.dataset.dirty = ''; closeModal(); toast('Guardado ✓'); refreshAll();
