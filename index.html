@@ -320,6 +320,27 @@ main{max-width:1320px;margin:0 auto;padding:0 var(--gut) 120px}
 .dm-form .btn{flex:none;padding:0 18px;height:44px}
 @media (max-width:900px){.people{grid-template-columns:minmax(0,1fr)}.chat-dm{height:86vh}.top-act{gap:4px}.icon-btn{width:38px;height:38px}}
 
+/* ---------- bienvenida ---------- */
+.ob-dots{display:flex;gap:6px}
+.ob-dots i{flex:1;height:4px;border-radius:2px;background:var(--line);transition:background .3s}
+.ob-dots i.on{background:var(--gold)}
+.ob-step{display:grid;gap:14px;animation:fadeIn .25s}
+.ob-foto{display:flex;flex-direction:column;align-items:center;gap:12px;padding:8px 0}
+.ob-foto .th{width:120px;height:120px;border-radius:50%;overflow:hidden;border:2px solid var(--gold);display:grid;place-items:center;background:var(--bg2)}
+.ob-foto .th img{width:100%;height:100%;object-fit:cover}
+.ob-foto .th .ava-c{border:0}
+.ob-opt{display:flex;gap:12px;align-items:center;padding:14px;border:1px solid var(--line);border-radius:var(--r);cursor:pointer;transition:border-color .15s,background .15s}
+.ob-opt input{position:absolute;opacity:0;pointer-events:none;width:1px}
+.ob-opt.on{border-color:var(--gold);background:rgba(201,168,106,.08)}
+.ob-opt:focus-within{outline:2px solid var(--acid);outline-offset:2px}
+.ob-ico{font-size:26px}
+.ob-check{width:24px;height:24px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;color:transparent;font-size:13px;flex:none}
+.ob-opt.on .ob-check{background:var(--gold);border-color:var(--gold);color:#17120b}
+.ob-sub{display:grid;gap:12px;padding:0 0 4px 14px;border-left:2px solid var(--gold);margin:-4px 0 4px 18px}
+.ob-nav{display:flex;gap:8px}
+.btn-link{color:var(--mute);font-size:13px;text-decoration:underline;padding:6px;align-self:center}
+.btn-link:hover{color:var(--text)}
+
 /* ---------- panel admin ---------- */
 .btn-sm{padding:8px 12px;font-size:11px}
 .st{display:inline-block;font-size:10px;letter-spacing:.16em;text-transform:uppercase;padding:4px 8px;border-radius:2px;font-weight:700}
@@ -416,6 +437,7 @@ footer{border-top:1px solid var(--line);margin-top:70px;padding:30px 0;display:f
       <div class="field"><label for="rNombre">Nombre</label><input id="rNombre" required autocomplete="name" maxlength="60"></div>
       <div class="field"><label for="rEmail">Correo</label><input id="rEmail" type="email" required autocomplete="email"></div>
       <div class="field"><label for="rPass">Contraseña (mín. 8)</label><input id="rPass" type="password" required minlength="8" autocomplete="new-password"></div>
+      <label class="toggle"><input type="checkbox" id="rArtista"> 🎨 Soy artista</label>
       <div class="err" id="rErr"></div>
       <button class="btn btn-accent btn-block" type="submit">Unirme</button>
     </form>
@@ -906,6 +928,8 @@ async function enterApp() {
   if (DEMO && !$('.demo-flag')) document.body.insertAdjacentHTML('beforeend', '<div class="demo-flag">Demo</div>');
   await loadCatalog();
   route();
+  const nuevo = S.recienLlegado; S.recienLlegado = null;
+  if (nuevo || (!S.me.Foto && !lsGet('tu_onb_' + S.me.id, false))) setTimeout(() => openBienvenida(nuevo ? nuevo.artista : false), 350);
 }
 async function loadCatalog() {
   const j = await api('catalog');
@@ -933,6 +957,7 @@ $('#fReg').onsubmit = async e => {
     const j = await api('register', { clave: $('#rClave').value, nombre: $('#rNombre').value, email: $('#rEmail').value, password: $('#rPass').value });
     if (!j.ok) { $('#rErr').textContent = j.error; return; }
     S.token = j.token; S.me = j.me; lsSet(LS.token, j.token); $('#rPass').value = '';
+    S.recienLlegado = { artista: $('#rArtista').checked }; $('#rArtista').checked = false;
     toast('¡Bienvenido a la comunidad, ' + S.me.Nombre.split(' ')[0] + '!'); enterApp();
   } catch (err) { $('#rErr').textContent = 'No hay conexión. Intenta de nuevo.'; } finally { btn.disabled = false; }
 };
@@ -1542,6 +1567,114 @@ async function openMiPerfil() {
     pintarMeBtn(); toast(r2.equipo === 'Pendiente' && eq !== 'Pendiente' ? 'Perfil guardado. Tu puesto quedó en revisión.' : 'Perfil guardado ✓');
     S.comunidad = null; if (location.hash.startsWith('#comunidad')) loadComunidad();
     openMiPerfil();
+  };
+}
+
+/* ---------- bienvenida: arma tu perfil en 3 pasos ---------- */
+async function openBienvenida(preArtista) {
+  const r = await api('miPerfil'); if (!r.ok) return;
+  const p = r.perfil, nombre1 = esc(String(p.Nombre).split(' ')[0]);
+  const yaArtista = !!p.Artista_ID, yaEquipo = !!p.Equipo_Estado;
+  const opt = (k, ico, tit, sub, on, extra) => `<label class="ob-opt ${on ? 'on' : ''}"><input type="checkbox" name="${k}" ${on ? 'checked' : ''}>
+      <span class="ob-ico">${ico}</span><span style="flex:1"><b>${tit}</b><span class="mute" style="display:block;font-size:13px">${sub}</span></span><span class="ob-check">✓</span></label>${extra}`;
+  openModal(`<form class="pad" id="obForm" data-guard novalidate>
+    <div class="ob-dots"><i class="on"></i><i></i><i></i></div>
+
+    <section class="ob-step" data-step="1">
+      <div class="kicker">Bienvenida · 1 de 3</div>
+      <h3 class="disp" style="font-size:38px">Hola, <span class="it" style="color:var(--gold)">${nombre1}</span></h3>
+      <p class="mute">Armemos tu perfil para que la comunidad te conozca. Toma un minuto.</p>
+      <div class="ob-foto"><div class="th" id="prev_Foto">${p.Foto ? `<img src="${esc(imgUrl(p.Foto))}" alt="">` : avatarHtml(p, 120)}</div>
+        <label class="btn btn-ghost btn-sm" style="cursor:pointer">${p.Foto ? 'Cambiar foto' : '📷 Subir mi foto'}<input type="file" accept="image/*" hidden onchange="subirFoto(this,'Foto','obForm','obNext','subirMiFoto')"></label>
+        <input type="hidden" name="Foto" value="${esc(p.Foto || '')}"></div>
+      <div class="field"><label for="ob_Nombre">¿Cómo quieres que te llamen?</label><input id="ob_Nombre" name="Nombre" value="${esc(p.Nombre || '')}" maxlength="60" autocomplete="name"></div>
+    </section>
+
+    <section class="ob-step" data-step="2" hidden>
+      <div class="kicker">Bienvenida · 2 de 3</div>
+      <h3 class="disp" style="font-size:38px">Cuéntanos <span class="it" style="color:var(--gold)">de ti</span></h3>
+      <div class="field"><label for="ob_Bio">Sobre mí</label><textarea id="ob_Bio" name="Bio" rows="4" maxlength="800" placeholder="¿Quién eres? ¿Qué te trae a la comunidad?">${esc(p.Bio || '')}</textarea></div>
+      <div class="field"><label for="ob_Instagram">Instagram (opcional)</label><input id="ob_Instagram" name="Instagram" value="${esc(p.Instagram || '')}" placeholder="@tuusuario" autocapitalize="off"></div>
+      <div class="field"><label for="ob_Facebook">Facebook (opcional)</label><input id="ob_Facebook" name="Facebook" value="${esc(p.Facebook || '')}" placeholder="tu usuario o enlace" autocapitalize="off"></div>
+    </section>
+
+    <section class="ob-step" data-step="3" hidden>
+      <div class="kicker">Bienvenida · 3 de 3</div>
+      <h3 class="disp" style="font-size:38px">¿Qué eres en <span class="it" style="color:var(--gold)">la comunidad?</span></h3>
+      <p class="mute">Marca lo que aplique. Puedes cambiarlo cuando quieras desde tu perfil.</p>
+      ${yaArtista ? '<div class="st-box ok">🎨 <span>Ya tienes perfil de artista. Lo editas desde <b>Mi perfil</b>.</span></div>'
+        : opt('Artista', '🎨', 'Soy artista', 'Muestra tu obra en la sección Artistas y transmite en vivo.', !!preArtista,
+          `<div class="ob-sub" id="obArt" ${preArtista ? '' : 'hidden'}>
+            <div class="field"><label for="ob_ArtNombre">Nombre artístico</label><input id="ob_ArtNombre" name="ArtNombre" maxlength="60" placeholder="Si es distinto a tu nombre"></div>
+            <div class="field"><label for="ob_Disciplina">Disciplina</label><input id="ob_Disciplina" name="Disciplina" maxlength="80" placeholder="Ej. Grafiti, fotografía, tatuaje, música"></div>
+            <div class="field"><label for="ob_Origen">Comunidad</label><select id="ob_Origen" name="Origen"><option>Tri-Urban</option><option>Cineteca Trikles</option></select></div>
+          </div>`)}
+      ${opt('Equipo', '⭐', 'Soy parte del equipo Trikles', 'Trabajo en Cineteca Trikles o en Tri-Urban.', yaEquipo,
+        `<div class="ob-sub" id="obEq" ${yaEquipo ? '' : 'hidden'}><div class="field"><label for="ob_Puesto">Mi puesto</label><input id="ob_Puesto" name="Puesto" value="${esc(p.Puesto || '')}" maxlength="80" placeholder="Ej. Coordinación de programación"></div></div>`)}
+      <div class="mute" style="font-size:12px">El perfil de artista y el puesto los revisa el equipo antes de mostrarse. Si no marcas nada, eres parte de la comunidad.</div>
+    </section>
+
+    <div class="ob-nav">
+      <button type="button" class="btn btn-ghost" id="obBack" hidden>← Atrás</button>
+      <button type="submit" class="btn btn-gold" id="obNext" style="flex:1">Siguiente</button>
+    </div>
+    <button type="button" class="btn-link" id="obSkip">Lo hago después</button>
+  </form>`, true);
+
+  const fm = $('#obForm'); let paso = 1;
+  const marcarVisto = () => lsSet('tu_onb_' + S.me.id, true);
+  marcarVisto(); // se muestra una sola vez por equipo; después se edita desde Mi perfil
+  const ir = n => {
+    paso = n;
+    $$('.ob-step', fm).forEach(sct => sct.hidden = +sct.dataset.step !== n);
+    $$('.ob-dots i', fm).forEach((d, i) => d.classList.toggle('on', i < n));
+    $('#obBack').hidden = n === 1; $('#obNext').textContent = n === 3 ? 'Terminar' : 'Siguiente';
+    $('#sheet').scrollTop = 0;
+  };
+  $$('.ob-opt input', fm).forEach(cb => cb.addEventListener('change', () => {
+    cb.closest('.ob-opt').classList.toggle('on', cb.checked);
+    const sub = cb.name === 'Artista' ? $('#obArt') : $('#obEq'); if (sub) sub.hidden = !cb.checked;
+    if (cb.checked && sub) setTimeout(() => sub.querySelector('input').focus(), 50);
+  }));
+  $('#obBack').onclick = () => ir(paso - 1);
+  $('#obSkip').onclick = () => { marcarVisto(); fm.dataset.dirty = ''; closeModal(); toast('Cuando quieras, lo completas en Mi perfil'); };
+  fm.onsubmit = async e => {
+    e.preventDefault();
+    if (fm.dataset.subiendo === '1') return toast('Espera a que termine de subir la foto');
+    const el = fm.elements;
+    if (paso === 1) { if (!el.Nombre.value.trim()) return toast('Escribe tu nombre'); return ir(2); }
+    if (paso === 2) {
+      if (redUrl(el.Instagram.value, 'https://instagram.com/') === null) return toast('Revisa tu Instagram: pon tu @usuario o el enlace completo');
+      if (redUrl(el.Facebook.value, 'https://facebook.com/') === null) return toast('Revisa tu Facebook: pon tu usuario o el enlace completo');
+      return ir(3);
+    }
+    const art = el.Artista && el.Artista.checked, eq = el.Equipo.checked;
+    if (eq && !el.Puesto.value.trim()) return toast('Escribe tu puesto en el equipo');
+    const base = { Nombre: el.Nombre.value.trim(), Foto: el.Foto.value, Bio: el.Bio.value.trim(),
+      Instagram: redUrl(el.Instagram.value, 'https://instagram.com/') || '', Facebook: redUrl(el.Facebook.value, 'https://facebook.com/') || '' };
+    const r1 = await busy($('#obNext'), 'Guardando…', async () => {
+      const a = await api('guardarPerfil', { ...base, Equipo: eq, Puesto: eq ? el.Puesto.value.trim() : '' });
+      if (!a.ok || !art) return { a };
+      const b = await api('guardarMiArtista', { Nombre: el.ArtNombre.value.trim() || base.Nombre, Origen: el.Origen.value,
+        Disciplina: el.Disciplina.value.trim(), Bio: base.Bio, Foto: base.Foto, Instagram: base.Instagram, Facebook: base.Facebook });
+      return { a, b };
+    });
+    if (!r1.a.ok) return toast(r1.a.error || 'No se pudo guardar');
+    if (r1.b && !r1.b.ok) return toast(r1.b.error || 'Tu perfil se guardó, pero no el de artista. Inténtalo desde Mi perfil.');
+    Object.assign(S.me, { Nombre: base.Nombre, Foto: base.Foto, Equipo_Estado: r1.a.equipo || '', Puesto: eq ? el.Puesto.value.trim() : '' });
+    if (r1.b && r1.b.ok) S.me.Artista_ID = r1.b.id;
+    marcarVisto(); fm.dataset.dirty = ''; pintarMeBtn(); S.comunidad = null;
+    const revision = [art ? 'tu perfil de artista' : '', eq && r1.a.equipo === 'Pendiente' ? 'tu puesto' : ''].filter(Boolean);
+    openModal(`<div class="pad" style="text-align:center;align-items:center">
+      ${avatarHtml(S.me, 110)}
+      <h3 class="disp" style="font-size:38px">¡Listo, <span class="it" style="color:var(--gold)">${esc(base.Nombre.split(' ')[0])}</span>!</h3>
+      <p>Tu perfil ya está en la comunidad.</p>
+      ${revision.length ? `<div class="st-box pend" style="text-align:left">⏳ <span>El equipo revisará ${revision.join(' y ')}; te aparecerá en cuanto lo aprueben.</span></div>` : ''}
+      <a class="btn btn-solid btn-block" href="#comunidad" onclick="closeModal()">Conocer a la comunidad</a>
+      <button class="btn btn-ghost btn-block" onclick="closeModal()">Explorar la tienda</button>
+      <div class="mute" style="font-size:12px">Puedes cambiar todo cuando quieras en <b>Mi perfil</b>.</div>
+    </div>`, true);
+    if (location.hash.startsWith('#comunidad')) loadComunidad();
   };
 }
 
