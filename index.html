@@ -3,12 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#f5efe3">
+<meta name="theme-color" content="#121212">
 <meta name="robots" content="noindex,nofollow">
 <title>Tri-Urban · Comunidad Trikles</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,100..900;1,62..125,100..900&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,100..900;1,62..125,100..900&family=Instrument+Serif:ital@0;1&family=Sedgwick+Ave+Display&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#f3f2ee; --bg2:#ffffff; --bg3:#e7e5df; --line:#d9d6cf; --text:#0e0e0d; --mute:#6c6a64;
@@ -19,7 +19,7 @@
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth;-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%}
-body{background:var(--bg);color:var(--text);font:400 14px/1.5 var(--sans);font-stretch:100%;-webkit-font-smoothing:antialiased;overflow-x:hidden;min-height:100vh}
+html{overflow-x:hidden}body{background:var(--bg);color:var(--text);font:400 14px/1.5 var(--sans);font-stretch:100%;-webkit-font-smoothing:antialiased;overflow-x:hidden;min-height:100vh}
 body::before{content:none}
 a{color:inherit}
 a:hover{color:var(--accent)}
@@ -447,125 +447,159 @@ footer{border-top:1px solid var(--ink);margin-top:80px;padding:28px 0;display:fl
 }
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 
-/* ================= CAPA MEXICANA: papel picado · talavera · bordado · lotería ================= */
+/* ================= CAPA GRAFFITI: concreto · spray · stickers · cinta ================= */
 :root{
-  --bg:#f5efe3; --bg2:#fffaf1; --bg3:#ebe2d1; --line:#d8ccb6; --tile:#ebe2d1; --paper:#f5efe3; --ink:#1a1410; --text:#1a1410; --mute:#6e6354;
-  --accent:#e4007c; --rosa:#e4007c; --cempa:#f39a1e; --verde:#00754a; --talavera:#1d3fa8; --morado:#6b2d8c;
-  --gold:#a2401a; --acid:#1d3fa8;
-  --picado:repeating-linear-gradient(90deg,var(--rosa) 0 72px,transparent 72px 78px,var(--cempa) 78px 150px,transparent 150px 156px,var(--verde) 156px 228px,transparent 228px 234px,var(--talavera) 234px 306px,transparent 306px 312px,var(--morado) 312px 384px,transparent 384px 390px);
-  --bordado:repeating-linear-gradient(90deg,var(--rosa) 0 9px,transparent 9px 13px,var(--cempa) 13px 22px,transparent 22px 26px,var(--verde) 26px 35px,transparent 35px 39px,var(--talavera) 39px 48px,transparent 48px 52px);
+  --bg:#121212; --bg2:#1b1b1b; --bg3:#272727; --line:#363636; --tile:#202020;
+  --text:#f2efe8; --mute:#9d998f; --ink:#f2efe8; --paper:#121212;
+  --spray:#ffd400; --cian:#00d1ff; --accent:#ff4d1a; --gold:#ffd400; --acid:#00d1ff;
+  --tag:'Sedgwick Ave Display','Permanent Marker',cursive;
 }
-::selection{background:var(--rosa);color:#fff}
-a:hover{color:var(--rosa)}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:1;opacity:.09;mix-blend-mode:screen;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+::selection{background:var(--spray);color:#000}
+a:hover{color:var(--spray)}
+.it{font-family:var(--tag);font-style:normal;font-weight:400;letter-spacing:0;line-height:1}
+.disp{font-weight:900}
 
-/* papel picado reutilizable */
-.gate-art::before,.hero::before{content:"";position:absolute;left:0;right:0;top:0;height:34px;z-index:4;pointer-events:none;background:var(--picado);
-  -webkit-mask:radial-gradient(circle at 50% 100%,#0000 6px,#000 6.5px) 0 0/13px 100% repeat-x,radial-gradient(circle,#0000 2.2px,#000 2.7px) 0 4px/13px 11px;
-  -webkit-mask-composite:source-in;mask:radial-gradient(circle at 50% 100%,#0000 6px,#000 6.5px) 0 0/13px 100% repeat-x intersect,radial-gradient(circle,#0000 2.2px,#000 2.7px) 0 4px/13px 11px;
-  border-top:2px solid var(--ink)}
+/* encabezado */
+.top{background:rgba(18,18,18,.88);border-bottom:2px solid var(--ink)}
+.logo em{font-family:var(--tag);font-style:normal;color:var(--spray);font-size:19px;display:inline-block;transform:rotate(-4deg)}
+.nav a.on::after{background:var(--spray);height:4px;bottom:0;transform:skewX(-12deg)}
+.avatar{background:var(--spray);color:#000}
+.icon-btn:hover{background:var(--bg3)}
 
-/* bordado tenango en líneas clave */
-.top{border-bottom:0;background-image:var(--bordado);background-size:100% 3px;background-repeat:no-repeat;background-position:bottom;background-color:rgba(245,239,227,.92)}
-.sec-head{border-bottom:0;background:var(--bordado) bottom/100% 3px no-repeat;padding-bottom:18px}
-footer{border-top:0;background:var(--bordado) top/100% 3px no-repeat;padding-top:30px}
-.logo em{color:var(--rosa)}
-.nav a.on::after{background:var(--rosa);height:3px}
+/* puerta: muro */
+.gate-art{background-color:#0c0c0c;
+  background-image:radial-gradient(ellipse 40% 30% at 18% 78%,rgba(0,209,255,.22),transparent 70%),radial-gradient(ellipse 35% 28% at 82% 22%,rgba(255,77,26,.2),transparent 70%),
+  linear-gradient(#1c1c1c 2px,transparent 2px),linear-gradient(90deg,#1c1c1c 2px,transparent 2px);
+  background-size:100% 100%,100% 100%,100% 46px,92px 92px;border-right:2px solid var(--ink)}
+.gate-art .big span:first-child{color:var(--spray);text-shadow:0 0 28px rgba(255,212,0,.35)}
+.gate-art .big .stroke{-webkit-text-stroke:2px #f2efe8}
+.gate-art .tag{font-family:var(--tag);font-style:normal;color:#f2efe8;transform:rotate(-2deg);transform-origin:left}
+.gate-tape{background:var(--spray);color:#000;font-weight:700;border:7px solid;border-image:repeating-linear-gradient(45deg,#000 0 8px,#ffd400 8px 16px) 7;padding:6px 0}
+.gate-form h2 .it{color:var(--spray)!important}
+.tabs2 button.on{border-color:var(--spray)}
+.lock-note{border-left:3px solid var(--spray)}
+.demo-hint b{color:var(--spray)}
 
-/* puerta: azulejo de talavera */
-.gate-art{background-color:var(--talavera);padding-top:64px;
-  background-image:
-    radial-gradient(circle,rgba(245,239,227,.28) 0 5px,transparent 5.5px 9px,rgba(245,239,227,.18) 9.5px 11px,transparent 11.5px),
-    radial-gradient(circle,transparent 0 15px,rgba(245,239,227,.22) 15.5px 17px,transparent 17.5px),
-    linear-gradient(45deg,transparent 49%,rgba(245,239,227,.12) 49% 51%,transparent 51%),
-    linear-gradient(-45deg,transparent 49%,rgba(245,239,227,.12) 49% 51%,transparent 51%);
-  background-size:64px 64px;background-position:0 0,32px 32px,0 0,0 0}
-.gate-art .kicker{color:#f5efe3}
-.gate-art .big{text-shadow:0 0 0 transparent}
-.gate-art .big span:first-child{color:var(--paper)}
-.gate-tape{background:var(--rosa);color:#fff;border-top:2px solid var(--ink);border-bottom:2px solid var(--ink)}
-.gate-form h2 .it{color:var(--rosa)!important}
-.tabs2 button.on{border-color:var(--rosa)}
-.lock-note{background:var(--bg3);border-left:3px solid var(--rosa)}
+/* botones */
+.btn{font-weight:700}
+.btn-solid{background:#f2efe8;color:#000}
+.btn-solid:hover,.btn-gold:hover{background:var(--spray);color:#000}
+.btn-gold{background:#f2efe8;color:#000}
+.btn-accent{background:var(--accent);color:#000}
+.btn-accent:hover{background:var(--spray);color:#000}
+.btn-ghost:hover{background:var(--spray);border-color:var(--spray);color:#000}
+.chip:hover{border-color:var(--spray);color:var(--spray)}
+.chip.on{background:var(--spray);border-color:var(--spray);color:#000}
 
-/* portada */
-.hero{position:relative;border:2px solid var(--ink)}
-.hero-txt{padding-top:calc(clamp(24px,4vw,56px) + 30px);border-right:2px solid var(--ink)}
-.hero-txt h1 .it{color:var(--rosa)}
-.hero .corner-price,.hero .edition,.hero .hist-tag{top:48px}
-.hero-txt .kicker{color:var(--gold)}
-.ticker{background:var(--ink);border-top:0}
-.ticker span.a{color:var(--cempa)}
-.live-strip{background:var(--rosa)}
-.live-strip .pill-live{color:var(--rosa)}
+/* títulos con escurrido de spray */
+.sec-head{position:relative;border-bottom:3px solid var(--spray)}
+.sec-head::after{content:"";position:absolute;left:0;top:100%;width:100%;height:30px;pointer-events:none;background:
+  linear-gradient(#ffd400,#ffd400) 6% 0/4px 16px no-repeat,radial-gradient(circle,#ffd400 3px,transparent 3.5px) calc(6% - 1px) 13px/6px 6px no-repeat,
+  linear-gradient(#ffd400,#ffd400) 19% 0/3px 26px no-repeat,radial-gradient(circle,#ffd400 2.6px,transparent 3px) calc(19% - 1px) 24px/5px 5px no-repeat,
+  linear-gradient(#ffd400,#ffd400) 23% 0/2px 9px no-repeat,
+  linear-gradient(#ffd400,#ffd400) 61% 0/4px 20px no-repeat,radial-gradient(circle,#ffd400 3px,transparent 3.5px) calc(61% - 1px) 17px/6px 6px no-repeat,
+  linear-gradient(#ffd400,#ffd400) 88% 0/3px 12px no-repeat}
+.sec-head h2 .it{color:var(--spray)!important;display:inline-block;transform:rotate(-6deg);text-shadow:0 0 20px rgba(255,212,0,.4)}
+.sec{padding-top:80px}
 
-/* botones y chips */
-.btn-solid:hover,.btn-gold:hover{background:var(--rosa);color:#fff}
-.btn-accent{background:var(--rosa)}
-.btn-ghost:hover{background:var(--talavera);border-color:var(--talavera);color:#fff}
-.chip:hover{border-color:var(--rosa);color:var(--rosa)}
-.chip.on{background:var(--ink)}
+/* portada: póster pegado en muro */
+.hero{border:2px solid var(--ink);box-shadow:10px 10px 0 var(--spray);margin-right:10px;background:var(--bg2)}
+.hero-txt{border-right:2px solid var(--ink)}
+.hero-txt h1 .it{color:var(--spray);display:block;transform:rotate(-5deg);transform-origin:left;margin:14px 0 8px;text-shadow:0 0 24px rgba(255,212,0,.4)}
+.hero-txt h1 .stroke{-webkit-text-stroke:2px #f2efe8}
+.hero-txt .kicker{color:var(--cian)}
+.ticker{background:var(--spray);color:#000;transform:rotate(-1deg);margin:28px -2% 0;width:104%;border-top:2px solid #000;border-bottom:2px solid #000}
+.ticker span.a{font-family:var(--tag);font-style:normal;color:#000;font-size:26px}
+.live-strip{background:var(--accent);color:#000;margin-top:26px}
+.live-strip .mute{color:rgba(0,0,0,.75)}
+.live-strip .pill-live{background:#000;color:var(--accent)}
+.live-strip .pill-live::before{background:var(--accent)}
+.live-strip:hover{background:var(--spray)}
 
-/* tarjetas: marco tipo lotería */
-.colab{border:2px solid var(--ink);background:var(--bg2);padding:10px}
-.colab .media{border:1px solid var(--ink)}
-.colab-body{padding:14px 4px 4px;text-align:center;align-items:center}
-.colab-body .piece{font-size:30px}
-.colab-body .obra{max-width:34ch}
-.colab.hist{border-style:dashed;border-color:var(--gold)}
-.corner-price{background:var(--rosa);color:#fff;top:10px;right:10px}
-.corner-price small{color:rgba(255,255,255,.85)}
-.edition{background:var(--talavera);color:#fff}
-.hist-tag{color:var(--gold);border:1px solid var(--gold)}
-.card .media{outline:1px solid var(--ink);outline-offset:-1px}
-.tag-mini.pre{background:var(--talavera)}
-.auc{border:2px solid var(--ink)}
+/* stickers (slaps) */
+.corner-price{background:var(--spray);color:#000;border:2px solid #000;box-shadow:3px 3px 0 #000;transform:rotate(-4deg);top:14px;right:14px;font-weight:700}
+.corner-price small{color:rgba(0,0,0,.7)}
+.edition{background:var(--cian);color:#000;border:2px solid #000;transform:rotate(3deg);font-weight:500}
+.tag-mini{background:#f2efe8;color:#000;border:2px solid #000;transform:rotate(-3deg)}
+.tag-mini.sold{background:var(--accent);color:#000}
+.tag-mini.pre{background:var(--cian);color:#000}
+.hist-tag{background:#000;color:var(--spray);border:2px solid var(--spray);transform:rotate(3deg)}
+.gal-badge{background:#000;color:#f2efe8}
+.hero-media .corner-price{top:18px;right:18px}
+
+/* tarjetas */
+.card .media{outline:2px solid transparent;outline-offset:-2px;transition:outline-color .2s}
+@media (hover:hover){.card:hover .media{outline-color:var(--spray)}}
+.colab{border:2px solid var(--ink);background:var(--bg2);transition:transform .2s,box-shadow .2s}
+@media (hover:hover){.colab:hover{transform:translate(-4px,-4px);box-shadow:8px 8px 0 var(--spray)}}
+.colab-body{padding:14px 14px 16px}
+.colab-artist .who{font-family:var(--tag);font-style:normal;font-size:26px;color:var(--spray)}
+.colab-artist .ava{border-color:var(--spray)}
+.colab.hist{border-style:dashed;border-color:#6a675f}
+.auc{border:2px solid var(--ink);transition:transform .2s,box-shadow .2s}
+@media (hover:hover){.auc:hover{transform:translate(-4px,-4px);box-shadow:8px 8px 0 var(--cian)}}
 .auc .media{border-bottom:2px solid var(--ink)}
-.cd{background:var(--bg3)}
-.cd.urgent{background:var(--rosa)}
-.bids li:first-child{color:var(--rosa)}
+.cd{background:var(--bg3);color:var(--spray)}
+.cd.urgent{background:var(--accent);color:#000}
+.bids li:first-child{color:var(--spray)}
+.live-card{border:2px solid var(--ink)}
 
-/* artistas: retrato en arco colonial */
-.artist .ph{border-radius:999px 999px 0 0;border:2px solid var(--ink);background:var(--cempa)}
-@media (hover:hover){.artist:hover .ph{border-color:var(--rosa)}}
-.org.tu{background:var(--rosa);color:#fff}
-.org.ct{border-color:var(--talavera);color:var(--talavera)}
-.stars{color:var(--cempa)}
-.star-in button.on{color:var(--cempa)}
-.art-cta{background:var(--talavera);
-  background-image:radial-gradient(circle,rgba(245,239,227,.16) 0 4px,transparent 4.5px),radial-gradient(circle,transparent 0 11px,rgba(245,239,227,.14) 11.5px 13px,transparent 13.5px);
-  background-size:44px 44px;background-position:0 0,22px 22px}
-.art-cta:hover{background-color:#16328a}
-.art-cta .mute{color:#dfe5f7}
+/* artistas: muro de stickers */
+.artist .ph{border:3px solid #f2efe8;box-shadow:4px 4px 0 #000;transform:rotate(-2deg);transition:transform .25s,filter .4s}
+.artist:nth-child(even) .ph{transform:rotate(2deg)}
+@media (hover:hover){.artist:hover .ph{transform:rotate(0) scale(1.03)}}
+.artist .n{font-family:var(--tag);font-style:normal;font-size:26px;color:var(--spray)}
+.org.tu{background:#f2efe8;color:#000}
+.org.ct{border-color:var(--cian);color:var(--cian)}
+.stars{color:var(--spray)}
+.stars .off,.star-in button{color:#4a4842}
+.star-in button.on{color:var(--spray)}
+.art-cta{background:var(--spray);color:#000;border:2px solid #000;box-shadow:6px 6px 0 #f2efe8}
+.art-cta:hover{background:var(--cian)}
+.art-cta .mute{color:rgba(0,0,0,.7)}
+.social a:hover{background:var(--spray);border-color:var(--spray);color:#000}
 
-/* detalle, carrito, comunidad */
-.sheet{border:2px solid var(--ink);background:var(--bg) var(--bordado) top/100% 4px no-repeat}
-.x{background:var(--rosa);color:#fff}
-.artist-box{border:2px solid var(--ink)}
-.artist-box .ava{border-radius:999px 999px 0 0}
-.sizes button.on{background:var(--rosa);border-color:var(--rosa);color:#fff}
-.quote{border-left:3px solid var(--cempa);padding-left:16px}
-.gal-dots i.on{background:var(--cempa)}
-.qty button:hover{background:var(--rosa);color:#fff}
-.bub.mio{background:var(--talavera);border-color:var(--talavera);color:#fff}
-.msg b{color:var(--gold)}
-.ins.eq{background:rgba(243,154,30,.18);color:#7a4300}
-.person .pn{color:var(--ink)}
-.ob-dots i.on{background:var(--rosa)}
-.ob-opt.on{border-color:var(--rosa);box-shadow:inset 0 0 0 1px var(--rosa)}
-.ob-opt.on .ob-check{background:var(--rosa);border-color:var(--rosa)}
-.avatar{background:var(--rosa);color:#fff}
-.badge,.tab-dot{background:var(--rosa)}
-.st-pend{background:var(--rosa)}
-#toast{background:var(--ink);border-bottom:3px solid var(--rosa)}
-.demo-flag{background:var(--talavera)}
-:focus-visible{outline-color:var(--rosa)}
+/* detalle y resto */
+.sheet{border:2px solid var(--ink);background:var(--bg)}
+.x{background:var(--spray);color:#000}
+.quote{font-family:var(--tag);font-style:normal;font-size:24px;color:var(--spray);border-left:3px solid var(--spray);padding-left:16px}
+.artist-box{border:2px solid var(--ink);background:var(--bg2)}
+.artist-box:hover{background:var(--bg3)}
+.sizes button.on{background:var(--spray);border-color:var(--spray);color:#000}
+.gal-nav{background:#000;color:#f2efe8}
+.gal-nav:hover{background:var(--spray);color:#000}
+.gal-dots i.on{background:var(--spray)}
+.qty button:hover{background:var(--spray);color:#000}
+.pbar{background:rgba(242,239,232,.12)}
+.pre-box{background:rgba(0,209,255,.06)}
+.person .pn{font-family:var(--tag);font-style:normal;color:var(--spray);font-size:22px}
+.person:hover{background:var(--bg3)}
+.people{background:var(--line)}
+.bub{background:var(--bg3);border-color:var(--line)}
+.bub.mio{background:var(--spray);border-color:var(--spray);color:#000}
+.msg b{color:var(--spray)}
+.msg.mine b{color:var(--cian)}
+.ins.eq{background:rgba(255,212,0,.14);color:var(--spray)}
+.ob-dots i.on{background:var(--spray)}
+.ob-opt.on{border-color:var(--spray);box-shadow:inset 0 0 0 1px var(--spray)}
+.ob-opt.on .ob-check{background:var(--spray);border-color:var(--spray);color:#000}
+.badge,.tab-dot{background:var(--accent);color:#000}
+.st-pend{background:var(--accent);color:#000}.st-pag{background:var(--cian);color:#000}.st-ent{background:#f2efe8;color:#000}
+#toast{background:var(--spray);color:#000;border:2px solid #000;box-shadow:4px 4px 0 #000}
+.demo-flag{background:var(--spray);color:#000}
+:focus-visible{outline-color:var(--spray)}
+footer{border-top:2px solid var(--ink)}
 
 @media (max-width:900px){
-  .gate-art{padding-top:56px}
-  .tabbar{background-color:rgba(245,239,227,.95);border-top:0;background-image:var(--bordado);background-size:100% 3px;background-repeat:no-repeat;background-position:top}
-  .tabbar a.on::before{background:var(--rosa);top:-6px}
+  .gate-art{border-right:0;border-bottom:2px solid var(--ink)}
+  .hero{box-shadow:6px 6px 0 var(--spray);margin-right:6px}
   .hero-txt{border-right:0;border-bottom:2px solid var(--ink)}
-  .colab{padding:8px}
+  .tabbar{background:rgba(18,18,18,.95);border-top:2px solid var(--ink)}
+  .tabbar a.on{color:var(--spray)}
+  .tabbar a.on::before{background:var(--spray);height:3px}
+  .ticker{margin:22px -4% 0;width:108%}
 }
 </style>
 </head>
