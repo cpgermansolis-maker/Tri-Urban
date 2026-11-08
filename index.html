@@ -601,6 +601,8 @@ footer{border-top:2px solid var(--ink)}
   .tabbar a.on::before{background:var(--spray);height:3px}
   .ticker{margin:22px -4% 0;width:108%}
 }
+.adm-quick-bar{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin:0 0 22px}
+.adm-quick{align-self:flex-start;margin-top:8px}
 </style>
 </head>
 <body>
@@ -1309,7 +1311,7 @@ function colabCard(p) {
       ${p.Edicion ? `<span class="edition">${esc(p.Edicion)}</span>` : ''}
       <div class="colab-artist"><div class="ava">${media(a, 'artista')}</div><div><div class="by">En colaboración con</div><div class="who">${esc(a.Nombre)}</div></div></div>
     </div>
-    <div class="colab-body"><div class="piece">${esc(p.Nombre)}</div><div class="obra">${esc(p.Obra_Desc || p.Descripcion)}</div></div>
+    <div class="colab-body"><div class="piece">${esc(p.Nombre)}</div><div class="obra">${esc(p.Obra_Desc || p.Descripcion)}</div>${esAdm() ? `<button class="btn btn-ghost btn-sm adm-quick" onclick="event.stopPropagation();editarColab('${p.id}')">✏️ Editar</button>` : ''}</div>
   </article>`;
   return `<article class="colab" onclick="openProducto('${p.id}')" tabindex="0" onkeydown="if(event.key==='Enter')this.click()">
     <div class="media">${media(p, 'colab')}${galBadge(p)}
@@ -1317,12 +1319,13 @@ function colabCard(p) {
       ${p.Edicion ? `<span class="edition">${esc(p.Edicion)}</span>` : ''}
       <div class="colab-artist"><div class="ava">${media(a, 'artista')}</div><div><div class="by">Intervenida por</div><div class="who">${esc(a.Nombre)}</div></div></div>
     </div>
-    <div class="colab-body"><div class="piece">${esc(p.Nombre)}</div><div class="obra">${esc(p.Obra_Desc || p.Descripcion)}</div></div>
+    <div class="colab-body"><div class="piece">${esc(p.Nombre)}</div><div class="obra">${esc(p.Obra_Desc || p.Descripcion)}</div>${esAdm() ? `<button class="btn btn-ghost btn-sm adm-quick" onclick="event.stopPropagation();editarColab('${p.id}')">✏️ Editar</button>` : ''}</div>
   </article>`;
 }
 function vColabs() {
   return `<section class="sec">
     <div class="sec-head"><h2 class="disp">Arte <span class="it" style="color:var(--gold)">×</span> Urban</h2><p>Cada prenda pasa por las manos de un artista de la comunidad. La pieza y quien la creó van primero; el precio, en la esquina.</p></div>
+    ${esAdm() ? '<div class="adm-quick-bar"><button class="btn btn-accent" onclick="editarColab()">+ Agregar colaboración</button><span class="mute" style="font-size:13px">Solo tú ves esto (admin). También en ⚙ Panel → Colabs.</span></div>' : ''}
     <div class="colab-grid">${P().filter(p => p.Tipo === 'colab' && !esHistoria(p)).map(colabCard).join('') || '<div class="empty">Próximas colaboraciones en camino.</div>'}</div>
   </section>
   ${(() => { const hist = P().filter(p => p.Tipo === 'colab' && esHistoria(p)); return hist.length ? `<section class="sec hist-sec">
@@ -2048,7 +2051,7 @@ async function openMiArtista() {
    PANEL DE ADMINISTRACIÓN (#admin) — el backend valida Rol = admin
    ===================================================================== */
 let ADM = null, admTab = 'pedidos', pedFiltro = 'Pendiente';
-const ADM_TABS = [['pedidos', 'Pedidos'], ['productos', 'Productos'], ['artistas', 'Artistas'], ['subastas', 'Subastas'], ['miembros', 'Miembros'], ['ajustes', 'Pagos']];
+const ADM_TABS = [['pedidos', 'Pedidos'], ['colabs', '✦ Colabs'], ['productos', 'Productos'], ['artistas', 'Artistas'], ['subastas', 'Subastas'], ['miembros', 'Miembros'], ['ajustes', 'Pagos']];
 const FORMS = {
   Productos: [
     ['Tipo', 'Tipo', 'select', [['prenda', 'Prenda Tri-Urban'], ['colab', 'Arte × Urban (colab)'], ['obra', 'Obra de galería']]],
@@ -2092,16 +2095,24 @@ function vAdmin() {
   </section>`;
 }
 async function loadAdmin() {
-  const j = await api('adminData'); if (!j.ok) { $('#admBody').innerHTML = `<div class="empty">${esc(j.error)}</div>`; return; }
+  const j = await api('adminData'); if (!j.ok) { if (!$('#admBody')) return; $('#admBody').innerHTML = `<div class="empty">${esc(j.error)}</div>`; return; }
   ADM = j; renderAdmin();
 }
-async function refreshAll() { await Promise.all([loadAdmin(), loadCatalog()]); }
+async function refreshAll() {
+  await Promise.all([loadAdmin(), loadCatalog()]);
+  if (!location.hash.startsWith('#admin')) { const y = scrollY; route(); scrollTo(0, y); } // ej. editado desde Arte × Urban
+}
+const esAdm = () => S.me && S.me.Rol === 'admin';
+async function editarColab(id) {
+  if (!ADM) { const j = await api('adminData'); if (!j.ok) return toast(j.error || 'No se pudo abrir'); ADM = j; }
+  admEditar('Productos', id || '', id ? undefined : { Tipo: 'colab' });
+}
 function renderAdmin() {
   if (!ADM || !$('#admBody')) return;
   $$('#admTabs .chip').forEach((b, i) => b.classList.toggle('on', ADM_TABS[i][0] === admTab));
   const pendArt = ADM.artistas.filter(a => a.Estado === 'Pendiente').length, pendPed = ADM.pedidos.filter(p => p.Estado === 'Pendiente').length, pendEq = ADM.miembros.filter(m => m.Equipo_Estado === 'Pendiente').length;
   $$('#admTabs .tab-dot').forEach(d => { const n = { artistas: pendArt, pedidos: pendPed, miembros: pendEq }[d.dataset.tab] || 0; d.textContent = n || ''; d.hidden = !n; });
-  const R = { pedidos: admPedidos, productos: admProductos, artistas: admArtistas, subastas: admSubastas, miembros: admMiembros, ajustes: admAjustes }[admTab];
+  const R = { pedidos: admPedidos, colabs: admColabs, productos: admProductos, artistas: admArtistas, subastas: admSubastas, miembros: admMiembros, ajustes: admAjustes }[admTab];
   $('#admBody').innerHTML = R(); tickCountdowns();
 }
 const nombreArtista = id => (ADM.artistas.find(a => a.id === id) || {}).Nombre || '—';
@@ -2125,8 +2136,8 @@ async function admPedido(folio, estado) {
   const r = await api('adminPedido', { folio, estado }); if (!r.ok) return toast(r.error);
   toast(folio + ' → ' + estado); refreshAll();
 }
-function admLista(tabla, rows, cols) {
-  return `<div style="margin-bottom:16px"><button class="btn btn-accent" onclick="admEditar('${tabla}')">+ Nuevo</button></div>
+function admLista(tabla, rows, cols, nuevo) {
+  return `<div style="margin-bottom:16px">${nuevo || `<button class="btn btn-accent" onclick="admEditar('${tabla}')">+ Nuevo</button>`}</div>
     <div class="adm-list">${rows.map(r => `<div class="adm-row ${r.Activo === false || r.Estado === 'Oculta' || r.Estado === 'Rechazado' ? 'off' : ''}">
       <div class="th">${media(r, tabla === 'Artistas' ? 'artista' : r.Tipo === 'obra' ? 'obra' : r.Tipo === 'colab' ? 'colab' : '')}</div>
       <div style="min-width:0">${cols(r)}</div>
@@ -2137,7 +2148,12 @@ function admLista(tabla, rows, cols) {
         <button class="btn btn-ghost btn-sm" onclick="admBorrar('${tabla}','${r.id}')" aria-label="Borrar">✕</button></div>
     </div>`).join('') || '<div class="empty">Nada por aquí todavía.</div>'}</div>`;
 }
-const admProductos = () => admLista('Productos', ADM.productos, p => `<b>${esc(p.Nombre)}</b><div class="mute" style="font-size:13px">${{ prenda: 'Prenda', colab: 'Colab', obra: 'Obra' }[p.Tipo] || p.Tipo} · ${money(p.Precio)} · ${p.Stock} pzas${p.Artista_ID ? ' · ' + esc(nombreArtista(p.Artista_ID)) : ''}${p.Activo === false ? ' · oculto' : ''}${esHistoria(p) ? ' · 📜 Historia' + (p.Historia_Periodo ? ' ' + esc(p.Historia_Periodo) : '') : ''}${!esHistoria(p) && siBool(p.Sobre_Pedido) ? ' · 📦 sobre pedido hasta ' + fmtDia(p.Pedido_Hasta) + (sobrePedido(p) ? '' : +p.Stock > 0 ? ' (hay stock)' : ' (vencido)') : ''}</div>`);
+const admColabs = () => admLista('Productos', ADM.productos.filter(p => p.Tipo === 'colab'), admProdCols,
+  `<button class="btn btn-accent" onclick="admEditar('Productos','',{Tipo:'colab'})">+ Nueva colaboración</button>
+   <p class="mute" style="font-size:13px;margin-top:10px">Prendas intervenidas por artistas (Arte × Urban). Marca “Ya no se produce” para pasarlas a Historia de Tri-URBN.</p>`)
+  .replace('<div class="adm-list"></div>', '<div class="adm-list"><div class="empty">Aún no hay colaboraciones. Agrega la primera.</div></div>');
+const admProductos = () => admLista('Productos', ADM.productos, admProdCols);
+const admProdCols = p => `<b>${esc(p.Nombre)}</b><div class="mute" style="font-size:13px">${{ prenda: 'Prenda', colab: 'Colab', obra: 'Obra' }[p.Tipo] || p.Tipo} · ${money(p.Precio)} · ${p.Stock} pzas${p.Artista_ID ? ' · ' + esc(nombreArtista(p.Artista_ID)) : ''}${p.Activo === false ? ' · oculto' : ''}${esHistoria(p) ? ' · 📜 Historia' + (p.Historia_Periodo ? ' ' + esc(p.Historia_Periodo) : '') : ''}${!esHistoria(p) && siBool(p.Sobre_Pedido) ? ' · 📦 sobre pedido hasta ' + fmtDia(p.Pedido_Hasta) + (sobrePedido(p) ? '' : +p.Stock > 0 ? ' (hay stock)' : ' (vencido)') : ''}</div>`;
 const ordenEstado = { Pendiente: 0, Aprobado: 1, Rechazado: 2 };
 const admArtistas = () => {
   const lista = ADM.artistas.slice().sort((x, y) => (ordenEstado[x.Estado] ?? 1) - (ordenEstado[y.Estado] ?? 1));
@@ -2162,9 +2178,9 @@ async function admBorrar(tabla, id) {
   const r = await api('adminDelete', { tabla, id }); if (!r.ok) return toast(r.error || 'No se pudo borrar');
   toast('Borrado'); refreshAll();
 }
-function admEditar(tabla, id) {
+function admEditar(tabla, id, inicial) {
   const lista = { Productos: ADM.productos, Artistas: ADM.artistas, Subastas: ADM.subastas }[tabla];
-  const o = id ? lista.find(x => x.id === id) : { Activo: true, Tipo: tabla === 'Subastas' ? 'colab' : 'prenda', Origen: 'Tri-Urban', Estado: 'Activa', Incremento: 100, Inicio: Date.now(), Fin: Date.now() + 3 * 864e5, Stock: 1 };
+  const o = id ? lista.find(x => x.id === id) : { Activo: true, Tipo: tabla === 'Subastas' ? 'colab' : 'prenda', Origen: 'Tri-Urban', Estado: 'Activa', Incremento: 100, Inicio: Date.now(), Fin: Date.now() + 3 * 864e5, Stock: 1, ...(inicial || {}) };
   const campo = ([k, label, type, opts, show, grupo]) => {
     const v = o[k] ?? '', sh = (show ? ` data-show="${show}"` : '') + (grupo ? ` data-grupo="${grupo}"` : '');
     let inp;
