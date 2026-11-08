@@ -146,6 +146,14 @@ main{max-width:1320px;margin:0 auto;padding:0 var(--gut) 120px}
 .colab-artist .ava svg,.colab-artist .ava img{width:100%;height:100%;object-fit:cover}
 .colab-artist .by{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold)}
 .colab-artist .who{font-family:var(--serif);font-style:italic;font-size:24px;line-height:1.1}
+.hist-tag{position:absolute;top:14px;right:14px;z-index:3;background:rgba(8,8,7,.82);border:1px solid var(--gold);color:var(--gold);font-size:11px;letter-spacing:.14em;text-transform:uppercase;padding:7px 11px;border-radius:999px;backdrop-filter:blur(4px)}
+.detail .media.hist .hist-tag{top:60px}
+.colab.hist{border-style:dashed;border-color:rgba(201,168,106,.35)}
+.colab.hist .media>svg,.colab.hist .media>img{filter:grayscale(.55) sepia(.2)}
+@media (hover:hover){.colab.hist:hover .media>svg,.colab.hist:hover .media>img{filter:none}}
+.hist-sec{border-top:1px solid var(--line)}
+.hist-box{border:1px dashed var(--gold);border-radius:var(--r);padding:14px 16px;font-size:14px;line-height:1.5;background:rgba(201,168,106,.06)}
+.hist-mini{position:absolute;top:4px;right:4px;font-size:13px;background:rgba(8,8,7,.8);border-radius:50%;width:22px;height:22px;display:grid;place-items:center}
 .colab-body{padding:16px 18px 18px;display:flex;flex-direction:column;gap:6px}
 .colab-body .piece{font-family:var(--display);font-size:22px;text-transform:uppercase;letter-spacing:.02em}
 .colab-body .obra{font-size:13px;color:var(--mute);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
@@ -510,7 +518,8 @@ function fmtDia(iso, largo) {
 }
 const siBool = v => v === true || String(v).toUpperCase() === 'TRUE';
 // agotado + sobre pedido activo + dentro de la fecha máxima (inclusive)
-const sobrePedido = p => +p.Stock <= 0 && siBool(p.Sobre_Pedido) && !!p.Pedido_Hasta && String(p.Pedido_Hasta).slice(0, 10) >= hoyISO();
+const esHistoria = p => siBool(p.Historia);
+const sobrePedido = p => !esHistoria(p) && +p.Stock <= 0 && siBool(p.Sobre_Pedido) && !!p.Pedido_Hasta && String(p.Pedido_Hasta).slice(0, 10) >= hoyISO();
 // Ventana de reservación: desde el día en que se activó (Pedido_Desde) hasta el fin del día máximo.
 function ventanaPedido(p) {
   const dia = (iso, fin) => { const [y, m, d] = String(iso).slice(0, 10).split('-').map(Number); return new Date(y, m - 1, d, fin ? 23 : 0, fin ? 59 : 0, fin ? 59 : 0).getTime(); };
@@ -526,7 +535,7 @@ function preBar(p, grande) {
     ${grande ? '<div class="pbar-txt"><span>Las reservaciones se cierran en</span><b class="pre-cd"></b></div>' : ''}
     <div class="pbar" role="progressbar" aria-label="Tiempo restante para reservar"><i></i></div></div>`;
 }
-const maxPiezas = p => sobrePedido(p) ? MAX_SOBRE_PEDIDO : Math.max(0, +p.Stock);
+const maxPiezas = p => esHistoria(p) ? 0 : sobrePedido(p) ? MAX_SOBRE_PEDIDO : Math.max(0, +p.Stock);
 const preTag = i => i.SobrePedido ? ` <span class="pre-tag">Sobre pedido${i.Llegada ? ' · llega ' + fmtDia(i.Llegada) : ''}</span>` : '';
 const safeUrl = u => /^https?:\/\/[^\s"'<>]+$/i.test(String(u || '').trim()) ? String(u).trim() : '';
 // "@usuario" o "usuario" → enlace completo de la red
@@ -658,6 +667,8 @@ const Demo = (() => {
           Descripcion:'Tee Core con serigrafía manual de tintas vegetales.', Obra_Desc:'El maguey como raíz común entre el campo y la calle. Impresión manual con tinta de grana cochinilla; el color madura con cada lavado.' },
         { id:'c4', Tipo:'colab', Nombre:'Hilo Rojo', Artista_ID:'a3', Precio:5600, Edicion:'Pieza única', Tallas:'M', Stock:1,
           Descripcion:'Coach jacket bordada a mano durante 40 horas.', Obra_Desc:'Bordado en hilo rojo que recorre la espalda como un mapa de las rutas de combi entre Tlaxcala y Puebla.' },
+        { id:'c5', Tipo:'colab', Nombre:'Primer Trazo', Artista_ID:'a1', Precio:2900, Edicion:'1/20', Stock:0, Historia:true, Historia_Periodo:'2024 · Drop 00',
+          Descripcion:'La primera playera Arte × Urban que hicimos.', Obra_Desc:'Un solo trazo de aerosol que empezó todo: la calle entrando por primera vez a una prenda Tri-Urban.' },
         { id:'o1', Tipo:'obra', Nombre:'Cartel imposible', Artista_ID:'a2', Precio:8500, Tecnica:'Acrílico sobre lienzo', Medidas:'60 × 90 cm', Stock:1, Descripcion:'Cartel para una película que solo existe en la cabeza del artista.' },
         { id:'o2', Tipo:'obra', Nombre:'Tlaxcala en stencil', Artista_ID:'a1', Precio:5200, Tecnica:'Aerosol sobre madera', Medidas:'50 × 70 cm', Stock:1, Descripcion:'La catedral de Tlaxcala vista desde un muro de la periferia.' },
         { id:'o3', Tipo:'obra', Nombre:'Sal de mar', Artista_ID:'a5', Precio:3200, Tecnica:'Impresión en plata sobre gelatina', Medidas:'40 × 50 cm', Stock:2, Descripcion:'Edición de 3. Revelado en cuarto oscuro.' },
@@ -790,6 +801,7 @@ const Demo = (() => {
       let total = 0; const items = [];
       for (const it of d.items || []) {
         const p = db.productos.find(x => x.id === it.id); if (!p) continue;
+        if (esHistoria(p)) return { ok: false, error: '“' + p.Nombre + '” ya es parte de la historia de Tri-URBN y no está a la venta.' };
         const q = Math.max(1, Math.floor(+it.qty || 1)), pre = sobrePedido(p);
         if (pre && q > MAX_SOBRE_PEDIDO) return { ok: false, error: 'Puedes reservar hasta ' + MAX_SOBRE_PEDIDO + ' piezas de “' + p.Nombre + '”.' };
         if (!pre && +p.Stock < q) return { ok: false, error: 'Ya no hay suficiente de “' + p.Nombre + '”.' };
@@ -1008,7 +1020,7 @@ const orgTag = o => o ? `<span class="org ${o === 'Tri-Urban' ? 'tu' : 'ct'}">${
    VISTAS
    ===================================================================== */
 function vInicio() {
-  const colabs = P().filter(p => p.Tipo === 'colab'), star = colabs[0];
+  const colabs = P().filter(p => p.Tipo === 'colab' && !esHistoria(p)), star = colabs[0];
   const live = (S.data.vivos || []).find(v => v.Estado === 'envivo');
   const sub = (S.data.subastas || []).filter(s => s.Fin > Date.now()).sort((a, b) => a.Fin - b.Fin)[0];
   const a = star ? artistaById(star.Artista_ID) : null;
@@ -1062,7 +1074,15 @@ function vTienda() {
   </section>`;
 }
 function colabCard(p) {
-  const a = artistaById(p.Artista_ID);
+  const a = artistaById(p.Artista_ID), h = esHistoria(p);
+  if (h) return `<article class="colab hist" onclick="openProducto('${p.id}')" tabindex="0" onkeydown="if(event.key==='Enter')this.click()">
+    <div class="media">${media(p, 'colab')}
+      <span class="hist-tag">📜 Historia${p.Historia_Periodo ? ' · ' + esc(p.Historia_Periodo) : ''}</span>
+      ${p.Edicion ? `<span class="edition">${esc(p.Edicion)}</span>` : ''}
+      <div class="colab-artist"><div class="ava">${media(a, 'artista')}</div><div><div class="by">En colaboración con</div><div class="who">${esc(a.Nombre)}</div></div></div>
+    </div>
+    <div class="colab-body"><div class="piece">${esc(p.Nombre)}</div><div class="obra">${esc(p.Obra_Desc || p.Descripcion)}</div></div>
+  </article>`;
   return `<article class="colab" onclick="openProducto('${p.id}')" tabindex="0" onkeydown="if(event.key==='Enter')this.click()">
     <div class="media">${media(p, 'colab')}
       <div class="corner-price"><small>PRECIO</small>${money(p.Precio)}</div>
@@ -1075,8 +1095,12 @@ function colabCard(p) {
 function vColabs() {
   return `<section class="sec">
     <div class="sec-head"><h2 class="disp">Arte <span class="it" style="color:var(--gold)">×</span> Urban</h2><p>Cada prenda pasa por las manos de un artista de la comunidad. La pieza y quien la creó van primero; el precio, en la esquina.</p></div>
-    <div class="colab-grid">${P().filter(p => p.Tipo === 'colab').map(colabCard).join('') || '<div class="empty">Próximas colaboraciones en camino.</div>'}</div>
-  </section>`;
+    <div class="colab-grid">${P().filter(p => p.Tipo === 'colab' && !esHistoria(p)).map(colabCard).join('') || '<div class="empty">Próximas colaboraciones en camino.</div>'}</div>
+  </section>
+  ${(() => { const hist = P().filter(p => p.Tipo === 'colab' && esHistoria(p)); return hist.length ? `<section class="sec hist-sec">
+    <div class="sec-head"><h2 class="disp">Historia de <span class="it" style="color:var(--gold);white-space:nowrap">Tri-URBN</span></h2><p>Colaboraciones que ya no producimos, pero que son parte de quienes somos. Aquí siguen, con el nombre de quien las hizo posibles.</p></div>
+    <div class="colab-grid">${hist.map(colabCard).join('')}</div>
+  </section>` : ''; })()}`;
 }
 function vGaleria() {
   const obras = P().filter(p => p.Tipo === 'obra');
@@ -1222,6 +1246,16 @@ function openProducto(id) {
   const pre = sobrePedido(p), agot = maxPiezas(p) <= 0, a = p.Artista_ID ? artistaById(p.Artista_ID) : null;
   const artistBox = a ? `<div class="artist-box" onclick="openArtista('${a.id}')"><div class="ava">${media(a, 'artista')}</div>
       <div style="flex:1"><div class="kicker" style="color:var(--gold)">${p.Tipo === 'obra' ? 'Obra de' : 'Intervenida por'}</div><div class="it" style="font-size:24px">${esc(a.Nombre)}</div><div class="mute" style="font-size:13px">${esc(a.Disciplina || '')}</div></div><span>→</span></div>` : '';
+  if (esHistoria(p)) return openModal(`<div class="detail">
+    <div class="media hist">${media(p)}<span class="hist-tag">📜 Historia${p.Historia_Periodo ? ' · ' + esc(p.Historia_Periodo) : ''}</span>${p.Edicion ? `<span class="edition">${esc(p.Edicion)}</span>` : ''}</div>
+    <div class="body">
+      <div class="kicker">Historia de Tri-URBN</div>
+      ${a ? artistBox.replace('Intervenida por', 'En colaboración con') : ''}
+      <h3 class="disp">${esc(p.Nombre)}</h3>
+      ${p.Obra_Desc ? `<p class="quote">${esc(p.Obra_Desc)}</p>` : ''}${p.Descripcion ? `<p class="mute">${esc(p.Descripcion)}</p>` : ''}
+      <div class="hist-box"><b>Esta pieza ya no se produce.</b> Forma parte de la historia de Tri-URBN: la guardamos aquí para honrar el trabajo de ${a ? esc(a.Nombre) : 'su artista'}${p.Historia_Periodo ? ' (' + esc(p.Historia_Periodo) + ')' : ''}.</div>
+      ${a ? `<button class="btn btn-gold btn-block" onclick="openArtista('${a.id}')">Conoce el trabajo de ${esc(a.Nombre)} →</button>` : ''}
+    </div></div>`);
   openModal(`<div class="detail">
     <div class="media">${media(p)}${p.Tipo === 'colab' ? `<div class="corner-price"><small>PRECIO</small>${money(p.Precio)}</div>` : ''}${p.Edicion ? `<span class="edition">${esc(p.Edicion)}</span>` : ''}</div>
     <div class="body">
@@ -1258,7 +1292,7 @@ async function openArtista(id) {
       <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">${stars(a.prom)}<span>${a.prom ? a.prom.toFixed(1) : '—'}</span><span class="mute" style="font-size:13px">${a.n} opiniones · <b style="color:var(--acid)">${a.recs}</b> lo recomiendan</span></div>
       <p>${esc(a.Bio || '')}</p>
       <div class="social">${safeUrl(a.Instagram) ? `<a href="${esc(safeUrl(a.Instagram))}" target="_blank" rel="noopener">Instagram ↗</a>` : ''}${safeUrl(a.Facebook) ? `<a href="${esc(safeUrl(a.Facebook))}" target="_blank" rel="noopener">Facebook ↗</a>` : ''}</div>
-      ${obras.length ? `<div><div class="kicker" style="margin-bottom:10px">Sus piezas</div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">${obras.map(o => `<div style="cursor:pointer;aspect-ratio:4/5;overflow:hidden;border-radius:3px" onclick="openProducto('${o.id}')" title="${esc(o.Nombre)}">${media(o)}</div>`).join('')}</div></div>` : ''}
+      ${obras.length ? `<div><div class="kicker" style="margin-bottom:10px">Sus piezas</div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">${obras.map(o => `<div style="cursor:pointer;aspect-ratio:4/5;overflow:hidden;border-radius:3px;position:relative" onclick="openProducto('${o.id}')" title="${esc(o.Nombre)}${esHistoria(o) ? ' · Historia de Tri-URBN' : ''}">${media(o)}${esHistoria(o) ? '<span class="hist-mini">📜</span>' : ''}</div>`).join('')}</div></div>` : ''}
     </div></div>
     <div class="pad" style="border-top:1px solid var(--line)">
       <h4 class="disp" style="font-size:30px">Opiniones de la comunidad</h4>
@@ -1762,7 +1796,7 @@ async function openMiArtista() {
     <button class="btn btn-gold btn-block" type="submit" id="maSave">${j.artista ? 'Guardar cambios' : 'Enviar mi perfil'}</button>
     ${estado === 'Aprobado' ? `<button type="button" class="btn btn-ghost btn-block" onclick="openArtista('${j.artista.id}')">Ver cómo lo ve la comunidad →</button>` : ''}
     ${puedeVivo ? '<button type="button" class="btn btn-accent btn-block" onclick="openIniciarVivo()">● Iniciar transmisión en vivo</button>' : ''}
-    ${piezas.length ? `<div><div class="kicker" style="margin:6px 0 10px">Mis piezas en la tienda</div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">${piezas.map(o => `<div style="cursor:pointer;aspect-ratio:4/5;overflow:hidden;border-radius:3px" onclick="openProducto('${o.id}')" title="${esc(o.Nombre)}">${media(o)}</div>`).join('')}</div></div>` : ''}
+    ${piezas.length ? `<div><div class="kicker" style="margin:6px 0 10px">Mis piezas en la tienda</div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">${piezas.map(o => `<div style="cursor:pointer;aspect-ratio:4/5;overflow:hidden;border-radius:3px;position:relative" onclick="openProducto('${o.id}')" title="${esc(o.Nombre)}${esHistoria(o) ? ' · Historia de Tri-URBN' : ''}">${media(o)}${esHistoria(o) ? '<span class="hist-mini">📜</span>' : ''}</div>`).join('')}</div></div>` : ''}
   </form>`, true);
   $('#maForm').onsubmit = async e => {
     e.preventDefault();
@@ -1801,6 +1835,8 @@ const FORMS = {
     ['Sobre_Pedido', 'Permitir “sobre pedido” cuando se agote', 'bool'],
     ['Pedido_Hasta', 'Fecha máxima para reservar', 'date', null, null, 'pre'],
     ['Pedido_Llegada', 'Fecha en que llega a la tienda física', 'date', null, null, 'pre'],
+    ['Historia', '📜 Ya no se produce: mostrarla en “Historia de Tri-URBN” (se exhibe, no se vende)', 'bool', null, 'colab'],
+    ['Historia_Periodo', 'Año o temporada (ej. 2024 · Drop Verano)', 'text', null, 'colab', 'hist'],
     ['Orden', 'Orden (menor = primero)', 'number'], ['Activo', 'Visible en la tienda', 'bool'],
   ],
   Artistas: [
@@ -1872,7 +1908,7 @@ function admLista(tabla, rows, cols) {
         <button class="btn btn-ghost btn-sm" onclick="admBorrar('${tabla}','${r.id}')" aria-label="Borrar">✕</button></div>
     </div>`).join('') || '<div class="empty">Nada por aquí todavía.</div>'}</div>`;
 }
-const admProductos = () => admLista('Productos', ADM.productos, p => `<b>${esc(p.Nombre)}</b><div class="mute" style="font-size:13px">${{ prenda: 'Prenda', colab: 'Colab', obra: 'Obra' }[p.Tipo] || p.Tipo} · ${money(p.Precio)} · ${p.Stock} pzas${p.Artista_ID ? ' · ' + esc(nombreArtista(p.Artista_ID)) : ''}${p.Activo === false ? ' · oculto' : ''}${siBool(p.Sobre_Pedido) ? ' · 📦 sobre pedido hasta ' + fmtDia(p.Pedido_Hasta) + (sobrePedido(p) ? '' : +p.Stock > 0 ? ' (hay stock)' : ' (vencido)') : ''}</div>`);
+const admProductos = () => admLista('Productos', ADM.productos, p => `<b>${esc(p.Nombre)}</b><div class="mute" style="font-size:13px">${{ prenda: 'Prenda', colab: 'Colab', obra: 'Obra' }[p.Tipo] || p.Tipo} · ${money(p.Precio)} · ${p.Stock} pzas${p.Artista_ID ? ' · ' + esc(nombreArtista(p.Artista_ID)) : ''}${p.Activo === false ? ' · oculto' : ''}${esHistoria(p) ? ' · 📜 Historia' + (p.Historia_Periodo ? ' ' + esc(p.Historia_Periodo) : '') : ''}${!esHistoria(p) && siBool(p.Sobre_Pedido) ? ' · 📦 sobre pedido hasta ' + fmtDia(p.Pedido_Hasta) + (sobrePedido(p) ? '' : +p.Stock > 0 ? ' (hay stock)' : ' (vencido)') : ''}</div>`);
 const ordenEstado = { Pendiente: 0, Aprobado: 1, Rechazado: 2 };
 const admArtistas = () => {
   const lista = ADM.artistas.slice().sort((x, y) => (ordenEstado[x.Estado] ?? 1) - (ordenEstado[y.Estado] ?? 1));
@@ -1926,6 +1962,8 @@ function admEditar(tabla, id) {
   if (tipo) { tipo.onchange = vis; vis(); }
   const sp = f.elements.Sobre_Pedido, visPre = () => $$('[data-grupo="pre"]', f).forEach(el => el.hidden = !sp.checked);
   if (sp) { sp.addEventListener('change', visPre); visPre(); }
+  const hi = f.elements.Historia, visHist = () => $$('[data-grupo="hist"]', f).forEach(el => el.hidden = !hi.checked || (tipo && tipo.value !== 'colab'));
+  if (hi) { hi.addEventListener('change', visHist); if (tipo) tipo.addEventListener('change', visHist); visHist(); }
   const leer = () => {
     const obj = { id: id || '' };
     FORMS[tabla].forEach(([k, , type]) => {
@@ -1940,6 +1978,8 @@ function admEditar(tabla, id) {
     if (f.dataset.subiendo === '1') return toast('Espera a que termine de subir la foto');
     const obj = leer();
     if (!obj.Nombre && !obj.Titulo) return toast('Falta el nombre');
+    if (tabla === 'Productos' && obj.Tipo !== 'colab') { obj.Historia = false; obj.Historia_Periodo = ''; }
+    if (obj.Historia) obj.Sobre_Pedido = false;
     if (tabla === 'Subastas' && obj.Fin <= obj.Inicio) return toast('El cierre debe ser después de la apertura');
     if (obj.Sobre_Pedido) {
       if (!obj.Pedido_Hasta || !obj.Pedido_Llegada) return toast('Pon la fecha máxima para reservar y la fecha de llegada');
