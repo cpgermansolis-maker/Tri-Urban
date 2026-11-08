@@ -603,6 +603,15 @@ footer{border-top:2px solid var(--ink)}
 }
 .adm-quick-bar{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin:0 0 22px}
 .adm-quick{align-self:flex-start;margin-top:8px}
+#loader{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:transparent;cursor:progress;transition:background .2s}
+#loader .ld-box{opacity:0;transform:translateY(8px) scale(.97);transition:opacity .2s,transform .2s;background:var(--bg2,#151515);color:var(--text,#f1ede4);border:2px solid var(--text,#f1ede4);padding:22px 28px;min-width:220px;max-width:min(320px,86vw);text-align:center;display:grid;gap:10px;justify-items:center;box-shadow:6px 6px 0 rgba(0,0,0,.6)}
+#loader.show{background:rgba(0,0,0,.45);backdrop-filter:blur(2px)}
+#loader.show .ld-box{opacity:1;transform:none}
+#loader .ld-spin{width:38px;height:38px;border-radius:50%;border:4px solid rgba(127,127,127,.3);border-top-color:var(--accent,#ff4d1a);animation:ldspin .8s linear infinite}
+#loaderTxt{font-weight:700;font-size:15px}
+#loader .ld-sub{font-size:12px;opacity:.65}
+@keyframes ldspin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){#loader .ld-spin{animation-duration:2.4s}}
 </style>
 </head>
 <body>
@@ -678,6 +687,7 @@ footer{border-top:2px solid var(--ink)}
 
 <div id="modal" class="modal" hidden><div class="sheet" id="sheet" role="dialog" aria-modal="true"><button class="x" id="modalX" aria-label="Cerrar">×</button><div id="modalBody"></div></div></div>
 <div id="toast" role="status" aria-live="polite"></div>
+<div id="loader" hidden role="status" aria-live="polite"><div class="ld-box"><div class="ld-spin" aria-hidden="true"></div><div id="loaderTxt">Cargando…</div><div class="ld-sub">Un momento, no cierres ni recargues.</div></div></div>
 
 <script>
 /* =====================================================================
@@ -848,7 +858,28 @@ const galBadge = p => { const g = galeria(p), v = g.filter(x => x.t === 'video')
    ===================================================================== */
 let S = { token: lsGet(LS.token, ''), me: null, data: null, cart: lsGet(LS.cart, []) };
 
+/* ---------- pantalla de carga: aparece en cada consulta al servidor (menos las que se repiten solas) ---------- */
+const SIN_CARGA = new Set(['noLeidos', 'vivoFeed', 'chat', 'subasta', 'vivoReaccionar', 'vivoComentar', 'enviarMensaje']);
+const TXT_CARGA = { llave: 'Verificando tu llave…', login: 'Entrando…', register: 'Creando tu cuenta…', catalog: 'Cargando la tienda…',
+  pedido: 'Apartando tu pedido…', pujar: 'Registrando tu puja…', opinar: 'Publicando tu opinión…', subirMiFoto: 'Subiendo tu foto…',
+  guardarPerfil: 'Guardando tu perfil…', guardarMiArtista: 'Guardando tu perfil de artista…', adminSave: 'Guardando…', adminDelete: 'Borrando…',
+  adminData: 'Cargando el panel…', misPedidos: 'Buscando tus pedidos…', comunidad: 'Cargando la comunidad…', conversaciones: 'Cargando tus mensajes…',
+  vivoIniciar: 'Abriendo tu transmisión…', logout: 'Cerrando sesión…' };
+let cargasActivas = 0;
+function cargando(on, txt) {
+  const el = $('#loader'); if (!el) return;
+  if (on) {
+    cargasActivas++; $('#loaderTxt').textContent = txt || 'Cargando…';
+    if (cargasActivas === 1) { el.hidden = false; if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); clearTimeout(el._t); el._t = setTimeout(() => el.classList.add('show'), 250); }
+  } else if (--cargasActivas <= 0) { cargasActivas = 0; clearTimeout(el._t); el.classList.remove('show'); el.hidden = true; }
+}
 async function api(action, data = {}) {
+  if (SIN_CARGA.has(action)) return apiReal(action, data);
+  const txt = action === 'adminUpload' ? (/^video/.test(data.mime || '') ? 'Subiendo video… puede tardar un poco' : 'Subiendo foto…') : TXT_CARGA[action];
+  cargando(true, txt);
+  try { return await apiReal(action, data); } finally { cargando(false); }
+}
+async function apiReal(action, data = {}) {
   if (DEMO) { await new Promise(r => setTimeout(r, 120)); return Demo.run(action, data, S.token); }
   const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), action === 'adminUpload' ? (/^video/.test(data.mime || '') ? 240000 : 60000) : 30000);
   let j;
