@@ -239,6 +239,25 @@ main{max-width:1320px;margin:0 auto;padding:0 var(--gut) 120px}
 .detail .corner-price{top:60px}
 .detail .media{position:relative;background:var(--bg2);aspect-ratio:4/5;min-width:0;width:100%;overflow:hidden}
 .detail .media>svg,.detail .media>img{width:100%;height:100%;object-fit:cover}
+.gal{display:flex;width:100%;height:100%;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain}
+.gal::-webkit-scrollbar{display:none}
+.gal-s{flex:0 0 100%;height:100%;scroll-snap-align:start;position:relative;background:#000}
+.gal-s>img,.gal-s>svg{width:100%;height:100%;object-fit:cover;display:block}
+.gal-s>iframe,.gal-s>video{width:100%;height:100%;border:0;object-fit:contain;background:#000;display:block}
+.gal-nav{position:absolute;top:50%;transform:translateY(-50%);z-index:4;width:40px;height:40px;border-radius:50%;border:1px solid rgba(241,237,228,.4);background:rgba(8,8,7,.6);color:var(--text);font-size:24px;line-height:1;cursor:pointer}
+.gal-nav.prev{left:10px}.gal-nav.next{right:10px}
+@media (hover:none){.gal-nav{display:none}}
+.gal-dots{position:absolute;left:0;right:0;bottom:12px;z-index:4;display:flex;justify-content:center;gap:7px;pointer-events:none}
+.gal-dots i{width:8px;height:8px;border-radius:50%;background:rgba(241,237,228,.45);pointer-events:auto;cursor:pointer;transition:.2s}
+.gal-dots i.on{background:var(--gold);width:22px;border-radius:4px}
+.gal-badge{position:absolute;right:10px;bottom:10px;z-index:3;font-size:11px;letter-spacing:.08em;background:rgba(8,8,7,.75);color:var(--text);padding:4px 8px;border-radius:999px}
+.colab .gal-badge{right:auto;bottom:auto;left:12px;top:48px}
+.gal-adm{display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:8px}
+.gal-th{position:relative;aspect-ratio:1;border-radius:4px;overflow:hidden;background:var(--bg3);border:1px solid var(--line)}
+.gal-th img{width:100%;height:100%;object-fit:cover}
+.gal-th .play{position:absolute;inset:0;display:grid;place-items:center;font-size:22px;color:var(--text);text-shadow:0 1px 6px #000}
+.gal-th-act{position:absolute;top:3px;right:3px;display:flex;gap:3px}
+.gal-th-act button{width:24px;height:24px;border-radius:50%;border:0;background:rgba(8,8,7,.8);color:var(--text);cursor:pointer;font-size:13px;line-height:1}
 .detail .body{padding:clamp(20px,3vw,40px);display:flex;flex-direction:column;gap:18px}
 .detail h3{font-size:clamp(34px,4vw,54px)}
 .artist-box{display:flex;gap:14px;align-items:center;padding:14px;border:1px solid var(--gold);border-radius:var(--r);background:rgba(201,168,106,.06);cursor:pointer}
@@ -612,6 +631,37 @@ function media(item, kind) {
   if (item.Tipo === 'obra' || kind === 'obra') return artworkSVG(item.id);
   return garmentSVG(item.id, item.Tipo === 'colab' || kind === 'colab');
 }
+/* ---------------- galería de fotos y videos por producto ---------------- */
+function galeria(p) {
+  let g; try { g = JSON.parse(p.Galeria || '[]'); } catch (_) { g = []; }
+  return Array.isArray(g) ? g.filter(x => x && /^(https?:\/\/|data:(image|video)\/)/i.test(String(x.u || ''))) : [];
+}
+const driveId = u => (String(u).match(/drive\.google\.com\/(?:file\/d\/|uc\?id=|open\?id=)([\w-]{20,})/) || [])[1] || '';
+function videoHtml(u) {
+  const y = /youtu/.test(u) ? ytId(u) : '';
+  if (y) return `<iframe src="https://www.youtube-nocookie.com/embed/${y}?rel=0&playsinline=1" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen loading="lazy" title="Video"></iframe>`;
+  const d = driveId(u);
+  if (d) return `<iframe src="https://drive.google.com/file/d/${d}/preview" allow="autoplay" allowfullscreen loading="lazy" title="Video"></iframe>`;
+  return `<video src="${esc(u)}" controls playsinline preload="metadata"></video>`;
+}
+// carrusel deslizable: foto principal + galería
+function galeriaDet(p) {
+  const g = galeria(p); if (!g.length) return media(p);
+  const slides = [...(p.Imagen ? [media(p)] : []), ...g.map(x => x.t === 'video' ? videoHtml(x.u) : `<img src="${esc(imgUrl(x.u))}" alt="${esc(p.Nombre)}" loading="lazy">`)];
+  if (slides.length === 1) return `<div class="gal"><div class="gal-s">${slides[0]}</div></div>`;
+  return `<div class="gal" onscroll="galDot(this)">${slides.map(s => `<div class="gal-s">${s}</div>`).join('')}</div>
+    <button type="button" class="gal-nav prev" onclick="galMove(this,-1)" aria-label="Anterior">‹</button><button type="button" class="gal-nav next" onclick="galMove(this,1)" aria-label="Siguiente">›</button>
+    <div class="gal-dots">${slides.map((_, i) => `<i class="${i ? '' : 'on'}" onclick="galIr(this,${i})"></i>`).join('')}</div>`;
+}
+const galDe = el => el.closest('.media').querySelector('.gal');
+function galIr(el, i) { const g = galDe(el); g.scrollTo({ left: i * g.clientWidth, behavior: 'smooth' }); }
+function galMove(el, d) { const g = galDe(el), i = Math.round(g.scrollLeft / g.clientWidth) + d; galIr(el, Math.max(0, Math.min(g.children.length - 1, i))); }
+function galDot(g) {
+  const i = Math.round(g.scrollLeft / g.clientWidth);
+  g.parentNode.querySelectorAll('.gal-dots i').forEach((d, k) => d.classList.toggle('on', k === i));
+  g.querySelectorAll('video').forEach(v => { if (!v.paused && v.closest('.gal-s') !== g.children[i]) v.pause(); });
+}
+const galBadge = p => { const g = galeria(p), v = g.filter(x => x.t === 'video').length; return g.length ? `<span class="gal-badge">${g.length - v ? '▣ ' + (g.length - v + (p.Imagen ? 1 : 0)) : ''}${v ? ' ▶ ' + v : ''}</span>` : ''; };
 
 /* =====================================================================
    CAPA DE DATOS
@@ -620,7 +670,7 @@ let S = { token: lsGet(LS.token, ''), me: null, data: null, cart: lsGet(LS.cart,
 
 async function api(action, data = {}) {
   if (DEMO) { await new Promise(r => setTimeout(r, 120)); return Demo.run(action, data, S.token); }
-  const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), action === 'adminUpload' ? 60000 : 30000);
+  const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), action === 'adminUpload' ? (/^video/.test(data.mime || '') ? 240000 : 60000) : 30000);
   let j;
   try {
     const res = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action, token: S.token, ...data }), signal: ctl.signal });
@@ -1060,7 +1110,7 @@ function vInicio() {
 function prodCard(p) {
   const agot = +p.Stock <= 0, pre = sobrePedido(p);
   return `<article class="card" onclick="openProducto('${p.id}')" tabindex="0" onkeydown="if(event.key==='Enter')this.click()">
-    <div class="media">${media(p)}${pre ? '<span class="tag-mini pre">Sobre pedido</span>' : agot ? '<span class="tag-mini sold">Agotado</span>' : +p.Stock <= 3 ? '<span class="tag-mini">Últimas piezas</span>' : ''}</div>
+    <div class="media">${media(p)}${galBadge(p)}${pre ? '<span class="tag-mini pre">Sobre pedido</span>' : agot ? '<span class="tag-mini sold">Agotado</span>' : +p.Stock <= 3 ? '<span class="tag-mini">Últimas piezas</span>' : ''}</div>
     <div class="meta"><span class="name">${esc(p.Nombre)}</span><span class="price">${money(p.Precio)}</span></div>
     ${pre ? `${preBar(p)}<div class="pre-line">Reserva hasta el ${fmtDia(p.Pedido_Hasta)}${p.Pedido_Llegada ? ' · llega el ' + fmtDia(p.Pedido_Llegada) : ''}</div>` : ''}
   </article>`;
@@ -1076,7 +1126,7 @@ function vTienda() {
 function colabCard(p) {
   const a = artistaById(p.Artista_ID), h = esHistoria(p);
   if (h) return `<article class="colab hist" onclick="openProducto('${p.id}')" tabindex="0" onkeydown="if(event.key==='Enter')this.click()">
-    <div class="media">${media(p, 'colab')}
+    <div class="media">${media(p, 'colab')}${galBadge(p)}
       <span class="hist-tag">📜 Historia${p.Historia_Periodo ? ' · ' + esc(p.Historia_Periodo) : ''}</span>
       ${p.Edicion ? `<span class="edition">${esc(p.Edicion)}</span>` : ''}
       <div class="colab-artist"><div class="ava">${media(a, 'artista')}</div><div><div class="by">En colaboración con</div><div class="who">${esc(a.Nombre)}</div></div></div>
@@ -1084,7 +1134,7 @@ function colabCard(p) {
     <div class="colab-body"><div class="piece">${esc(p.Nombre)}</div><div class="obra">${esc(p.Obra_Desc || p.Descripcion)}</div></div>
   </article>`;
   return `<article class="colab" onclick="openProducto('${p.id}')" tabindex="0" onkeydown="if(event.key==='Enter')this.click()">
-    <div class="media">${media(p, 'colab')}
+    <div class="media">${media(p, 'colab')}${galBadge(p)}
       <div class="corner-price"><small>PRECIO</small>${money(p.Precio)}</div>
       ${p.Edicion ? `<span class="edition">${esc(p.Edicion)}</span>` : ''}
       <div class="colab-artist"><div class="ava">${media(a, 'artista')}</div><div><div class="by">Intervenida por</div><div class="who">${esc(a.Nombre)}</div></div></div>
@@ -1247,7 +1297,7 @@ function openProducto(id) {
   const artistBox = a ? `<div class="artist-box" onclick="openArtista('${a.id}')"><div class="ava">${media(a, 'artista')}</div>
       <div style="flex:1"><div class="kicker" style="color:var(--gold)">${p.Tipo === 'obra' ? 'Obra de' : 'Intervenida por'}</div><div class="it" style="font-size:24px">${esc(a.Nombre)}</div><div class="mute" style="font-size:13px">${esc(a.Disciplina || '')}</div></div><span>→</span></div>` : '';
   if (esHistoria(p)) return openModal(`<div class="detail">
-    <div class="media hist">${media(p)}<span class="hist-tag">📜 Historia${p.Historia_Periodo ? ' · ' + esc(p.Historia_Periodo) : ''}</span>${p.Edicion ? `<span class="edition">${esc(p.Edicion)}</span>` : ''}</div>
+    <div class="media hist">${galeriaDet(p)}<span class="hist-tag">📜 Historia${p.Historia_Periodo ? ' · ' + esc(p.Historia_Periodo) : ''}</span>${p.Edicion ? `<span class="edition">${esc(p.Edicion)}</span>` : ''}</div>
     <div class="body">
       <div class="kicker">Historia de Tri-URBN</div>
       ${a ? artistBox.replace('Intervenida por', 'En colaboración con') : ''}
@@ -1257,7 +1307,7 @@ function openProducto(id) {
       ${a ? `<button class="btn btn-gold btn-block" onclick="openArtista('${a.id}')">Conoce el trabajo de ${esc(a.Nombre)} →</button>` : ''}
     </div></div>`);
   openModal(`<div class="detail">
-    <div class="media">${media(p)}${p.Tipo === 'colab' ? `<div class="corner-price"><small>PRECIO</small>${money(p.Precio)}</div>` : ''}${p.Edicion ? `<span class="edition">${esc(p.Edicion)}</span>` : ''}</div>
+    <div class="media">${galeriaDet(p)}${p.Tipo === 'colab' ? `<div class="corner-price"><small>PRECIO</small>${money(p.Precio)}</div>` : ''}${p.Edicion ? `<span class="edition">${esc(p.Edicion)}</span>` : ''}</div>
     <div class="body">
       <div class="kicker">${{ prenda: 'Tri-Urban', colab: 'Arte × Urban', obra: 'Galería' }[p.Tipo]}</div>
       ${p.Tipo === 'colab' ? artistBox : ''}
@@ -1825,7 +1875,8 @@ const FORMS = {
   Productos: [
     ['Tipo', 'Tipo', 'select', [['prenda', 'Prenda Tri-Urban'], ['colab', 'Arte × Urban (colab)'], ['obra', 'Obra de galería']]],
     ['Nombre', 'Nombre de la pieza', 'text'], ['Precio', 'Precio (MXN)', 'number'], ['Stock', 'Piezas disponibles', 'number'],
-    ['Imagen', 'Foto', 'image'],
+    ['Imagen', 'Foto principal', 'image'],
+    ['Galeria', 'Más fotos y videos', 'galeria'],
     ['Artista_ID', 'Artista', 'artista', null, 'colab,obra'],
     ['Descripcion', 'Descripción de la prenda / obra', 'textarea'],
     ['Obra_Desc', 'Sobre la obra (texto del artista)', 'textarea', null, 'colab'],
@@ -1943,6 +1994,11 @@ function admEditar(tabla, id) {
     else if (type === 'select') inp = `<select name="${k}">${opts.map(([val, l]) => `<option value="${val}" ${val === v ? 'selected' : ''}>${l}</option>`).join('')}</select>`;
     else if (type === 'artista') inp = `<select name="${k}"><option value="">—</option>${ADM.artistas.map(a => `<option value="${a.id}" ${a.id === v ? 'selected' : ''}>${esc(a.Nombre)}</option>`).join('')}</select>`;
     else if (type === 'bool') return `<label class="toggle"${sh}><input type="checkbox" name="${k}" ${(v === '' || v == null ? k === 'Activo' : siBool(v)) ? 'checked' : ''}> ${label}</label>`;
+    else if (type === 'galeria') inp = `<input type="hidden" name="${k}" value="${esc(v)}"><div class="gal-adm" id="galAdm"></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap"><label class="btn btn-ghost btn-sm" style="cursor:pointer">＋ Fotos<input type="file" accept="image/*" multiple hidden onchange="galSubir(this,false)"></label>
+        <label class="btn btn-ghost btn-sm" style="cursor:pointer">＋ Video<input type="file" accept="video/mp4,video/quicktime,video/webm" hidden onchange="galSubir(this,true)"></label></div>
+        <div style="display:flex;gap:8px"><input id="galLink" placeholder="o pega un enlace de YouTube o de video" style="flex:1;min-width:0"><button type="button" class="btn btn-ghost btn-sm" onclick="galAgregarLink()">Agregar</button></div>
+        <div class="mute" style="font-size:12px">Se ven después de la foto principal, en este orden (‹ para moverlas). Hasta 12. Videos de máx. 20 MB; si es más pesado, súbelo a YouTube como “no listado” y pega el enlace.</div>`;
     else if (type === 'date') inp = `<input type="date" name="${k}" value="${esc(String(v).slice(0, 10))}">`;
     else if (type === 'datetime') inp = `<input type="datetime-local" name="${k}" value="${toLocalDT(v)}">`;
     else if (type === 'image') inp = `<div class="img-up"><div class="th" id="prev_${k}">${v ? `<img src="${esc(imgUrl(v))}" alt="">` : ''}</div>
@@ -1958,6 +2014,7 @@ function admEditar(tabla, id) {
     ${FORMS[tabla].map(campo).join('')}
     <button class="btn btn-solid btn-block" type="submit" id="admSave">Guardar</button></form>`, true);
   const f = $('#admForm'), tipo = f.elements.Tipo;
+  if (f.elements.Galeria) galPintar();
   const vis = () => $$('[data-show]', f).forEach(el => el.hidden = tabla === 'Productos' && !el.dataset.show.split(',').includes(tipo.value));
   if (tipo) { tipo.onchange = vis; vis(); }
   const sp = f.elements.Sobre_Pedido, visPre = () => $$('[data-grupo="pre"]', f).forEach(el => el.hidden = !sp.checked);
@@ -1995,6 +2052,51 @@ function admEditar(tabla, id) {
   };
 }
 const BORRADORES = {};
+/* galería en el formulario del panel */
+const galLeer = () => { try { const g = JSON.parse($('#admForm').elements.Galeria.value || '[]'); return Array.isArray(g) ? g : []; } catch (_) { return []; } };
+function galGuardar(g) { const f = $('#admForm'); f.elements.Galeria.value = JSON.stringify(g); f.dataset.dirty = '1'; galPintar(); }
+function galPintar() {
+  const box = $('#galAdm'); if (!box) return;
+  const g = galLeer();
+  box.innerHTML = g.map((x, i) => {
+    const y = x.t === 'video' && /youtu/.test(x.u) ? ytId(x.u) : '';
+    const th = x.t === 'video' ? (y ? `<img src="https://img.youtube.com/vi/${y}/mqdefault.jpg" alt="">` : '') + '<span class="play">▶</span>' : `<img src="${esc(imgUrl(x.u))}" alt="">`;
+    return `<div class="gal-th">${th}<div class="gal-th-act">${i ? `<button type="button" onclick="galMover(${i},-1)" title="Mover antes">‹</button>` : ''}<button type="button" onclick="galQuitar(${i})" title="Quitar">✕</button></div></div>`;
+  }).join('') || '<div class="mute" style="font-size:13px">Sin fotos ni videos extra.</div>';
+}
+function galQuitar(i) { const g = galLeer(); g.splice(i, 1); galGuardar(g); }
+function galMover(i, d) { const g = galLeer(); [g[i + d], g[i]] = [g[i], g[i + d]]; galGuardar(g); }
+function galAgregarLink() {
+  const inp = $('#galLink'), u = inp.value.trim();
+  if (!/^https?:\/\/\S+$/i.test(u)) return toast('Pega un enlace que empiece con https://');
+  const g = galLeer(); if (g.length >= 12) return toast('Máximo 12 fotos y videos extra');
+  g.push({ t: /\.(jpe?g|png|webp|gif)(\?|$)/i.test(u) ? 'img' : 'video', u }); inp.value = ''; galGuardar(g);
+}
+const leerBase64 = file => new Promise((ok, bad) => { const r = new FileReader(); r.onload = () => ok(String(r.result).split(',')[1]); r.onerror = bad; r.readAsDataURL(file); });
+async function galSubir(inp, video) {
+  const files = [...inp.files]; inp.value = ''; if (!files.length) return;
+  if (galLeer().length + files.length > 12) return toast('Máximo 12 fotos y videos extra');
+  const f = $('#admForm'), save = $('#admSave'), txt = save.textContent;
+  f.dataset.subiendo = '1'; f.dataset.dirty = '1'; save.disabled = true;
+  let ok = 0;
+  try {
+    for (let n = 0; n < files.length; n++) {
+      const file = files[n];
+      save.textContent = video ? 'Subiendo video… (puede tardar)' : `Subiendo foto ${n + 1} de ${files.length}…`;
+      let data, mime;
+      if (video) {
+        if (file.size > 20 * 1024 * 1024) { toast('Ese video pesa más de 20 MB. Súbelo a YouTube como “no listado” y pega el enlace.'); continue; }
+        data = await leerBase64(file); mime = file.type || 'video/mp4';
+      } else { data = await resizeImage(file); mime = 'image/jpeg'; }
+      const r = await api('adminUpload', { data, mime, name: video ? file.name : file.name.replace(/\.\w+$/, '') + '.jpg' });
+      if (!r.ok) { toast(r.error || 'No se pudo subir'); continue; }
+      if (!f.isConnected) return;
+      const g = galLeer(); g.push({ t: video ? 'video' : 'img', u: r.url }); galGuardar(g); ok++;
+    }
+    if (ok) toast(video ? 'Video listo ✓ (Drive puede tardar unos minutos en procesarlo)' : 'Fotos listas ✓');
+  } catch (_) { toast('No se pudo leer el archivo. Prueba con otro.'); }
+  finally { f.dataset.subiendo = ''; if (f.isConnected) { save.disabled = false; save.textContent = txt; } }
+}
 function resizeImage(file, max = 1600) {
   return new Promise((ok, bad) => {
     const img = new Image(), url = URL.createObjectURL(file);
