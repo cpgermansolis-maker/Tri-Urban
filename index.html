@@ -282,6 +282,44 @@ main{max-width:1320px;margin:0 auto;padding:0 var(--gut) 120px}
 .st-box.can{border-color:var(--bad);background:rgba(248,113,113,.06)}
 .tab-dot{display:inline-grid;place-items:center;min-width:18px;height:18px;padding:0 5px;margin-left:6px;border-radius:9px;background:var(--accent);color:#fff;font-size:10px;font-weight:700;letter-spacing:0}
 
+/* ---------- comunidad y mensajes ---------- */
+.ava-c{display:inline-grid;place-items:center;flex:none;border-radius:50%;overflow:hidden;color:#f1ede4;font-weight:700;border:1px solid var(--line)}
+.ava-c img{width:100%;height:100%;object-fit:cover}
+#meBtn.con-foto{padding:0;overflow:hidden}
+#meBtn img{width:100%;height:100%;object-fit:cover}
+.insignias{display:flex;gap:6px;flex-wrap:wrap}
+.insignias{min-width:0}
+.ins{display:inline-block;font-size:11px;letter-spacing:.06em;padding:4px 9px;border-radius:12px;max-width:100%;overflow-wrap:anywhere;line-height:1.35}
+.ins.eq{background:rgba(201,168,106,.16);color:var(--gold);border:1px solid rgba(201,168,106,.5)}
+.ins.art{background:rgba(215,255,61,.1);color:var(--acid);border:1px solid rgba(215,255,61,.4)}
+.com-tools{display:grid;gap:12px;margin-bottom:20px}
+.people{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(320px,100%),1fr));gap:12px}
+.person{min-width:0;display:flex;gap:14px;align-items:center;padding:14px;border:1px solid var(--line);border-radius:var(--r);background:var(--bg2);cursor:pointer}
+.person:hover{border-color:var(--gold)}
+.person .pn{font-family:var(--serif);font-style:italic;font-size:21px;line-height:1.15}
+.person .pb{font-size:13px;color:var(--mute);margin-top:6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.person .insignias{margin-top:6px}
+.eq-box{display:grid;gap:12px;padding:14px;border:1px dashed var(--line);border-radius:var(--r)}
+.eq-adm{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:8px}
+.eq-adm input{width:auto;flex:1;min-width:140px;padding:7px 10px;font-size:14px}
+.convs{display:grid;gap:4px}
+.conv{display:flex;gap:12px;align-items:center;padding:10px;border-radius:var(--r);cursor:pointer}
+.conv:hover{background:var(--bg2)}
+.conv.nuevo .conv-u{color:var(--text);font-weight:500}
+.conv-h{display:flex;justify-content:space-between;gap:8px;font-size:14px}
+.conv-u{font-size:13px;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chat-dm{display:flex;flex-direction:column;height:min(78vh,700px)}
+.dm-head{display:flex;gap:10px;align-items:center;padding:12px 60px 12px 14px;border-bottom:1px solid var(--line)}
+.dm-head .icon-btn{flex:none}
+.dm-list{flex:1;overflow:auto;padding:16px;display:flex;flex-direction:column;gap:8px}
+.bub{max-width:80%;align-self:flex-start;background:var(--bg3);padding:9px 12px;border-radius:14px 14px 14px 4px;font-size:15px;line-height:1.4;white-space:pre-wrap;word-wrap:break-word;animation:fadeIn .2s}
+.bub.mio{align-self:flex-end;background:var(--gold);color:#17120b;border-radius:14px 14px 4px 14px}
+.bub time{display:block;font-size:10px;opacity:.6;margin-top:3px;text-align:right}
+.dm-form{display:flex;gap:8px;padding:12px;border-top:1px solid var(--line);align-items:flex-end}
+.dm-form textarea{flex:1;width:auto;min-width:0;resize:none;padding:11px 12px;max-height:120px;line-height:1.35}
+.dm-form .btn{flex:none;padding:0 18px;height:44px}
+@media (max-width:900px){.people{grid-template-columns:minmax(0,1fr)}.chat-dm{height:86vh}.top-act{gap:4px}.icon-btn{width:38px;height:38px}}
+
 /* ---------- panel admin ---------- */
 .btn-sm{padding:8px 12px;font-size:11px}
 .st{display:inline-block;font-size:10px;letter-spacing:.16em;text-transform:uppercase;padding:4px 8px;border-radius:2px;font-weight:700}
@@ -393,6 +431,10 @@ footer{border-top:1px solid var(--line);margin-top:70px;padding:30px 0;display:f
       <a class="logo" href="#inicio">TRI—URBAN<em>× Trikles</em></a>
       <nav class="nav" id="nav"></nav>
       <div class="top-act">
+        <button class="icon-btn" id="msgBtn" aria-label="Mensajes" onclick="openMensajes()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5h16v11H9l-5 4V5Z" stroke-linejoin="round"/></svg>
+          <span class="badge" id="msgCount" hidden>0</span>
+        </button>
         <button class="icon-btn" id="cartBtn" aria-label="Carrito">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 7h14l-1.2 12.2a2 2 0 0 1-2 1.8H8.2a2 2 0 0 1-2-1.8L5 7Z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg>
           <span class="badge" id="cartCount" hidden>0</span>
@@ -626,7 +668,18 @@ const Demo = (() => {
   let db = lsGet(LS.db, null);
   if (!db) { db = seed(); save(); }
   function save() { lsSet(LS.db, db); }
-  const pub = m => m && ({ id: m.id, Nombre: m.Nombre, Email: m.Email, Rol: m.Rol, Artista_ID: m.Artista_ID || '' });
+  const pub = m => m && ({ id: m.id, Nombre: m.Nombre, Email: m.Email, Rol: m.Rol, Artista_ID: m.Artista_ID || '', Foto: m.Foto || '', Equipo_Estado: m.Equipo_Estado || '', Puesto: m.Puesto || '' });
+  // gente de ejemplo para la sección Comunidad
+  db.mensajes = db.mensajes || [];
+  if (!db.miembros.some(m => String(m.id).startsWith('dm'))) {
+    db.miembros.push(
+      { id: 'dm1', Nombre: 'Mariana López', Email: 'demo1@x', Pass: uid('x'), Rol: 'miembro', Equipo_Estado: 'Aprobado', Puesto: 'Programación de cine', Bio: 'Elijo las películas de cada mes. Pregúntame lo que quieras.', Fecha: now - 900 * H },
+      { id: 'dm2', Nombre: 'Valeria Nox', Email: 'demo2@x', Pass: uid('x'), Rol: 'artista', Artista_ID: 'a1', Bio: 'Grafiti, stencil y mucho café.', Instagram: 'https://instagram.com/', Fecha: now - 700 * H },
+      { id: 'dm3', Nombre: 'Diego Ramírez', Email: 'demo3@x', Pass: uid('x'), Rol: 'miembro', Bio: 'Cinéfilo de domingo.', Fecha: now - 300 * H });
+    save();
+  }
+  const perfilDemo = r => { const eq = r.Equipo_Estado === 'Aprobado'; return { id: r.id, Nombre: r.Nombre, Foto: r.Foto || '', Bio: r.Bio || '', Instagram: r.Instagram || '', Facebook: r.Facebook || '',
+    Artista_ID: r.Artista_ID && db.artistas.some(a => a.id === r.Artista_ID && (!a.Estado || a.Estado === 'Aprobado')) ? r.Artista_ID : '', Equipo: eq, Puesto: eq ? r.Puesto || '' : '', Desde: r.Fecha || Date.now() }; };
   const who = t => db.miembros.find(m => m.id === db.sesiones[t]);
   const ratings = id => { const o = db.opiniones.filter(x => x.Artista_ID === id); return { prom: o.length ? o.reduce((a, b) => a + +b.Estrellas, 0) / o.length : 0, n: o.length, recs: o.filter(x => x.Recomienda).length }; };
   const topBid = id => db.pujas.filter(b => b.Subasta_ID === id).sort((a, b) => b.Monto - a.Monto)[0];
@@ -727,6 +780,37 @@ const Demo = (() => {
       return { ok: true, folio, total, config: db.config, sobrePedido: items.filter(i => i.SobrePedido) };
     },
   };
+  /* ---- perfiles, comunidad y mensajes ---- */
+  A.miPerfil = (d, m) => ({ ok: true, perfil: { ...pub(m), Bio: m.Bio || '', Instagram: m.Instagram || '', Facebook: m.Facebook || '' } });
+  A.guardarPerfil = (d, m) => {
+    if (!String(d.Nombre || '').trim()) return { ok: false, error: 'Escribe tu nombre.' };
+    Object.assign(m, { Nombre: d.Nombre.trim(), Foto: d.Foto, Bio: d.Bio, Instagram: d.Instagram, Facebook: d.Facebook });
+    if (!d.Equipo) { m.Equipo_Estado = ''; m.Puesto = ''; }
+    else if (m.Equipo_Estado !== 'Aprobado' || d.Puesto !== (m.Puesto || '')) { m.Equipo_Estado = m.Rol === 'admin' ? 'Aprobado' : 'Pendiente'; m.Puesto = d.Puesto; }
+    save(); return { ok: true, equipo: m.Equipo_Estado };
+  };
+  A.comunidad = () => ({ ok: true, miembros: db.miembros.filter(x => x.Activo !== false).map(perfilDemo).sort((a, b) => a.Nombre.localeCompare(b.Nombre, 'es')) });
+  A.perfil = d => { const r = db.miembros.find(x => x.id === d.id); return r ? { ok: true, perfil: perfilDemo(r) } : { ok: false, error: 'Perfil no encontrado' }; };
+  A.noLeidos = (d, m) => ({ ok: true, n: db.mensajes.filter(x => x.Para === m.id && !x.Leido).length });
+  A.conversaciones = (d, m) => {
+    const c = {};
+    db.mensajes.forEach(x => { if (x.De !== m.id && x.Para !== m.id) return; const o = x.De === m.id ? x.Para : x.De, k = c[o] || (c[o] = { con: o, sinLeer: 0, fecha: 0 });
+      if (x.Fecha >= k.fecha) Object.assign(k, { ultimo: x.Texto.slice(0, 80), fecha: x.Fecha, mio: x.De === m.id }); if (x.Para === m.id && !x.Leido) k.sinLeer++; });
+    return { ok: true, conversaciones: Object.values(c).map(k => ({ ...k, perfil: perfilDemo(db.miembros.find(x => x.id === k.con)) })).sort((a, b) => b.fecha - a.fecha) };
+  };
+  A.chat = (d, m) => {
+    const r = db.miembros.find(x => x.id === d.con); if (!r) return { ok: false, error: 'Perfil no encontrado' };
+    const ms = db.mensajes.filter(x => (x.De === m.id && x.Para === d.con) || (x.De === d.con && x.Para === m.id));
+    ms.forEach(x => { if (x.Para === m.id) x.Leido = true; }); save();
+    return { ok: true, ahora: Date.now(), perfil: perfilDemo(r), mensajes: ms.filter(x => x.Fecha > (+d.since || 0)).map(x => ({ id: x.id, mio: x.De === m.id, Texto: x.Texto, Fecha: x.Fecha })) };
+  };
+  A.enviarMensaje = (d, m) => {
+    const t = String(d.texto || '').trim().slice(0, 1000); if (!t) return { ok: false, error: 'Escribe un mensaje' };
+    if (d.para === m.id) return { ok: false, error: 'No puedes escribirte a ti mismo' };
+    db.mensajes.push({ id: uid('d'), De: m.id, Para: d.para, Texto: t, Fecha: Date.now(), Leido: false }); save();
+    if (String(d.para).startsWith('dm')) setTimeout(() => { db.mensajes.push({ id: uid('d'), De: d.para, Para: m.id, Texto: '¡Hola! 👋 Gracias por escribir.', Fecha: Date.now(), Leido: false }); save(); }, 2500);
+    return { ok: true };
+  };
   /* ---- miembro: mi perfil de artista ---- */
   const miArt = m => db.artistas.find(a => (m.Artista_ID && a.id === m.Artista_ID) || (a.Miembro_ID && a.Miembro_ID === m.id));
   A.miArtista = (d, m) => { const a = miArt(m); return { ok: true, artista: a ? { ...a, Estado: a.Estado || 'Aprobado' } : null }; };
@@ -763,7 +847,7 @@ const Demo = (() => {
     adminMiembro(d, m) {
       const x = db.miembros.find(y => y.id === d.id); if (!x) return { ok: false };
       if (d.id === m.id && ((d.Rol && d.Rol !== 'admin') || d.Activo === false)) return { ok: false, error: 'No puedes quitarte tu propio acceso de administrador.' };
-      ['Rol', 'Artista_ID', 'Activo'].forEach(k => { if (d[k] !== undefined) x[k] = d[k]; }); save(); return { ok: true };
+      ['Rol', 'Artista_ID', 'Activo', 'Puesto', 'Equipo_Estado'].forEach(k => { if (d[k] !== undefined) x[k] = d[k]; }); save(); return { ok: true };
     },
     adminConfig(d) { Object.assign(db.config, d.config || {}); save(); return { ok: true }; },
     adminUpload(d) { return { ok: true, url: 'data:' + d.mime + ';base64,' + d.data }; },
@@ -817,7 +901,8 @@ $('#fLlave').onsubmit = async e => {
 };
 async function enterApp() {
   $('#gate').hidden = true; $('#app').hidden = false;
-  $('#meBtn').textContent = iniciales(S.me.Nombre);
+  pintarMeBtn();
+  revisarMensajes(); clearInterval(msgTimer); msgTimer = setInterval(revisarMensajes, 30000);
   if (DEMO && !$('.demo-flag')) document.body.insertAdjacentHTML('beforeend', '<div class="demo-flag">Demo</div>');
   await loadCatalog();
   route();
@@ -828,7 +913,7 @@ async function loadCatalog() {
 }
 function logout(silent) {
   if (!silent && S.token) api('logout').catch(() => {});
-  S.token = ''; S.me = null; lsSet(LS.token, ''); stopTimers(); closeModal(); showGate();
+  S.token = ''; S.me = null; lsSet(LS.token, ''); stopTimers(); clearInterval(msgTimer); closeModal(); showGate();
 }
 $$('[data-gtab]').forEach(b => b.onclick = () => {
   $$('[data-gtab]').forEach(x => x.classList.toggle('on', x === b));
@@ -855,9 +940,10 @@ $('#fReg').onsubmit = async e => {
 /* =====================================================================
    NAVEGACIÓN
    ===================================================================== */
+const CORTO = { 'Tri-Urban': 'Tienda', 'Arte × Urban': 'Colabs', 'En vivo': 'Vivo', 'Comunidad': 'Gente' }; // menú inferior del celular
 const SECCIONES = [
   ['inicio', 'Inicio', '◐'], ['tienda', 'Tri-Urban', '▲'], ['colabs', 'Arte × Urban', '✦'],
-  ['galeria', 'Galería', '▣'], ['subastas', 'Subastas', '⚑'], ['artistas', 'Artistas', '☺'], ['vivo', 'En vivo', '●'],
+  ['galeria', 'Galería', '▣'], ['subastas', 'Subastas', '⚑'], ['artistas', 'Artistas', '☺'], ['comunidad', 'Comunidad', '◎'], ['vivo', 'En vivo', '●'],
 ];
 let timers = [];
 function stopTimers() { timers.forEach(clearInterval); timers = []; }
@@ -865,7 +951,7 @@ function renderNav(cur) {
   const live = (S.data?.vivos || []).some(v => v.Estado === 'envivo');
   $('#nav').innerHTML = SECCIONES.map(([k, l]) => `<a href="#${k}" class="${k === cur ? 'on' : ''}">${l}${k === 'vivo' && live ? '<span class="dot"></span>' : ''}</a>`).join('') + (S.me.Rol === 'admin' ? `<a href="#admin" class="${cur === 'admin' ? 'on' : ''}">⚙ Panel</a>` : '');
   const adm = S.me.Rol === 'admin';
-  $('#tabbar').innerHTML = SECCIONES.filter(s => s[0] !== 'galeria' && !(adm && s[0] === 'inicio')).map(([k, l, i]) => `<a href="#${k}" class="${k === cur ? 'on' : ''}"><i>${k === 'vivo' && live ? '🔴' : i}</i>${l.replace('Arte × Urban', 'Colabs')}</a>`).join('')
+  $('#tabbar').innerHTML = SECCIONES.filter(s => s[0] !== 'galeria' && !(adm && s[0] === 'inicio')).map(([k, l, i]) => `<a href="#${k}" class="${k === cur ? 'on' : ''}"><i>${k === 'vivo' && live ? '🔴' : i}</i>${CORTO[l] || l}</a>`).join('')
     + (adm ? `<a href="#admin" class="${cur === 'admin' ? 'on' : ''}"><i>⚙</i>Panel</a>` : '');
 }
 function route() {
@@ -875,12 +961,13 @@ function route() {
   const esAdmin = S.me.Rol === 'admin' && sec === 'admin';
   const k = esAdmin ? 'admin' : SECCIONES.some(s => s[0] === sec) ? sec : 'inicio';
   renderNav(k);
-  const V = { inicio: vInicio, tienda: vTienda, colabs: vColabs, galeria: vGaleria, subastas: vSubastas, artistas: vArtistas, vivo: vVivo, admin: vAdmin }[k];
+  const V = { inicio: vInicio, tienda: vTienda, colabs: vColabs, galeria: vGaleria, subastas: vSubastas, artistas: vArtistas, vivo: vVivo, admin: vAdmin, comunidad: vComunidad }[k];
   $('#view').innerHTML = V(arg) + footer();
   window.scrollTo(0, 0);
   tickCountdowns(); timers.push(setInterval(tickCountdowns, 1000));
   if (k === 'vivo' && arg) startLive(arg);
   if (k === 'admin') loadAdmin();
+  if (k === 'comunidad') loadComunidad();
 }
 window.addEventListener('hashchange', route);
 function footer() {
@@ -1251,8 +1338,11 @@ async function checkout(btn) {
   route();
 }
 $('#cartBtn').onclick = openCart;
-$('#meBtn').onclick = () => openModal(`<div class="pad"><div class="avatar" style="width:64px;height:64px;font-size:22px">${iniciales(S.me.Nombre)}</div>
+$('#meBtn').onclick = () => openModal(`<div class="pad">${avatarHtml(S.me, 64)}
   <h3 class="it" style="font-size:30px">${esc(S.me.Nombre)}</h3><div class="mute">${esc(S.me.Email)}</div>
+  ${S.me.Equipo_Estado === 'Aprobado' ? `<div class="insignias">${insignias({ Equipo: true, Puesto: S.me.Puesto })}</div>` : ''}
+  <button class="btn btn-gold btn-block" onclick="openMiPerfil()">👤 Mi perfil</button>
+  <button class="btn btn-ghost btn-block" onclick="openMensajes()">💬 Mensajes</button>
   <div><span class="org ${S.me.Rol === 'miembro' ? 'ct' : 'tu'}">${{ miembro: 'Miembro', artista: 'Artista', admin: 'Administrador' }[S.me.Rol] || S.me.Rol}</span></div>
   <button class="btn btn-solid btn-block" onclick="openMisPedidos()">Mis pedidos</button>
   <button class="btn btn-ghost btn-block" onclick="openMiArtista()">🎨 ${S.me.Artista_ID ? 'Mi perfil de artista' : 'Soy artista: crear mi perfil'}</button>
@@ -1334,6 +1424,179 @@ async function openMisPedidos() {
       <div class="ord-h"><span class="mute">Total</span><b>${money(p.total)}</b></div>
       ${p.Estado === 'Pendiente' ? `<div class="mute" style="font-size:12px">Transfiere a ${esc(j.config.Pago_Banco || '')} · ${esc(j.config.Pago_Numero || '')} con concepto ${esc(p.folio)}.</div>` : ''}</div>`).join('') || '<div class="empty">Aún no tienes pedidos.</div>'}
   </div>`, true);
+}
+
+/* =====================================================================
+   PERFILES, COMUNIDAD Y MENSAJES
+   ===================================================================== */
+let msgTimer = null;
+function avatarHtml(p, size = 44) {
+  const u = imgUrl(p.Foto), r = rng(p.id || p.Nombre)(), hue = Math.round(r * 360);
+  return u ? `<span class="ava-c" style="width:${size}px;height:${size}px"><img src="${esc(u)}" alt="" loading="lazy"></span>`
+    : `<span class="ava-c" style="width:${size}px;height:${size}px;font-size:${Math.round(size * .36)}px;background:hsl(${hue},35%,32%)">${esc(iniciales(p.Nombre))}</span>`;
+}
+function insignias(p) {
+  return (p.Equipo ? `<span class="ins eq">⭐ Equipo Trikles${p.Puesto ? ' · ' + esc(p.Puesto) : ''}</span>` : '')
+    + (p.Artista_ID ? '<span class="ins art">🎨 Artista</span>' : '');
+}
+function pintarMeBtn() {
+  const b = $('#meBtn'), u = imgUrl(S.me.Foto);
+  b.innerHTML = u ? `<img src="${esc(u)}" alt="">` : esc(iniciales(S.me.Nombre));
+  b.classList.toggle('con-foto', !!u);
+}
+async function revisarMensajes() {
+  if (!S.me || document.hidden) return;
+  const r = await api('noLeidos'); if (!r.ok) return;
+  $('#msgCount').textContent = r.n > 9 ? '9+' : r.n; $('#msgCount').hidden = !r.n;
+}
+document.addEventListener('visibilitychange', () => { if (!document.hidden && S.me) revisarMensajes(); });
+
+/* ---------- sección Comunidad ---------- */
+let comFiltro = 'Todos', comBusca = '';
+function vComunidad() {
+  return `<section class="sec">
+    <div class="sec-head"><h2 class="disp">Comunidad</h2><p>Las personas de Tri-Urban y Cineteca Trikles. Conoce quién es quién y mándales un mensaje.</p></div>
+    <div class="art-cta" onclick="openMiPerfil()"><span>${avatarHtml(S.me, 40)}</span><div style="flex:1"><b>Tu perfil</b><div class="mute" style="font-size:13px">Agrega tu foto, cuéntanos de ti y di si eres parte del equipo.</div></div><span>→</span></div>
+    <div class="com-tools"><input id="comBusca" type="search" placeholder="Buscar por nombre o puesto…" value="${esc(comBusca)}" oninput="comBusca=this.value;pintarComunidad()" autocomplete="off">
+      <div class="filters" style="margin:0">${['Todos', 'Equipo Trikles', 'Artistas'].map(f => `<button class="chip ${f === comFiltro ? 'on' : ''}" onclick="comFiltro='${f}';$$('.com-tools .chip').forEach(c=>c.classList.toggle('on',c.textContent==='${f}'));pintarComunidad()">${f}</button>`).join('')}</div></div>
+    <div class="people" id="people"><div class="mute">Cargando…</div></div>
+  </section>`;
+}
+async function loadComunidad() {
+  const r = await api('comunidad'); if (!r.ok) return;
+  S.comunidad = r.miembros; pintarComunidad();
+}
+function pintarComunidad() {
+  const el = $('#people'); if (!el || !S.comunidad) return;
+  const q = comBusca.trim().toLowerCase();
+  const lista = S.comunidad.filter(p => (comFiltro === 'Todos' || (comFiltro === 'Artistas' ? p.Artista_ID : p.Equipo))
+    && (!q || (p.Nombre + ' ' + (p.Puesto || '')).toLowerCase().includes(q)));
+  el.innerHTML = lista.map(p => `<div class="person" onclick="openPerfil('${p.id}')" tabindex="0" onkeydown="if(event.key==='Enter')this.click()">
+      ${avatarHtml(p, 64)}
+      <div style="min-width:0;flex:1"><div class="pn">${esc(p.Nombre)}${p.id === S.me.id ? ' <span class="mute" style="font-size:12px">(tú)</span>' : ''}</div>
+        <div class="insignias">${insignias(p)}</div>
+        ${p.Bio ? `<div class="pb">${esc(p.Bio)}</div>` : ''}</div>
+      ${p.id !== S.me.id ? `<button class="icon-btn" aria-label="Enviar mensaje a ${esc(p.Nombre)}" onclick="event.stopPropagation();openChat('${p.id}')">💬</button>` : ''}
+    </div>`).join('') || '<div class="empty">Nadie coincide con tu búsqueda.</div>';
+}
+
+/* ---------- ver un perfil ---------- */
+async function openPerfil(id) {
+  openModal('<div class="pad mute">Cargando…</div>', true);
+  const r = await api('perfil', { id }); if (!r.ok) return openModal(`<div class="pad">${esc(r.error)}</div>`, true);
+  const p = r.perfil, yo = p.id === S.me.id;
+  openModal(`<div class="pad" style="align-items:flex-start">
+    ${avatarHtml(p, 110)}
+    <h3 class="it" style="font-size:34px;line-height:1.05">${esc(p.Nombre)}</h3>
+    <div class="insignias">${insignias(p)}</div>
+    ${p.Bio ? `<p style="white-space:pre-line">${esc(p.Bio)}</p>` : '<p class="mute">Aún no escribe nada sobre sí.</p>'}
+    <div class="social">${safeUrl(p.Instagram) ? `<a href="${esc(safeUrl(p.Instagram))}" target="_blank" rel="noopener">Instagram ↗</a>` : ''}${safeUrl(p.Facebook) ? `<a href="${esc(safeUrl(p.Facebook))}" target="_blank" rel="noopener">Facebook ↗</a>` : ''}</div>
+    <div class="mute" style="font-size:12px">En la comunidad desde ${new Date(+p.Desde).toLocaleDateString('es-MX', { month: 'long', year: 'numeric' })}</div>
+    ${yo ? '<button class="btn btn-gold btn-block" onclick="openMiPerfil()">Editar mi perfil</button>'
+      : `<button class="btn btn-accent btn-block" onclick="openChat('${p.id}')">💬 Enviar mensaje</button>`}
+    ${p.Artista_ID ? `<button class="btn btn-ghost btn-block" onclick="openArtista('${p.Artista_ID}')">🎨 Ver su perfil de artista</button>` : ''}
+  </div>`, true);
+}
+
+/* ---------- editar mi perfil ---------- */
+async function openMiPerfil() {
+  openModal('<div class="pad mute">Cargando…</div>', true);
+  const r = await api('miPerfil'); if (!r.ok) return toast(r.error);
+  const p = r.perfil, eq = p.Equipo_Estado;
+  const f = (k, label, extra = '') => `<div class="field"><label for="mp_${k}">${label}</label><input id="mp_${k}" name="${k}" value="${esc(p[k] || '')}" ${extra}></div>`;
+  openModal(`<form class="pad" id="mpForm" data-guard>
+    <div class="kicker">Mi perfil</div>
+    <div class="field"><label>Foto</label><div class="img-up"><div class="th" id="prev_Foto" style="border-radius:50%;width:96px;height:96px">${p.Foto ? `<img src="${esc(imgUrl(p.Foto))}" alt="">` : ''}</div>
+      <div style="flex:1;display:grid;gap:8px"><label class="btn btn-ghost btn-sm" style="cursor:pointer">${p.Foto ? 'Cambiar foto' : 'Subir foto'}<input type="file" accept="image/*" hidden onchange="subirFoto(this,'Foto','mpForm','mpSave','subirMiFoto')"></label>
+      <input type="hidden" name="Foto" value="${esc(p.Foto || '')}"></div></div></div>
+    ${f('Nombre', 'Nombre', 'required maxlength="60" autocomplete="name"')}
+    <div class="field"><label for="mp_Bio">Sobre mí</label><textarea id="mp_Bio" name="Bio" rows="4" maxlength="800" placeholder="¿Quién eres? ¿Qué te trae a la comunidad?">${esc(p.Bio || '')}</textarea></div>
+    ${f('Instagram', 'Instagram (enlace o @usuario)', 'placeholder="@tuusuario" autocapitalize="off"')}
+    ${f('Facebook', 'Facebook (enlace o usuario)', 'autocapitalize="off"')}
+    <div class="eq-box">
+      <label class="toggle"><input type="checkbox" name="Equipo" ${eq ? 'checked' : ''}> Soy parte del equipo de Cineteca Trikles / Tri-Urban</label>
+      <div class="field" id="mpPuesto" ${eq ? '' : 'hidden'}><label for="mp_Puesto">Mi puesto</label><input id="mp_Puesto" name="Puesto" value="${esc(p.Puesto || '')}" maxlength="80" placeholder="Ej. Coordinación de programación"></div>
+      ${eq === 'Pendiente' ? '<div class="st-box pend">⏳ <span>Tu puesto está <b>en revisión</b>. Aparecerá en tu perfil cuando lo aprueben.</span></div>'
+        : eq === 'Aprobado' ? '<div class="st-box ok">✓ <span>Verificado como equipo Trikles. Si cambias tu puesto, vuelve a revisión.</span></div>'
+        : eq === 'Rechazado' ? '<div class="st-box can">No se pudo verificar tu puesto. Revísalo o escríbele al equipo.</div>' : ''}
+    </div>
+    <button class="btn btn-gold btn-block" type="submit" id="mpSave">Guardar mi perfil</button>
+    <button type="button" class="btn btn-ghost btn-block" onclick="openMiArtista()">🎨 ${p.Artista_ID ? 'Mi perfil de artista' : '¿Eres artista? Crea tu perfil de artista'}</button>
+    <button type="button" class="btn btn-ghost btn-block" onclick="openPerfil('${p.id}')">Ver cómo me ven los demás →</button>
+  </form>`, true);
+  const fm = $('#mpForm');
+  fm.elements.Equipo.onchange = () => { $('#mpPuesto').hidden = !fm.elements.Equipo.checked; if (fm.elements.Equipo.checked) fm.elements.Puesto.focus(); };
+  fm.onsubmit = async e => {
+    e.preventDefault(); if (fm.dataset.subiendo === '1') return toast('Espera a que termine de subir la foto');
+    const ig = redUrl(fm.elements.Instagram.value, 'https://instagram.com/'), fb = redUrl(fm.elements.Facebook.value, 'https://facebook.com/');
+    if (ig === null) return toast('Revisa tu Instagram: pon tu @usuario o el enlace completo');
+    if (fb === null) return toast('Revisa tu Facebook: pon tu usuario o el enlace completo');
+    const d = { Nombre: fm.elements.Nombre.value.trim(), Foto: fm.elements.Foto.value, Bio: fm.elements.Bio.value.trim(), Instagram: ig, Facebook: fb,
+      Equipo: fm.elements.Equipo.checked, Puesto: fm.elements.Puesto.value.trim() };
+    if (!d.Nombre) return toast('Escribe tu nombre');
+    if (d.Equipo && !d.Puesto) return toast('Escribe tu puesto en el equipo');
+    const r2 = await busy($('#mpSave'), 'Guardando…', () => api('guardarPerfil', d));
+    if (!r2.ok) return toast(r2.error || 'No se pudo guardar');
+    fm.dataset.dirty = '';
+    Object.assign(S.me, { Nombre: d.Nombre, Foto: d.Foto, Equipo_Estado: r2.equipo || '', Puesto: d.Equipo ? d.Puesto : '' });
+    pintarMeBtn(); toast(r2.equipo === 'Pendiente' && eq !== 'Pendiente' ? 'Perfil guardado. Tu puesto quedó en revisión.' : 'Perfil guardado ✓');
+    S.comunidad = null; if (location.hash.startsWith('#comunidad')) loadComunidad();
+    openMiPerfil();
+  };
+}
+
+/* ---------- mensajes privados ---------- */
+const horaCorta = ms => { const d = new Date(+ms), hoy = new Date(); return d.toDateString() === hoy.toDateString() ? d.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' }) : d.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' }); };
+async function openMensajes() {
+  openModal('<div class="pad mute">Cargando…</div>', true);
+  const r = await api('conversaciones'); if (!r.ok) return toast(r.error);
+  openModal(`<div class="pad"><h3 class="disp" style="font-size:40px">Mensajes</h3>
+    <div class="convs">${r.conversaciones.map(c => `<div class="conv ${c.sinLeer ? 'nuevo' : ''}" onclick="openChat('${c.con}')" tabindex="0" onkeydown="if(event.key==='Enter')this.click()">
+      ${avatarHtml(c.perfil, 48)}
+      <div style="min-width:0;flex:1"><div class="conv-h"><b>${esc(c.perfil.Nombre)}</b><span class="mute">${horaCorta(c.fecha)}</span></div>
+        <div class="conv-u">${c.mio ? '<span class="mute">Tú: </span>' : ''}${esc(c.ultimo)}</div></div>
+      ${c.sinLeer ? `<span class="badge" style="position:static">${c.sinLeer}</span>` : ''}</div>`).join('')
+      || '<div class="empty">Aún no tienes conversaciones. Busca a alguien en <b>Comunidad</b> y mándale un mensaje.</div>'}</div>
+    <a class="btn btn-ghost btn-block" href="#comunidad" onclick="closeModal()">Buscar en la comunidad</a>
+    <div class="priv" style="padding:0">🔒 Los mensajes son privados entre ustedes dos.</div></div>`, true);
+}
+let chatCon = null, chatSince = 0, chatVistos = new Set();
+async function openChat(id) {
+  if (id === S.me.id) return;
+  chatCon = id; chatSince = 0; chatVistos = new Set();
+  openModal(`<div class="chat-dm"><div class="dm-head" id="dmHead"><button class="icon-btn" onclick="openMensajes()" aria-label="Volver">←</button><div class="mute">Cargando…</div></div>
+    <div class="dm-list" id="dmList"></div>
+    <form class="dm-form" id="dmForm"><textarea id="dmIn" rows="1" maxlength="1000" placeholder="Escribe un mensaje…" aria-label="Mensaje"></textarea><button class="btn btn-accent" id="dmSend" aria-label="Enviar">↑</button></form></div>`, true);
+  const inp = $('#dmIn');
+  inp.addEventListener('input', () => { inp.style.height = 'auto'; inp.style.height = Math.min(inp.scrollHeight, 120) + 'px'; });
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); $('#dmForm').requestSubmit(); } });
+  $('#dmForm').onsubmit = async e => {
+    e.preventDefault(); const t = inp.value.trim(); if (!t) return;
+    inp.value = ''; inp.style.height = 'auto';
+    const r = await api('enviarMensaje', { para: id, texto: t });
+    if (!r.ok) { inp.value = t; return toast(r.error); }
+    pollChat();
+  };
+  await pollChat(true);
+  if (modalTimer) clearInterval(modalTimer);
+  modalTimer = setInterval(() => { if (!document.hidden && chatCon === id && $('#dmList')) pollChat(); }, 4000);
+  setTimeout(() => inp.focus(), 100);
+}
+async function pollChat(primera) {
+  const id = chatCon; const r = await api('chat', { con: id, since: chatSince }); if (!r.ok || id !== chatCon || !$('#dmList')) return;
+  chatSince = r.ahora;
+  if (primera) {
+    const p = r.perfil;
+    $('#dmHead').innerHTML = `<button class="icon-btn" onclick="openMensajes()" aria-label="Volver">←</button>
+      <div style="display:flex;gap:10px;align-items:center;cursor:pointer;min-width:0;flex:1" onclick="openPerfil('${p.id}')">${avatarHtml(p, 40)}<div style="min-width:0"><b>${esc(p.Nombre)}</b><div class="insignias">${insignias(p)}</div></div></div>`;
+  }
+  const list = $('#dmList'), abajo = list.scrollHeight - list.scrollTop - list.clientHeight < 80;
+  const nuevos = r.mensajes.filter(m => !chatVistos.has(m.id));
+  nuevos.forEach(m => { chatVistos.add(m.id); list.insertAdjacentHTML('beforeend', `<div class="bub ${m.mio ? 'mio' : ''}"><div>${esc(m.Texto)}</div><time>${horaCorta(m.Fecha)}</time></div>`); });
+  if (primera && !r.mensajes.length) list.innerHTML = '<div class="mute" style="text-align:center;margin:auto">Salúdale 👋</div>';
+  else if (nuevos.length) list.querySelector(':scope > .mute')?.remove();
+  if (primera || abajo || nuevos.some(m => m.mio)) list.scrollTop = list.scrollHeight;
+  if (nuevos.some(m => !m.mio)) revisarMensajes();
 }
 
 /* =====================================================================
@@ -1438,8 +1701,8 @@ async function refreshAll() { await Promise.all([loadAdmin(), loadCatalog()]); }
 function renderAdmin() {
   if (!ADM || !$('#admBody')) return;
   $$('#admTabs .chip').forEach((b, i) => b.classList.toggle('on', ADM_TABS[i][0] === admTab));
-  const pendArt = ADM.artistas.filter(a => a.Estado === 'Pendiente').length, pendPed = ADM.pedidos.filter(p => p.Estado === 'Pendiente').length;
-  $$('#admTabs .tab-dot').forEach(d => { const n = d.dataset.tab === 'artistas' ? pendArt : d.dataset.tab === 'pedidos' ? pendPed : 0; d.textContent = n || ''; d.hidden = !n; });
+  const pendArt = ADM.artistas.filter(a => a.Estado === 'Pendiente').length, pendPed = ADM.pedidos.filter(p => p.Estado === 'Pendiente').length, pendEq = ADM.miembros.filter(m => m.Equipo_Estado === 'Pendiente').length;
+  $$('#admTabs .tab-dot').forEach(d => { const n = { artistas: pendArt, pedidos: pendPed, miembros: pendEq }[d.dataset.tab] || 0; d.textContent = n || ''; d.hidden = !n; });
   const R = { pedidos: admPedidos, productos: admProductos, artistas: admArtistas, subastas: admSubastas, miembros: admMiembros, ajustes: admAjustes }[admTab];
   $('#admBody').innerHTML = R(); tickCountdowns();
 }
@@ -1590,10 +1853,18 @@ async function subirFoto(inp, k, formId, saveId, accion) {
   }
 }
 function admMiembros() {
-  return `<p class="mute" style="margin-bottom:16px">Para que alguien pueda transmitir en vivo: rol <b>Artista</b> y elige su perfil de artista.</p>
-    <div class="adm-list">${ADM.miembros.map(m => `<div class="adm-row ${m.Activo ? '' : 'off'}" style="grid-template-columns:44px 1fr auto">
-      <div class="avatar" style="width:44px;height:44px">${iniciales(m.Nombre)}</div>
-      <div style="min-width:0"><b>${esc(m.Nombre)}</b>${m.id === S.me.id ? ' <span class="mute">(tú)</span>' : ''}<div class="mute" style="font-size:13px;overflow:hidden;text-overflow:ellipsis">${esc(m.Email)}</div></div>
+  const pend = ADM.miembros.filter(m => m.Equipo_Estado === 'Pendiente');
+  const lista = ADM.miembros.slice().sort((a, b) => (b.Equipo_Estado === 'Pendiente') - (a.Equipo_Estado === 'Pendiente'));
+  return `${pend.length ? `<div class="st-box pend" style="margin-bottom:14px">⏳ <span><b>${pend.length}</b> ${pend.length > 1 ? 'personas piden' : 'persona pide'} aparecer como equipo Trikles.</span></div>` : ''}
+    <p class="mute" style="margin-bottom:16px">Para que alguien pueda transmitir en vivo: rol <b>Artista</b> y elige su perfil de artista. El <b>puesto</b> se muestra en su perfil cuando su equipo está verificado.</p>
+    <div class="adm-list">${lista.map(m => `<div class="adm-row ${m.Activo ? '' : 'off'}" style="grid-template-columns:44px 1fr auto">
+      ${avatarHtml(m, 44)}
+      <div style="min-width:0"><b>${esc(m.Nombre)}</b>${m.id === S.me.id ? ' <span class="mute">(tú)</span>' : ''}<div class="mute" style="font-size:13px;overflow:hidden;text-overflow:ellipsis">${esc(m.Email)}</div>
+        <div class="eq-adm">${m.Equipo_Estado === 'Pendiente' ? '<span class="st st-pend">Pide equipo</span>' : m.Equipo_Estado === 'Aprobado' ? '<span class="ins eq">⭐ Equipo</span>' : ''}
+          <input value="${esc(m.Puesto || '')}" placeholder="Puesto en Trikles" maxlength="80" aria-label="Puesto" onchange="admMiembro('${m.id}',{Puesto:this.value})">
+          ${m.Equipo_Estado === 'Pendiente' ? `<button class="btn btn-solid btn-sm" onclick="admMiembro('${m.id}',{Equipo_Estado:'Aprobado'})">✓ Verificar</button><button class="btn btn-ghost btn-sm" onclick="admMiembro('${m.id}',{Equipo_Estado:'Rechazado'})">Rechazar</button>`
+            : m.Equipo_Estado === 'Aprobado' ? `<button class="btn btn-ghost btn-sm" onclick="admMiembro('${m.id}',{Equipo_Estado:''})">Quitar de equipo</button>`
+            : `<button class="btn btn-ghost btn-sm" onclick="if(!this.parentNode.querySelector('input').value.trim())return toast('Escribe primero su puesto');admMiembro('${m.id}',{Equipo_Estado:'Aprobado',Puesto:this.parentNode.querySelector('input').value})">Hacer equipo</button>`}</div></div>
       <div class="adm-act">
         <select onchange="admMiembro('${m.id}',{Rol:this.value})" aria-label="Rol">${[['miembro', 'Miembro'], ['artista', 'Artista'], ['admin', 'Admin']].map(([v, l]) => `<option value="${v}" ${m.Rol === v ? 'selected' : ''}>${l}</option>`).join('')}</select>
         <select onchange="admMiembro('${m.id}',{Artista_ID:this.value})" aria-label="Perfil de artista"><option value="">Sin perfil</option>${ADM.artistas.map(a => `<option value="${a.id}" ${a.id === m.Artista_ID ? 'selected' : ''}>${esc(a.Nombre)}</option>`).join('')}</select>
