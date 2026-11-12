@@ -85,7 +85,7 @@ img{display:block;max-width:100%}
 .logo{font-family:var(--display);font-stretch:68%;font-weight:800;font-size:28px;letter-spacing:-.01em;text-decoration:none;white-space:nowrap;line-height:1}
 .logo:hover{color:var(--text)}
 .logo em{font-family:var(--serif);font-style:italic;font-weight:400;font-stretch:100%;font-size:17px;color:var(--mute);margin-left:6px;letter-spacing:0;text-transform:none}
-.nav{display:flex;gap:2px;flex:1;justify-content:safe center;overflow-x:auto;scrollbar-width:none}
+.nav{display:flex;gap:2px;flex:1;min-width:0;flex-wrap:wrap;justify-content:center;row-gap:2px} /* si no cabe, baja a otra línea: nunca esconde opciones (tabletas) */
 .nav::-webkit-scrollbar{display:none}
 .nav a{text-decoration:none;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:8px 12px;color:var(--mute);white-space:nowrap;position:relative}
 .nav a:hover{color:var(--text)}
