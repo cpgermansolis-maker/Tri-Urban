@@ -904,7 +904,7 @@ let S = { token: lsGet(LS.token, ''), me: null, data: null, cart: lsGet(LS.cart,
 /* ---------- pantalla de carga: aparece en cada consulta al servidor (menos las que se repiten solas) ---------- */
 const SIN_CARGA = new Set(['noLeidos', 'vivoFeed', 'chat', 'subasta', 'vivoReaccionar', 'vivoComentar', 'enviarMensaje']);
 const TXT_CARGA = { llave: 'Verificando tu llave…', login: 'Entrando…', register: 'Creando tu cuenta…', catalog: 'Cargando la tienda…',
-  pedido: 'Apartando tu pedido…', pujar: 'Registrando tu puja…', opinar: 'Publicando tu opinión…', subirMiFoto: 'Subiendo tu foto…',
+  pedido: 'Apartando tu pedido…', pujar: 'Registrando tu puja…', opinar: 'Publicando tu opinión…', subirMiFoto: 'Subiendo tu foto… (en datos móviles puede tardar)',
   guardarPerfil: 'Guardando tu perfil…', guardarMiArtista: 'Guardando tu perfil de artista…', adminSave: 'Guardando…', adminDelete: 'Borrando…',
   adminData: 'Cargando el panel…', misPedidos: 'Buscando tus pedidos…', comunidad: 'Cargando la comunidad…', conversaciones: 'Cargando tus mensajes…',
   vivoIniciar: 'Abriendo tu transmisión…', logout: 'Cerrando sesión…', miQR: 'Generando tu QR…', adminEscanear: 'Verificando el QR…' };
@@ -924,7 +924,7 @@ async function api(action, data = {}) {
 }
 async function apiReal(action, data = {}) {
   if (DEMO) { await new Promise(r => setTimeout(r, 120)); return Demo.run(action, data, S.token); }
-  const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), action === 'adminUpload' ? (/^video/.test(data.mime || '') ? 240000 : 60000) : 30000);
+  const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), action === 'adminUpload' ? (/^video/.test(data.mime || '') ? 240000 : 90000) : action === 'subirMiFoto' ? 90000 : 30000);
   let j;
   try {
     const res = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action, token: S.token, ...data }), signal: ctl.signal });
@@ -1159,7 +1159,7 @@ const Demo = (() => {
     const id = uid('a'); db.artistas.push({ ...o, id, Activo: true, Miembro_ID: m.id, Estado: 'Pendiente' }); m.Artista_ID = id; save();
     return { ok: true, id, nuevo: true };
   };
-  A.subirMiFoto = d => ({ ok: true, url: 'data:' + d.mime + ';base64,' + d.data });
+  A.subirMiFoto = (d, m) => { const url = 'data:' + d.mime + ';base64,' + d.data; if (d.para === 'perfil') { m.Foto = url; save(); } return { ok: true, url }; };
   /* ---- miembro: mis pedidos ---- */
   const tipoDemo = r => (r.Equipo_Estado === 'Aprobado' || r.Rol === 'admin') ? 'equipo' : (r.Artista_ID && db.artistas.some(a => a.id === r.Artista_ID && (a.Estado || 'Aprobado') === 'Aprobado')) ? 'artista' : 'miembro';
   A.miQR = (d, m) => {
@@ -1202,7 +1202,7 @@ const Demo = (() => {
     adminMiembro(d, m) {
       const x = db.miembros.find(y => y.id === d.id); if (!x) return { ok: false };
       if (d.id === m.id && ((d.Rol && d.Rol !== 'admin') || d.Activo === false)) return { ok: false, error: 'No puedes quitarte tu propio acceso de administrador.' };
-      ['Rol', 'Artista_ID', 'Activo', 'Puesto', 'Equipo_Estado'].forEach(k => { if (d[k] !== undefined) x[k] = d[k]; }); save(); return { ok: true };
+      ['Rol', 'Artista_ID', 'Activo', 'Puesto', 'Equipo_Estado', 'Foto'].forEach(k => { if (d[k] !== undefined) x[k] = d[k]; }); save(); return { ok: true };
     },
     adminConfig(d) { Object.assign(db.config, d.config || {}); save(); return { ok: true }; },
     adminUpload(d) { return { ok: true, url: 'data:' + d.mime + ';base64,' + d.data }; },
@@ -1891,7 +1891,7 @@ async function openMiPerfil() {
   openModal(`<form class="pad" id="mpForm" data-guard>
     <div class="kicker">Mi perfil</div>
     <div class="field"><label>Foto</label><div class="img-up"><div class="th" id="prev_Foto" style="border-radius:50%;width:96px;height:96px">${p.Foto ? `<img src="${esc(imgUrl(p.Foto))}" alt="">` : ''}</div>
-      <div style="flex:1;display:grid;gap:8px"><label class="btn btn-ghost btn-sm" style="cursor:pointer">${p.Foto ? 'Cambiar foto' : 'Subir foto'}<input type="file" accept="image/*" hidden onchange="subirFoto(this,'Foto','mpForm','mpSave','subirMiFoto')"></label>
+      <div style="flex:1;display:grid;gap:8px"><label class="btn btn-ghost btn-sm" style="cursor:pointer">${p.Foto ? 'Cambiar foto' : 'Subir foto'}<input type="file" accept="image/*" hidden onchange="subirFoto(this,'Foto','mpForm','mpSave','subirMiFoto',{para:'perfil'})"></label>
       <input type="hidden" name="Foto" value="${esc(p.Foto || '')}"></div></div></div>
     ${f('Nombre', 'Nombre', 'required maxlength="60" autocomplete="name"')}
     <div class="field"><label for="mp_Bio">Sobre mí</label><textarea id="mp_Bio" name="Bio" rows="4" maxlength="800" placeholder="¿Quién eres? ¿Qué te trae a la comunidad?">${esc(p.Bio || '')}</textarea></div>
@@ -1944,7 +1944,7 @@ async function openBienvenida(preArtista) {
       <h3 class="disp" style="font-size:38px">Hola, <span class="it" style="color:var(--gold)">${nombre1}</span></h3>
       <p class="mute">Armemos tu perfil para que la comunidad te conozca. Toma un minuto.</p>
       <div class="ob-foto"><div class="th" id="prev_Foto">${p.Foto ? `<img src="${esc(imgUrl(p.Foto))}" alt="">` : avatarHtml(p, 120)}</div>
-        <label class="btn btn-ghost btn-sm" style="cursor:pointer">${p.Foto ? 'Cambiar foto' : '📷 Subir mi foto'}<input type="file" accept="image/*" hidden onchange="subirFoto(this,'Foto','obForm','obNext','subirMiFoto')"></label>
+        <label class="btn btn-ghost btn-sm" style="cursor:pointer">${p.Foto ? 'Cambiar foto' : '📷 Subir mi foto'}<input type="file" accept="image/*" hidden onchange="subirFoto(this,'Foto','obForm','obNext','subirMiFoto',{para:'perfil'})"></label>
         <input type="hidden" name="Foto" value="${esc(p.Foto || '')}"></div>
       <div class="field"><label for="ob_Nombre">¿Cómo quieres que te llamen?</label><input id="ob_Nombre" name="Nombre" value="${esc(p.Nombre || '')}" maxlength="60" autocomplete="name"></div>
     </section>
@@ -2460,14 +2460,14 @@ async function galSubir(inp, video) {
       if (video) {
         if (file.size > 20 * 1024 * 1024) { toast('Ese video pesa más de 20 MB. Súbelo a YouTube como “no listado” y pega el enlace.'); continue; }
         data = await leerBase64(file); mime = file.type || 'video/mp4';
-      } else { data = await resizeImage(file); mime = 'image/jpeg'; }
+      } else { ({ data, mime } = await leerFoto(file)); }
       const r = await api('adminUpload', { data, mime, name: video ? file.name : file.name.replace(/\.\w+$/, '') + '.jpg' });
       if (!r.ok) { toast(r.error || 'No se pudo subir'); continue; }
       if (!f.isConnected) return;
       const g = galLeer(); g.push({ t: video ? 'video' : 'img', u: r.url }); galGuardar(g); ok++;
     }
     if (ok) toast(video ? 'Video listo ✓ (Drive puede tardar unos minutos en procesarlo)' : 'Fotos listas ✓');
-  } catch (_) { toast('No se pudo leer el archivo. Prueba con otro.'); }
+  } catch (e) { toast(e && e.message === 'formato' ? MSG_FORMATO : 'No se pudo leer el archivo. Prueba con otro.'); }
   finally { f.dataset.subiendo = ''; if (f.isConnected) { save.disabled = false; save.textContent = txt; } }
 }
 function resizeImage(file, max = 1600) {
@@ -2483,18 +2483,29 @@ function resizeImage(file, max = 1600) {
   });
 }
 const admSubir = (inp, k) => subirFoto(inp, k, 'admForm', 'admSave', 'adminUpload');
-async function subirFoto(inp, k, formId, saveId, accion) {
+// Lee una foto para subirla: la achica a JPG; si el navegador no puede, manda el original (JPG/PNG/WebP hasta 4 MB)
+const MSG_FORMATO = 'Ese formato de foto no se puede usar (suele pasar con fotos HEIC de iPhone o algunos Android). Toma una captura de pantalla de la foto y sube esa, o elige otra en JPG/PNG.';
+async function leerFoto(file) {
+  try { return { data: await resizeImage(file), mime: 'image/jpeg' }; }
+  catch (_) {
+    if (/^image\/(jpeg|png|webp)$/.test(file.type) && file.size <= 4 * 1024 * 1024) return { data: await leerBase64(file), mime: file.type };
+    throw new Error('formato');
+  }
+}
+async function subirFoto(inp, k, formId, saveId, accion, extra) {
   const file = inp.files[0]; if (!file) return;
   const f = document.getElementById(formId), lbl = inp.closest('label'), save = document.getElementById(saveId), txtSave = save.textContent;
   f.dataset.subiendo = '1'; f.dataset.dirty = '1'; save.disabled = true; save.textContent = 'Subiendo foto…';
   lbl.firstChild.textContent = 'Subiendo…';
   try {
-    const data = await resizeImage(file);
-    const r = await api(accion, { data, mime: 'image/jpeg', name: file.name.replace(/\.\w+$/, '') + '.jpg' });
-    if (!r.ok) return toast(r.error);
-    if (!f.isConnected) return;
-    f.elements[k].value = r.url; $('#prev_' + k).innerHTML = `<img src="${esc(imgUrl(r.url))}" alt="">`; toast('Foto lista ✓');
-  } catch (_) { toast('No se pudo leer la imagen. Prueba con otra (JPG o PNG).'); }
+    const { data, mime } = await leerFoto(file);
+    const r = await api(accion, { ...(extra || {}), data, mime, name: file.name.replace(/\.\w+$/, '') + (mime === 'image/png' ? '.png' : mime === 'image/webp' ? '.webp' : '.jpg') });
+    if (!r.ok) return toast(r.error || 'No se pudo subir la foto. Intenta de nuevo.');
+    if (extra && extra.para === 'perfil') { S.me.Foto = r.url; pintarMeBtn(); } // ya quedó guardada en su perfil
+    if (!f.isConnected) return toast(extra && extra.para === 'perfil' ? 'Foto de perfil actualizada ✓' : 'Foto subida');
+    f.elements[k].value = r.url; $('#prev_' + k).innerHTML = `<img src="${esc(imgUrl(r.url))}" alt="">`;
+    toast(extra && extra.para === 'perfil' ? 'Foto de perfil actualizada ✓' : 'Foto lista ✓ — no olvides Guardar');
+  } catch (e) { toast(e && e.message === 'formato' ? MSG_FORMATO : 'No se pudo leer la imagen. Prueba con otra (JPG o PNG).'); }
   finally {
     f.dataset.subiendo = ''; inp.value = '';
     if (f.isConnected) { save.disabled = false; save.textContent = txtSave; lbl.firstChild.textContent = 'Cambiar foto'; }
@@ -2516,8 +2527,19 @@ function admMiembros() {
       <div class="adm-act">
         <select onchange="admMiembro('${m.id}',{Rol:this.value})" aria-label="Rol">${[['miembro', 'Miembro'], ['artista', 'Artista'], ['admin', 'Admin']].map(([v, l]) => `<option value="${v}" ${m.Rol === v ? 'selected' : ''}>${l}</option>`).join('')}</select>
         <select onchange="admMiembro('${m.id}',{Artista_ID:this.value})" aria-label="Perfil de artista"><option value="">Sin perfil</option>${ADM.artistas.map(a => `<option value="${a.id}" ${a.id === m.Artista_ID ? 'selected' : ''}>${esc(a.Nombre)}</option>`).join('')}</select>
+        <label class="btn btn-ghost btn-sm" style="cursor:pointer">📷 ${m.Foto ? 'Cambiar foto' : 'Poner foto'}<input type="file" accept="image/*" hidden onchange="admFotoMiembro(this,'${m.id}')"></label>
         <label class="toggle"><input type="checkbox" ${m.Activo ? 'checked' : ''} onchange="admMiembro('${m.id}',{Activo:this.checked})"> Activo</label>
       </div></div>`).join('')}</div>`;
+}
+async function admFotoMiembro(inp, id) {
+  const file = inp.files[0]; inp.value = ''; if (!file) return;
+  try {
+    const { data, mime } = await leerFoto(file);
+    const up = await api('adminUpload', { data, mime, name: 'perfil_' + id + (mime === 'image/png' ? '.png' : '.jpg') });
+    if (!up.ok) return toast(up.error || 'No se pudo subir la foto');
+    if (id === S.me.id) { S.me.Foto = up.url; pintarMeBtn(); }
+    await admMiembro(id, { Foto: up.url });
+  } catch (e) { toast(e && e.message === 'formato' ? MSG_FORMATO : 'No se pudo leer la imagen.'); }
 }
 async function admMiembro(id, patch) {
   const r = await api('adminMiembro', { id, ...patch }); if (!r.ok) { toast(r.error); return loadAdmin(); }
