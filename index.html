@@ -8,6 +8,7 @@
 <title>Tri-Urban · Comunidad Trikles</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.js" defer></script>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,100..900;1,62..125,100..900&family=Instrument+Serif:ital@0;1&family=Sedgwick+Ave+Display&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -612,6 +613,48 @@ footer{border-top:2px solid var(--ink)}
 #loader .ld-sub{font-size:12px;opacity:.65}
 @keyframes ldspin{to{transform:rotate(360deg)}}
 @media (prefers-reduced-motion:reduce){#loader .ld-spin{animation-duration:2.4s}}
+.qr-strip .qr-ico{font-size:22px}
+.cred-pad{display:grid;gap:14px}
+.cred{position:relative;overflow:hidden;border-radius:16px;padding:18px;display:grid;gap:14px;background:#141414;color:#f4f1ea;border:2px solid #2a2a2a;font-family:var(--sans,system-ui)}
+.cred-top{display:flex;justify-content:space-between;font-size:11px;letter-spacing:.22em;opacity:.75;font-weight:700}
+.cred-who{display:flex;gap:14px;align-items:center}
+.cred-foto{width:84px;height:84px;flex:none;border-radius:50%;overflow:hidden;border:3px solid currentColor;background:#333}
+.cred-foto img{width:100%;height:100%;object-fit:cover}
+.cred-nombre{font-size:24px;font-weight:800;line-height:1.05;word-break:break-word}
+.cred-tipo{font-size:13px;font-weight:700;margin-top:4px}
+.cred-sub{font-size:12px;opacity:.7}
+.cred-qr{background:#fff;border-radius:10px;padding:10px;justify-self:center;width:min(300px,100%)}
+.cred-qr img{width:100%;height:auto;display:block;image-rendering:pixelated}
+.cred-foot{text-align:center;font-size:11px;letter-spacing:.12em;text-transform:uppercase;opacity:.65}
+.cred-artista{border-color:#00d1ff;box-shadow:0 0 0 1px #00d1ff inset}.cred-artista .cred-tipo{color:#00d1ff}
+.cred-equipo{background:linear-gradient(135deg,#3a2a08 0%,#c9a24a 28%,#fff1b8 46%,#b8892e 62%,#5a3f0a 100%);color:#2a1c02;border:2px solid #f6d77a;box-shadow:0 10px 30px rgba(201,162,74,.45),inset 0 0 0 1px rgba(255,255,255,.35)}
+.cred-equipo::after{content:"";position:absolute;inset:-40%;background:linear-gradient(115deg,transparent 40%,rgba(255,255,255,.55) 50%,transparent 60%);animation:credbrillo 3.6s ease-in-out infinite;pointer-events:none}
+.cred-equipo .cred-qr{background:#fff6dc;box-shadow:0 0 0 3px #4a3206}
+.cred-equipo .cred-top,.cred-equipo .cred-foot{opacity:.9}
+.cred-ribbon{justify-self:center;background:#2a1c02;color:#f6d77a;font-size:11px;font-weight:800;letter-spacing:.24em;padding:6px 18px;border-radius:999px;position:relative;z-index:2;box-shadow:0 2px 0 rgba(0,0,0,.25)}
+@keyframes credbrillo{0%{transform:translateX(-60%)}55%,100%{transform:translateX(60%)}}
+@media (prefers-reduced-motion:reduce){.cred-equipo::after{animation:none;display:none}}
+.scan-wrap{display:grid;gap:14px;max-width:520px}
+#lector{width:100%;overflow:hidden;border-radius:8px}
+#lector:empty{display:none}
+.scan-manual{display:flex;gap:8px}.scan-manual input{flex:1;min-width:0}
+.acc{border-radius:14px;overflow:hidden;border:2px solid #1f8a4c;background:var(--bg2,#151515)}
+.acc-banda{background:#1f8a4c;color:#fff;font-weight:800;font-size:20px;letter-spacing:.04em;padding:14px 16px;display:grid;gap:2px}
+.acc-banda small{font-size:12px;font-weight:600;letter-spacing:.06em;opacity:.9}
+.acc-no{border-color:#d42a1e}.acc-no .acc-banda{background:#d42a1e}
+.acc-equipo:not(.acc-no){border-color:#e3b64f;box-shadow:0 0 0 3px rgba(227,182,79,.35)}
+.acc-equipo:not(.acc-no) .acc-banda{background:linear-gradient(135deg,#7a5410,#e3b64f 45%,#fff1b8 55%,#b8892e);color:#2a1c02}
+.acc-body{padding:16px;display:grid;gap:12px;justify-items:center;text-align:center}
+.acc-foto{width:min(300px,82%);aspect-ratio:1;border-radius:14px;overflow:hidden;background:#333;border:4px solid #1f8a4c}
+.acc-equipo .acc-foto{border-color:#e3b64f}.acc-artista .acc-foto{border-color:#00d1ff}.acc-no .acc-foto{border-color:#d42a1e}
+.acc-foto img{width:100%;height:100%;object-fit:cover}
+.acc-sinfoto{height:100%;display:grid;place-content:center;color:#eee;font-weight:700}
+.acc-nombre{font-size:30px;font-weight:800;line-height:1.05;word-break:break-word}
+.acc-tags{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.acc-tag{font-size:13px;font-weight:700;padding:6px 12px;border-radius:999px;border:1px solid currentColor}
+.acc-tag.t-equipo{background:#e3b64f;color:#2a1c02;border-color:#e3b64f}
+.acc-tag.t-artista{color:#00d1ff}
+.acc-body .btn{width:100%}
 </style>
 </head>
 <body>
@@ -864,7 +907,7 @@ const TXT_CARGA = { llave: 'Verificando tu llave…', login: 'Entrando…', regi
   pedido: 'Apartando tu pedido…', pujar: 'Registrando tu puja…', opinar: 'Publicando tu opinión…', subirMiFoto: 'Subiendo tu foto…',
   guardarPerfil: 'Guardando tu perfil…', guardarMiArtista: 'Guardando tu perfil de artista…', adminSave: 'Guardando…', adminDelete: 'Borrando…',
   adminData: 'Cargando el panel…', misPedidos: 'Buscando tus pedidos…', comunidad: 'Cargando la comunidad…', conversaciones: 'Cargando tus mensajes…',
-  vivoIniciar: 'Abriendo tu transmisión…', logout: 'Cerrando sesión…' };
+  vivoIniciar: 'Abriendo tu transmisión…', logout: 'Cerrando sesión…', miQR: 'Generando tu QR…', adminEscanear: 'Verificando el QR…' };
 let cargasActivas = 0;
 function cargando(on, txt) {
   const el = $('#loader'); if (!el) return;
@@ -1118,10 +1161,27 @@ const Demo = (() => {
   };
   A.subirMiFoto = d => ({ ok: true, url: 'data:' + d.mime + ';base64,' + d.data });
   /* ---- miembro: mis pedidos ---- */
+  const tipoDemo = r => (r.Equipo_Estado === 'Aprobado' || r.Rol === 'admin') ? 'equipo' : (r.Artista_ID && db.artistas.some(a => a.id === r.Artista_ID && (a.Estado || 'Aprobado') === 'Aprobado')) ? 'artista' : 'miembro';
+  A.miQR = (d, m) => {
+    if (!m.Foto) return { ok: false, error: 'FOTO' };
+    if (!m.QR_Token || d.regenerar) { m.QR_Token = 'tq' + Array.from(crypto.getRandomValues(new Uint8Array(16)), b => b.toString(16).padStart(2, '0')).join(''); save(); }
+    return { ok: true, qr: 'TRIKLES-' + m.QR_Token, tipo: tipoDemo(m), perfil: perfilDemo(m) };
+  };
   A.misPedidos = (d, m) => ({ ok: true, pedidos: db.pedidos.filter(p => p.Miembro_ID === m.id).slice().reverse(), config: db.config });
   /* ---- administración ---- */
   const TAB = { Productos: 'productos', Artistas: 'artistas', Subastas: 'subastas', Opiniones: 'opiniones', Comentarios: 'comentarios' };
   const ADM = {
+    adminEscanear(d, m) {
+      const tok = (String(d.codigo || '').match(/tq[0-9a-f]{32}/i) || [])[0];
+      const r = tok && db.miembros.find(x => x.QR_Token === tok.toLowerCase());
+      if (!r) return { ok: true, existe: false };
+      db.accesos = db.accesos || [];
+      const previos = db.accesos.filter(a => a.Miembro_ID === r.id && a.Resultado === 'Permitido'), activo = r.Activo !== false, tipo = tipoDemo(r);
+      const art = r.Artista_ID ? db.artistas.find(a => a.id === r.Artista_ID) : null;
+      db.accesos.push({ Miembro_ID: r.id, Resultado: activo ? 'Permitido' : 'Denegado', Fecha: Date.now(), Admin: m.Nombre }); save();
+      return { ok: true, existe: true, activo, tipo, ultimo: previos.length ? previos[previos.length - 1].Fecha : 0, visitas: previos.length + (activo ? 1 : 0),
+        perfil: { ...perfilDemo(r), Puesto: r.Equipo_Estado === 'Aprobado' ? (r.Puesto || '') : '', Rol: r.Rol }, artista: art ? { Nombre: art.Nombre, Disciplina: art.Disciplina || '', Origen: art.Origen || '' } : null };
+    },
     adminData() {
       return { ok: true, productos: db.productos, artistas: db.artistas.map(a => ({ ...a, Estado: a.Estado || 'Aprobado', Solicitante: a.Miembro_ID ? (db.miembros.find(x => x.id === a.Miembro_ID) || {}).Nombre || '' : '' })), subastas: db.subastas.map(subPub),
         pedidos: db.pedidos.slice().reverse().map(p => ({ ...p, Nombre: (db.miembros.find(x => x.id === p.Miembro_ID) || {}).Nombre || p.Nombre || '', Email: (db.miembros.find(x => x.id === p.Miembro_ID) || {}).Email || '' })),
@@ -1244,7 +1304,7 @@ const SECCIONES = [
   ['galeria', 'Galería', '▣'], ['subastas', 'Subastas', '⚑'], ['artistas', 'Artistas', '☺'], ['comunidad', 'Comunidad', '◎'], ['vivo', 'En vivo', '●'],
 ];
 let timers = [];
-function stopTimers() { timers.forEach(clearInterval); timers = []; }
+function stopTimers() { timers.forEach(clearInterval); timers = []; if (typeof pararCamara === 'function') pararCamara(); }
 function renderNav(cur) {
   const live = (S.data?.vivos || []).some(v => v.Estado === 'envivo');
   $('#nav').innerHTML = SECCIONES.map(([k, l]) => `<a href="#${k}" class="${k === cur ? 'on' : ''}">${l}${k === 'vivo' && live ? '<span class="dot"></span>' : ''}</a>`).join('') + (S.me.Rol === 'admin' ? `<a href="#admin" class="${cur === 'admin' ? 'on' : ''}">⚙ Panel</a>` : '');
@@ -1302,6 +1362,7 @@ function vInicio() {
     </div>` : '<div class="hero-media"></div>'}
   </section>
   <div class="ticker"><div>${[...tick, ...tick].map((t, i) => `<span class="${i % 2 ? 'a' : ''}">${t}</span>`).join('')}</div></div>
+  <div class="live-strip qr-strip" onclick="openMiQR()" tabindex="0" onkeydown="if(event.key==='Enter')this.click()"><span class="qr-ico">🎟️</span><div style="flex:1"><b>Tu acceso a Cineteca Trikles</b> · <span class="mute">genera tu QR único para entrar</span></div><span>Generar QR →</span></div>
   ${live ? `<div class="live-strip" onclick="location.hash='#vivo/${live.id}'"><span class="pill-live">EN VIVO</span><div style="flex:1"><b>${esc(artistaById(live.Artista_ID).Nombre)}</b> · <span class="mute">${esc(live.Titulo)}</span></div><span>Entrar →</span></div>` : ''}
   <section class="sec">
     <div class="sec-head"><h2 class="disp">Arte <span class="it" style="color:var(--gold)">×</span> Urban</h2><p>Prendas Tri-Urban intervenidas por artistas. Ediciones cortas, firmadas, con historia.</p></div>
@@ -1662,6 +1723,8 @@ $('#cartBtn').onclick = openCart;
 $('#meBtn').onclick = () => openModal(`<div class="pad">${avatarHtml(S.me, 64)}
   <h3 class="it" style="font-size:30px">${esc(S.me.Nombre)}</h3><div class="mute">${esc(S.me.Email)}</div>
   ${S.me.Equipo_Estado === 'Aprobado' ? `<div class="insignias">${insignias({ Equipo: true, Puesto: S.me.Puesto })}</div>` : ''}
+  <button class="btn btn-accent btn-block" onclick="openMiQR()">🎟️ Generar mi QR de acceso</button>
+  ${S.me.Rol === 'admin' ? '<button class="btn btn-ghost btn-block" onclick="irEscanear()">📷 Escanear QR</button>' : ''}
   <button class="btn btn-gold btn-block" onclick="openMiPerfil()">👤 Mi perfil</button>
   <button class="btn btn-ghost btn-block" onclick="openMensajes()">💬 Mensajes</button>
   <div><span class="org ${S.me.Rol === 'miembro' ? 'ct' : 'tu'}">${{ miembro: 'Miembro', artista: 'Artista', admin: 'Administrador' }[S.me.Rol] || S.me.Rol}</span></div>
@@ -2082,7 +2145,7 @@ async function openMiArtista() {
    PANEL DE ADMINISTRACIÓN (#admin) — el backend valida Rol = admin
    ===================================================================== */
 let ADM = null, admTab = 'pedidos', pedFiltro = 'Pendiente';
-const ADM_TABS = [['pedidos', 'Pedidos'], ['colabs', '✦ Colabs'], ['productos', 'Productos'], ['artistas', 'Artistas'], ['subastas', 'Subastas'], ['miembros', 'Miembros'], ['ajustes', 'Pagos']];
+const ADM_TABS = [['escanear', '📷 Escanear QR'], ['pedidos', 'Pedidos'], ['colabs', '✦ Colabs'], ['productos', 'Productos'], ['artistas', 'Artistas'], ['subastas', 'Subastas'], ['miembros', 'Miembros'], ['ajustes', 'Pagos']];
 const FORMS = {
   Productos: [
     ['Tipo', 'Tipo', 'select', [['prenda', 'Prenda Tri-Urban'], ['colab', 'Arte × Urban (colab)'], ['obra', 'Obra de galería']]],
@@ -2143,7 +2206,8 @@ function renderAdmin() {
   $$('#admTabs .chip').forEach((b, i) => b.classList.toggle('on', ADM_TABS[i][0] === admTab));
   const pendArt = ADM.artistas.filter(a => a.Estado === 'Pendiente').length, pendPed = ADM.pedidos.filter(p => p.Estado === 'Pendiente').length, pendEq = ADM.miembros.filter(m => m.Equipo_Estado === 'Pendiente').length;
   $$('#admTabs .tab-dot').forEach(d => { const n = { artistas: pendArt, pedidos: pendPed, miembros: pendEq }[d.dataset.tab] || 0; d.textContent = n || ''; d.hidden = !n; });
-  const R = { pedidos: admPedidos, colabs: admColabs, productos: admProductos, artistas: admArtistas, subastas: admSubastas, miembros: admMiembros, ajustes: admAjustes }[admTab];
+  if (admTab !== 'escanear' || camAbierta) pararCamara();
+  const R = { escanear: admEscanear, pedidos: admPedidos, colabs: admColabs, productos: admProductos, artistas: admArtistas, subastas: admSubastas, miembros: admMiembros, ajustes: admAjustes }[admTab];
   $('#admBody').innerHTML = R(); tickCountdowns();
 }
 const nombreArtista = id => (ADM.artistas.find(a => a.id === id) || {}).Nombre || '—';
@@ -2277,6 +2341,90 @@ function admEditar(tabla, id, inicial) {
   };
 }
 const BORRADORES = {};
+/* =====================================================================
+   ACCESO A CINETECA TRIKLES: QR único por miembro + escáner (admins)
+   ===================================================================== */
+const TIPO_ACC = { equipo: ['⭐', 'Equipo Trikles', 'Acceso premium'], artista: ['🎨', 'Artista Trikles', 'Acceso de artista'], miembro: ['◐', 'Comunidad Trikles', 'Acceso de miembro'] };
+const cargarScript = src => new Promise((ok, bad) => {
+  if (document.querySelector(`script[src="${src}"]`) && (src.includes('qrcode@') ? window.QRCode : window.Html5Qrcode)) return ok();
+  const s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = () => bad(new Error('lib')); document.head.appendChild(s);
+});
+async function openMiQR(regenerar) {
+  if (regenerar && !confirm('Se generará un QR nuevo y el anterior dejará de servir. ¿Continuar?')) return;
+  const j = await api('miQR', regenerar ? { regenerar: true } : {});
+  if (!j.ok && j.error === 'FOTO') return openModal(`<div class="pad" style="text-align:center;display:grid;gap:14px;justify-items:center">
+    <div style="font-size:46px">📸</div><h3 class="disp" style="font-size:34px">Primero tu foto</h3>
+    <p class="mute">Tu QR de acceso lleva tu foto de perfil: así el equipo de Cineteca Trikles te reconoce en la entrada. Sube una foto donde se vea bien tu cara.</p>
+    <button class="btn btn-accent btn-block" onclick="openMiPerfil()">📷 Subir mi foto</button></div>`, true);
+  if (!j.ok) return toast(j.error || 'No se pudo generar tu QR');
+  try { await cargarScript('https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.js'); } catch (_) { return toast('No se pudo cargar el generador de QR. Revisa tu internet.'); }
+  const gold = j.tipo === 'equipo', [ico, nom, sub] = TIPO_ACC[j.tipo] || TIPO_ACC.miembro, p = j.perfil;
+  const png = await QRCode.toDataURL(j.qr, { width: 560, margin: 1, errorCorrectionLevel: 'M', color: gold ? { dark: '#4a3206', light: '#fff6dc' } : { dark: '#0e0e0d', light: '#ffffff' } });
+  openModal(`<div class="pad cred-pad"><div class="cred cred-${j.tipo}">
+      ${gold ? '<div class="cred-ribbon">★ PREMIUM ★</div>' : ''}
+      <div class="cred-top"><span>CINETECA TRIKLES</span><span>ACCESO</span></div>
+      <div class="cred-who"><div class="cred-foto"><img src="${esc(imgUrl(p.Foto))}" alt=""></div>
+        <div style="min-width:0"><div class="cred-nombre">${esc(p.Nombre)}</div><div class="cred-tipo">${ico} ${nom}${gold && p.Puesto ? ' · ' + esc(p.Puesto) : ''}</div><div class="cred-sub">${sub}</div></div></div>
+      <div class="cred-qr"><img src="${png}" alt="Tu código QR de acceso"></div>
+      <div class="cred-foot">Muéstralo en la entrada · personal e intransferible</div>
+    </div>
+    <p class="mute" style="font-size:13px;text-align:center">📸 Toma captura de pantalla para tenerlo a la mano. Al escanearlo, el equipo verá tu foto y tu nombre.</p>
+    <button class="btn btn-ghost btn-block btn-sm" onclick="openMiQR(true)">Generar un QR nuevo (si compartiste o perdiste el actual)</button></div>`, true);
+}
+/* ---------- escáner (solo admins) ---------- */
+let lector = null, camAbierta = false, leyendoQR = false;
+function irEscanear() { closeModal(); admTab = 'escanear'; if (location.hash === '#admin') renderAdmin(); else location.hash = '#admin'; }
+function admEscanear() {
+  return `<div class="scan-wrap">
+    <p class="mute">Escanea el QR de acceso de la persona. Verás su foto: compárala con quien tienes enfrente.</p>
+    <button class="btn btn-accent btn-block" id="bCam" onclick="toggleCamara()">📷 Abrir cámara</button>
+    <div id="lector"></div>
+    <form class="scan-manual" onsubmit="event.preventDefault();consultarQR($('#qrManual').value)"><input id="qrManual" placeholder="o pega aquí el código del QR" autocomplete="off"><button class="btn btn-ghost" type="submit">Buscar</button></form>
+    <div id="scanRes"></div></div>`;
+}
+function toggleCamara() { camAbierta ? pararCamara() : abrirLector(); }
+async function abrirLector() {
+  const res = $('#scanRes'); if (res) res.innerHTML = '';
+  try { await cargarScript('https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js'); } catch (_) { return toast('No se pudo cargar el lector. Revisa tu internet.'); }
+  if (!$('#lector')) return;
+  if (!lector || !document.body.contains(lector._el)) { lector = new Html5Qrcode('lector'); lector._el = $('#lector'); }
+  try {
+    await lector.start({ facingMode: 'environment' }, { fps: 10, qrbox: (w, h) => { const q = Math.floor(Math.min(w, h) * 0.75); return { width: q, height: q }; } },
+      txt => { if (leyendoQR) return; leyendoQR = true; pararCamara(); consultarQR(txt).finally(() => { leyendoQR = false; }); }, () => {});
+    camAbierta = true; const b = $('#bCam'); if (b) { b.textContent = '⏹ Detener cámara'; b.classList.replace('btn-accent', 'btn-ghost'); }
+  } catch (e) { toast('No se pudo abrir la cámara. Da permiso de cámara al navegador e intenta de nuevo.'); }
+}
+function pararCamara() {
+  if (lector && camAbierta) lector.stop().catch(() => {});
+  camAbierta = false; const b = $('#bCam'); if (b) { b.textContent = '📷 Abrir cámara'; b.classList.replace('btn-ghost', 'btn-accent'); }
+}
+async function consultarQR(txt) {
+  txt = String(txt || '').trim(); if (!txt) return;
+  const r = await api('adminEscanear', { codigo: txt });
+  const box = $('#scanRes'); if (!box) return;
+  if (!r.ok) { box.innerHTML = `<div class="acc acc-no"><div class="acc-banda">⚠ ${esc(r.error || 'Error')}</div></div>`; return; }
+  if (navigator.vibrate) navigator.vibrate(r.existe && r.activo ? 120 : [200, 100, 200]);
+  box.innerHTML = tarjetaAcceso(r); $('#qrManual').value = '';
+  box.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+function tarjetaAcceso(r) {
+  const otro = '<button class="btn btn-accent btn-block" onclick="abrirLector()">📷 Escanear otro</button>';
+  if (!r.existe) return `<div class="acc acc-no"><div class="acc-banda">⛔ QR NO VÁLIDO<small>No pertenece a ningún miembro (o ya fue reemplazado por uno nuevo)</small></div>
+    <div class="acc-body"><p class="mute">Pide a la persona que abra la app y genere su QR desde “🎟️ Generar mi QR de acceso”.</p>${otro}</div></div>`;
+  const p = r.perfil, [ico, nom] = TIPO_ACC[r.tipo] || TIPO_ACC.miembro, u = imgUrl(p.Foto);
+  const fecha = ms => new Date(+ms).toLocaleString('es-MX', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+  return `<div class="acc acc-${r.tipo} ${r.activo ? '' : 'acc-no'}">
+    <div class="acc-banda">${r.activo ? '✅ ACCESO PERMITIDO' : '⛔ CUENTA DESACTIVADA'}<small>${r.activo ? (r.tipo === 'equipo' ? '★ Premium · ' : '') + nom : 'No permitir el acceso'}</small></div>
+    <div class="acc-body">
+      <div class="acc-foto">${u ? `<img src="${esc(u)}" alt="Foto de ${esc(p.Nombre)}">` : '<div class="acc-sinfoto">Sin foto<br><small>Verifica con una identificación</small></div>'}</div>
+      <div class="acc-nombre">${esc(p.Nombre)}</div>
+      <div class="acc-tags">${r.tipo === 'artista' && r.artista ? '' : `<span class="acc-tag t-${r.tipo}">${ico} ${nom}${r.tipo === 'equipo' && p.Puesto ? ' · ' + esc(p.Puesto) : ''}</span>`}
+        ${r.artista ? `<span class="acc-tag t-artista">🎨 Artista · ${esc(r.artista.Nombre)}${r.artista.Disciplina ? ' · ' + esc(r.artista.Disciplina) : ''}</span>` : ''}
+        </div>
+      <div class="mute" style="font-size:13px">${p.Desde ? 'En la comunidad desde ' + new Date(+p.Desde).toLocaleDateString('es-MX', { month: 'long', year: 'numeric' }) + ' · ' : ''}${r.ultimo ? 'Último acceso: ' + fecha(r.ultimo) : 'Primera visita'}</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-ghost btn-sm" onclick="openPerfil('${p.id}')">Ver perfil completo</button></div>
+      ${otro}</div></div>`;
+}
 /* galería en el formulario del panel */
 const galLeer = () => { try { const g = JSON.parse($('#admForm').elements.Galeria.value || '[]'); return Array.isArray(g) ? g : []; } catch (_) { return []; } };
 function galGuardar(g) { const f = $('#admForm'); f.elements.Galeria.value = JSON.stringify(g); f.dataset.dirty = '1'; galPintar(); }
