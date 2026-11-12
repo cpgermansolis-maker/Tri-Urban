@@ -655,6 +655,18 @@ footer{border-top:2px solid var(--ink)}
 .acc-tag.t-equipo{background:#e3b64f;color:#2a1c02;border-color:#e3b64f}
 .acc-tag.t-artista{color:#00d1ff}
 .acc-body .btn{width:100%}
+.crop-ov{position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.72);display:flex;align-items:center;justify-content:center;padding:16px}
+.crop-box{background:var(--bg2,#151515);color:var(--text,#f1ede4);border:2px solid var(--text,#f1ede4);width:min(400px,100%);padding:18px;display:grid;gap:12px;box-shadow:6px 6px 0 rgba(0,0,0,.6)}
+.crop-tit{font-weight:800;font-size:18px;text-align:center}
+.crop-area{position:relative;width:100%;aspect-ratio:1;overflow:hidden;touch-action:none;cursor:grab;background:#111;user-select:none}
+.crop-area:active{cursor:grabbing}
+.crop-area canvas{width:100%;height:100%;display:block}
+.crop-mask{position:absolute;inset:0;pointer-events:none;border-radius:50%;box-shadow:0 0 0 9999px rgba(0,0,0,.42);outline:2px solid rgba(255,255,255,.9);outline-offset:-2px}
+.crop-zoom{display:flex;align-items:center;gap:10px}
+.crop-zoom input{flex:1;padding:0;accent-color:var(--accent,#ff4d1a);border:0;background:none}
+.crop-zoom button{width:36px;height:36px;border:1px solid currentColor;font-size:20px;line-height:1;flex:none}
+.crop-hint{font-size:12px;opacity:.7;text-align:center}
+.crop-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 </style>
 </head>
 <body>
@@ -2110,7 +2122,7 @@ async function openMiArtista() {
     <h3 class="it" style="font-size:34px;line-height:1">${esc(a.Nombre || 'Nuevo perfil')}</h3>
     ${aviso}
     <div class="field"><label>Foto</label><div class="img-up"><div class="th" id="prev_Foto" style="border-radius:50%;width:96px;height:96px">${a.Foto ? `<img src="${esc(imgUrl(a.Foto))}" alt="">` : ''}</div>
-      <div style="flex:1;display:grid;gap:8px"><label class="btn btn-ghost btn-sm" style="cursor:pointer">${a.Foto ? 'Cambiar foto' : 'Subir foto'}<input type="file" accept="image/*" hidden onchange="subirFoto(this,'Foto','maForm','maSave','subirMiFoto')"></label>
+      <div style="flex:1;display:grid;gap:8px"><label class="btn btn-ghost btn-sm" style="cursor:pointer">${a.Foto ? 'Cambiar foto' : 'Subir foto'}<input type="file" accept="image/*" hidden onchange="subirFoto(this,'Foto','maForm','maSave','subirMiFoto',{recortar:true})"></label>
       <input type="hidden" name="Foto" value="${esc(a.Foto || '')}"></div></div></div>
     ${f('Nombre', 'Nombre artístico', 'required maxlength="60"')}
     <div class="field"><label for="ma_Origen">Comunidad</label><select id="ma_Origen" name="Origen">${['Tri-Urban', 'Cineteca Trikles'].map(o => `<option ${o === a.Origen ? 'selected' : ''}>${o}</option>`).join('')}</select></div>
@@ -2492,14 +2504,63 @@ async function leerFoto(file) {
     throw new Error('formato');
   }
 }
+/* ---------- editor de recorte: devuelve {data, mime} (JPG cuadrado 800px) o null si cancela ---------- */
+function recortarFoto(file) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file), img = new Image();
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('formato')); };
+    img.onload = () => {
+      const ov = document.createElement('div'); ov.className = 'crop-ov';
+      ov.innerHTML = `<div class="crop-box" role="dialog" aria-label="Ajustar foto">
+        <div class="crop-tit">Ajusta tu foto</div>
+        <div class="crop-area"><canvas></canvas><div class="crop-mask"></div></div>
+        <div class="crop-zoom"><button type="button" data-z="-1" aria-label="Alejar">−</button><input type="range" min="1" max="5" step="0.01" value="1" aria-label="Zoom"><button type="button" data-z="1" aria-label="Acercar">+</button></div>
+        <div class="crop-hint">Arrastra para acomodar · pellizca o usa la barra para el zoom</div>
+        <div class="crop-btns"><button type="button" class="btn btn-ghost" data-act="no">Cancelar</button><button type="button" class="btn btn-accent" data-act="si">Usar esta foto</button></div></div>`;
+      document.body.appendChild(ov);
+      const area = ov.querySelector('.crop-area'), cv = ov.querySelector('canvas'), ctx = cv.getContext('2d'), rango = ov.querySelector('input');
+      const W = img.naturalWidth, H = img.naturalHeight;
+      let L = 0, z = 1, ox = 0, oy = 0; // L = lado del cuadro en px CSS; ox/oy = desplazamiento del centro
+      const base = () => Math.max(L / W, L / H);
+      const limitar = () => { const s = base() * z, mx = Math.max(0, (W * s - L) / 2), my = Math.max(0, (H * s - L) / 2); ox = Math.min(mx, Math.max(-mx, ox)); oy = Math.min(my, Math.max(-my, oy)); };
+      const pintar = (c, lado) => { const k = lado / L, s = base() * z * k, x = c.getContext('2d'); x.fillStyle = '#111'; x.fillRect(0, 0, lado, lado); x.drawImage(img, lado / 2 - W * s / 2 + ox * k, lado / 2 - H * s / 2 + oy * k, W * s, H * s); };
+      const medir = () => { L = area.clientWidth; const d = window.devicePixelRatio || 1; cv.width = cv.height = Math.round(L * d); limitar(); pintar(cv, cv.width); };
+      const zoomA = (nz, cx = 0, cy = 0) => { nz = Math.min(5, Math.max(1, nz)); ox = cx - (cx - ox) * nz / z; oy = cy - (cy - oy) * nz / z; z = nz; rango.value = z; limitar(); pintar(cv, cv.width); };
+      medir(); window.addEventListener('resize', medir);
+      // arrastrar y pellizcar
+      const ptr = new Map(); let pinch = null;
+      area.addEventListener('pointerdown', e => { area.setPointerCapture(e.pointerId); ptr.set(e.pointerId, { x: e.clientX, y: e.clientY }); if (ptr.size === 2) { const [a, b] = [...ptr.values()]; pinch = { d: Math.hypot(a.x - b.x, a.y - b.y), z }; } });
+      area.addEventListener('pointermove', e => {
+        const p = ptr.get(e.pointerId); if (!p) return;
+        if (ptr.size === 1) { ox += e.clientX - p.x; oy += e.clientY - p.y; limitar(); pintar(cv, cv.width); }
+        ptr.set(e.pointerId, { x: e.clientX, y: e.clientY });
+        if (ptr.size === 2 && pinch) { const [a, b] = [...ptr.values()], r = area.getBoundingClientRect(); zoomA(pinch.z * Math.hypot(a.x - b.x, a.y - b.y) / pinch.d, (a.x + b.x) / 2 - r.left - L / 2, (a.y + b.y) / 2 - r.top - L / 2); }
+      });
+      const soltar = e => { ptr.delete(e.pointerId); if (ptr.size < 2) pinch = null; };
+      area.addEventListener('pointerup', soltar); area.addEventListener('pointercancel', soltar);
+      area.addEventListener('wheel', e => { e.preventDefault(); const r = area.getBoundingClientRect(); zoomA(z * (e.deltaY < 0 ? 1.1 : 1 / 1.1), e.clientX - r.left - L / 2, e.clientY - r.top - L / 2); }, { passive: false });
+      rango.oninput = () => zoomA(+rango.value);
+      ov.querySelectorAll('[data-z]').forEach(b => b.onclick = () => zoomA(z * (+b.dataset.z > 0 ? 1.2 : 1 / 1.2)));
+      const cerrar = res => { window.removeEventListener('resize', medir); URL.revokeObjectURL(url); ov.remove(); resolve(res); };
+      ov.querySelector('[data-act="no"]').onclick = () => cerrar(null);
+      ov.querySelector('[data-act="si"]').onclick = () => { const out = document.createElement('canvas'); out.width = out.height = 800; pintar(out, 800); cerrar({ data: out.toDataURL('image/jpeg', 0.88).split(',')[1], mime: 'image/jpeg' }); };
+      ov.addEventListener('keydown', e => { if (e.key === 'Escape') { e.stopPropagation(); cerrar(null); } });
+      ov.querySelector('[data-act="si"]').focus();
+    };
+    img.src = url;
+  });
+}
 async function subirFoto(inp, k, formId, saveId, accion, extra) {
   const file = inp.files[0]; if (!file) return;
   const f = document.getElementById(formId), lbl = inp.closest('label'), save = document.getElementById(saveId), txtSave = save.textContent;
   f.dataset.subiendo = '1'; f.dataset.dirty = '1'; save.disabled = true; save.textContent = 'Subiendo foto…';
   lbl.firstChild.textContent = 'Subiendo…';
   try {
-    const { data, mime } = await leerFoto(file);
-    const r = await api(accion, { ...(extra || {}), data, mime, name: file.name.replace(/\.\w+$/, '') + (mime === 'image/png' ? '.png' : mime === 'image/webp' ? '.webp' : '.jpg') });
+    const { recortar, ...extraApi } = extra || {};
+    const foto = (recortar || extraApi.para === 'perfil') ? await recortarFoto(file) : await leerFoto(file);
+    if (!foto) return; // canceló el ajuste
+    const { data, mime } = foto;
+    const r = await api(accion, { ...extraApi, data, mime, name: file.name.replace(/\.\w+$/, '') + (mime === 'image/png' ? '.png' : mime === 'image/webp' ? '.webp' : '.jpg') });
     if (!r.ok) return toast(r.error || 'No se pudo subir la foto. Intenta de nuevo.');
     if (extra && extra.para === 'perfil') { S.me.Foto = r.url; pintarMeBtn(); } // ya quedó guardada en su perfil
     if (!f.isConnected) return toast(extra && extra.para === 'perfil' ? 'Foto de perfil actualizada ✓' : 'Foto subida');
@@ -2534,7 +2595,8 @@ function admMiembros() {
 async function admFotoMiembro(inp, id) {
   const file = inp.files[0]; inp.value = ''; if (!file) return;
   try {
-    const { data, mime } = await leerFoto(file);
+    const foto = await recortarFoto(file); if (!foto) return;
+    const { data, mime } = foto;
     const up = await api('adminUpload', { data, mime, name: 'perfil_' + id + (mime === 'image/png' ? '.png' : '.jpg') });
     if (!up.ok) return toast(up.error || 'No se pudo subir la foto');
     if (id === S.me.id) { S.me.Foto = up.url; pintarMeBtn(); }
