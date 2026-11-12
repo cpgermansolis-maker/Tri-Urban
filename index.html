@@ -667,6 +667,91 @@ footer{border-top:2px solid var(--ink)}
 .crop-zoom button{width:36px;height:36px;border:1px solid currentColor;font-size:20px;line-height:1;flex:none}
 .crop-hint{font-size:12px;opacity:.7;text-align:center}
 .crop-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+/* ---------- seguimiento de pedidos ---------- */
+.seg-strip{background:var(--cian);color:#000}.seg-strip .mute{color:rgba(0,0,0,.72)}.seg-strip:hover{background:var(--spray);color:#000}
+.aviso-strip{background:var(--spray);color:#000}.aviso-strip .mute{color:rgba(0,0,0,.72)}.aviso-strip:hover{background:var(--cian);color:#000}
+.seg-strip .mute,.aviso-strip .mute{display:inline}
+.seg-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(360px,100%),1fr));gap:16px}
+.seg{border:2px solid var(--line);background:var(--bg2);padding:16px;display:grid;gap:14px;min-width:0}
+.seg.mio{border-color:var(--cian);box-shadow:5px 5px 0 var(--cian)}
+.seg.listo{border-color:#1f8a4c}
+.seg-top{display:flex;gap:14px;align-items:center}
+.seg-th{width:72px;height:72px;flex:none;overflow:hidden;background:var(--bg3)}
+.seg-th img,.seg-th svg{width:100%;height:100%;object-fit:cover;display:block}
+.seg-n{font-weight:800;font-size:18px;line-height:1.15;overflow-wrap:anywhere}
+.seg-estado{font-weight:700;color:var(--spray);margin:2px 0}
+.seg-pasos{list-style:none;display:grid;grid-template-columns:repeat(4,1fr);margin:4px 0 0;padding:0}
+.seg-pasos li{display:grid;justify-items:center;align-content:start;gap:6px;text-align:center;position:relative;font-size:11px;line-height:1.2;color:var(--mute);padding:0 2px}
+.seg-pasos li::before{content:"";position:absolute;top:16px;left:-50%;width:100%;height:3px;background:var(--line)}
+.seg-pasos li:first-child::before{display:none}
+.seg-pasos li.hecho::before,.seg-pasos li.aqui::before{background:var(--spray)}
+.seg-dot{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:var(--bg3);border:2px solid var(--line);position:relative;z-index:1;font-size:15px}
+.seg-pasos li.hecho .seg-dot{background:var(--spray);border-color:var(--spray);color:#000;font-weight:800}
+.seg-pasos li.aqui .seg-dot{border-color:var(--spray);box-shadow:0 0 0 4px rgba(255,212,0,.25)}
+.seg-pasos li.aqui{color:var(--text);font-weight:700}
+.seg-nota{font-size:14px;background:var(--bg3);padding:10px 12px;overflow-wrap:anywhere}
+.seg-fila{display:flex;justify-content:space-between;gap:10px;align-items:center;font-size:13px}
+.seg-mio{display:grid;gap:8px;border-top:1px dashed var(--line);padding-top:12px}
+.seg-listo{background:#1f8a4c;color:#fff;font-weight:700;padding:10px 12px;font-size:14px}
+.seg-tag{color:var(--cian);border-color:var(--cian)}
+.seg-adm{gap:12px}
+.seg-opts{display:grid;gap:6px}
+.seg-opt{display:flex;gap:8px;align-items:center;font-size:14px;cursor:pointer}
+.seg-opt input{width:auto;accent-color:var(--spray)}
+/* ---------- feed ---------- */
+.feed,.avisos{display:grid;gap:22px;max-width:560px;margin:0 auto}
+.avisos{margin-bottom:26px;padding-bottom:26px;border-bottom:2px dashed var(--line)}
+.post{background:var(--bg2);border:2px solid var(--line);min-width:0}
+.post.aviso{border-color:var(--spray);box-shadow:5px 5px 0 var(--spray)}
+.aviso-tag{background:var(--spray);color:#000;font-weight:800;font-size:12px;letter-spacing:.06em;padding:6px 12px}
+.post-h{display:flex;align-items:center;gap:10px;padding:10px 12px}
+.post-a{display:flex;gap:10px;align-items:center;cursor:pointer;min-width:0;flex:1}
+.post-nom{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.post-media{position:relative;aspect-ratio:4/5;background:#000;overflow:hidden;user-select:none;-webkit-user-select:none}
+.post-media .gal-s{background:#000}
+.post-media .gal-s>img{object-fit:contain}
+.post-big{padding:30px 22px;font-size:20px;font-weight:700;line-height:1.35;white-space:pre-line;overflow-wrap:anywhere;background:var(--bg3)}
+.post.aviso .post-big{background:rgba(255,212,0,.08)}
+.post-act{display:flex;gap:2px;padding:6px 6px 0}
+.post-act button{font-size:17px;padding:8px 10px;display:flex;gap:6px;align-items:center;font-weight:700}
+.post-act span{font-size:14px}
+.post-txt{padding:2px 12px 0;font-size:14px;white-space:pre-line;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;cursor:pointer}
+.post-txt.full{display:block}
+.post-vercom{padding:6px 12px 12px;font-size:13px;display:block}
+.post-modal .post{border:0;background:transparent}
+.post-modal{gap:14px}
+.heart-pop{position:absolute;left:50%;top:50%;font-size:96px;transform:translate(-50%,-50%) scale(.2);animation:heartpop .9s ease forwards;pointer-events:none;z-index:6;filter:drop-shadow(0 4px 12px rgba(0,0,0,.5))}
+@keyframes heartpop{30%{transform:translate(-50%,-50%) scale(1.15);opacity:1}70%{transform:translate(-50%,-50%) scale(1);opacity:1}100%{transform:translate(-50%,-50%) scale(1);opacity:0}}
+.coms{display:grid;gap:12px;max-height:40vh;overflow:auto;padding:2px 0}
+.com{display:flex;gap:10px;align-items:flex-start;font-size:14px}
+.com-t{white-space:pre-line;overflow-wrap:anywhere}
+.pgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:3px}
+.pgrid-i{position:relative;aspect-ratio:1;overflow:hidden;background:var(--bg3);padding:0;border:0;cursor:pointer;color:var(--text)}
+.pgrid-i img{width:100%;height:100%;object-fit:cover;display:block}
+.pgrid-txt{display:grid;place-items:center;height:100%;padding:6px;font-size:11px;font-weight:700;text-align:center;overflow:hidden;line-height:1.25}
+.pgrid-ico{position:absolute;top:4px;right:6px;font-size:13px;color:#fff;text-shadow:0 1px 3px #000}
+.reels{height:calc(100svh - 230px);min-height:440px;max-width:440px;margin:0 auto;overflow-y:auto;scroll-snap-type:y mandatory;background:#000;border:2px solid var(--line);scrollbar-width:none;overscroll-behavior:contain}
+.reels::-webkit-scrollbar{display:none}
+.reel{height:100%;scroll-snap-align:start;scroll-snap-stop:always;position:relative;overflow:hidden;color:#fff}
+.reel-v{position:absolute;inset:0 0 0 0;display:grid;place-items:center}
+.reel-v iframe,.reel-v video{width:100%;height:100%;border:0;object-fit:contain;background:#000}
+.reel-info{position:absolute;left:0;right:66px;bottom:0;padding:14px;background:linear-gradient(transparent,rgba(0,0,0,.8));display:grid;gap:6px;pointer-events:none}
+.reel-info .post-a{pointer-events:auto;color:#fff;flex-wrap:wrap}
+.reel-txt{font-size:13px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;white-space:pre-line}
+.reel-side{position:absolute;right:8px;bottom:64px;display:grid;gap:10px;z-index:3}
+.reel-side button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:rgba(0,0,0,.5);border-radius:999px;width:50px;height:54px;font-size:20px;color:#fff;font-weight:700}
+.reel-side span{font-size:11px}
+.reel-mas{display:grid;place-items:center}
+.pub-prev{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:8px}
+.pub-th{position:relative;aspect-ratio:1;overflow:hidden;background:var(--bg3)}
+.pub-th img,.pub-th video{width:100%;height:100%;object-fit:cover;display:block}
+.pub-th button{position:absolute;top:4px;right:4px;width:26px;height:26px;border-radius:50%;background:rgba(0,0,0,.75);color:#fff;font-size:12px}
+.pub-vid{position:absolute;left:6px;bottom:4px;font-size:13px;font-weight:700;color:#fff;text-shadow:0 1px 3px #000}
+.pub-link{display:grid;place-items:center;height:100%;font-size:13px;font-weight:700}
+.pub-btns{display:flex;gap:8px;flex-wrap:wrap}
+.aviso-toggle{border:2px solid var(--spray);padding:12px;align-items:flex-start;line-height:1.4}
+@media (max-width:900px){.reels{height:calc(100svh - 200px)}}
+@media (max-width:520px){.reels{border-left:0;border-right:0;margin:0 calc(-1 * var(--gut));max-width:none}}
 </style>
 </head>
 <body>
@@ -914,12 +999,14 @@ const galBadge = p => { const g = galeria(p), v = g.filter(x => x.t === 'video')
 let S = { token: lsGet(LS.token, ''), me: null, data: null, cart: lsGet(LS.cart, []) };
 
 /* ---------- pantalla de carga: aparece en cada consulta al servidor (menos las que se repiten solas) ---------- */
-const SIN_CARGA = new Set(['noLeidos', 'vivoFeed', 'chat', 'subasta', 'vivoReaccionar', 'vivoComentar', 'enviarMensaje']);
+const SIN_CARGA = new Set(['noLeidos', 'vivoFeed', 'chat', 'subasta', 'vivoReaccionar', 'vivoComentar', 'enviarMensaje', 'likePost']);
 const TXT_CARGA = { llave: 'Verificando tu llave…', login: 'Entrando…', register: 'Creando tu cuenta…', catalog: 'Cargando la tienda…',
   pedido: 'Apartando tu pedido…', pujar: 'Registrando tu puja…', opinar: 'Publicando tu opinión…', subirMiFoto: 'Subiendo tu foto… (en datos móviles puede tardar)',
   guardarPerfil: 'Guardando tu perfil…', guardarMiArtista: 'Guardando tu perfil de artista…', adminSave: 'Guardando…', adminDelete: 'Borrando…',
   adminData: 'Cargando el panel…', misPedidos: 'Buscando tus pedidos…', comunidad: 'Cargando la comunidad…', conversaciones: 'Cargando tus mensajes…',
-  vivoIniciar: 'Abriendo tu transmisión…', logout: 'Cerrando sesión…', miQR: 'Generando tu QR…', adminEscanear: 'Verificando el QR…' };
+  vivoIniciar: 'Abriendo tu transmisión…', logout: 'Cerrando sesión…', miQR: 'Generando tu QR…', adminEscanear: 'Verificando el QR…',
+  feed: 'Cargando el feed…', publicar: 'Publicando…', post: 'Abriendo la publicación…', comentarPost: 'Enviando tu comentario…',
+  borrarPost: 'Borrando…', borrarComentarioPost: 'Borrando…', subirPostMedia: 'Subiendo…', adminSeguimiento: 'Actualizando el seguimiento…' };
 let cargasActivas = 0;
 function cargando(on, txt) {
   const el = $('#loader'); if (!el) return;
@@ -936,7 +1023,7 @@ async function api(action, data = {}) {
 }
 async function apiReal(action, data = {}) {
   if (DEMO) { await new Promise(r => setTimeout(r, 120)); return Demo.run(action, data, S.token); }
-  const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), action === 'adminUpload' ? (/^video/.test(data.mime || '') ? 240000 : 90000) : action === 'subirMiFoto' ? 90000 : 30000);
+  const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), action === 'adminUpload' || action === 'subirPostMedia' ? (/^video/.test(data.mime || '') ? 240000 : 90000) : action === 'subirMiFoto' ? 90000 : 30000);
   let j;
   try {
     const res = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action, token: S.token, ...data }), signal: ctl.signal });
@@ -1063,16 +1150,16 @@ const Demo = (() => {
     },
     me(d, m) { return { ok: true, me: pub(m) }; },
     logout(d, m, t) { delete db.sesiones[t]; save(); return { ok: true }; },
-    catalog() {
+    catalog(d, m) {
       return { ok: true,
-        productos: db.productos.filter(p => p.Activo !== false), config: db.config,
-        artistas: db.artistas.filter(a => a.Activo !== false && (!a.Estado || a.Estado === 'Aprobado')).map(a => ({ ...a, ...ratings(a.id) })),
+        productos: db.productos.filter(p => p.Activo !== false), config: db.config, seguimiento: segDemo(m), avisos: A.feed({}, m).avisos.slice(0, 3),
+        artistas: db.artistas.filter(a => a.Activo !== false && (!a.Estado || a.Estado === 'Aprobado')).map(a => ({ ...a, ...artLinkDemo(a), ...ratings(a.id) })),
         subastas: db.subastas.filter(x => x.Estado !== 'Oculta').map(subPub),
         vivos: db.vivos.filter(v => v.Estado !== 'terminado') };
     },
     artista(d) {
       const a = db.artistas.find(x => x.id === d.id); if (!a) return { ok: false, error: 'No encontrado' };
-      return { ok: true, artista: { ...a, ...ratings(a.id) }, opiniones: db.opiniones.filter(o => o.Artista_ID === a.id).sort((x, y) => y.Fecha - x.Fecha) };
+      return { ok: true, artista: { ...a, ...artLinkDemo(a), ...ratings(a.id) }, opiniones: db.opiniones.filter(o => o.Artista_ID === a.id).sort((x, y) => y.Fecha - x.Fecha) };
     },
     opinar(d, m) {
       const e = Math.max(1, Math.min(5, +d.estrellas || 0)), txt = String(d.texto || '').trim().slice(0, 500);
@@ -1167,11 +1254,58 @@ const Demo = (() => {
   A.guardarMiArtista = (d, m) => {
     const o = { Nombre: String(d.Nombre || '').trim().slice(0, 60), Origen: d.Origen, Disciplina: d.Disciplina, Bio: d.Bio, Foto: d.Foto, Instagram: d.Instagram, Facebook: d.Facebook };
     if (!o.Nombre) return { ok: false, error: 'Escribe tu nombre artístico.' };
+    if (o.Foto) m.Foto = o.Foto;
     const a = miArt(m); if (a) { Object.assign(a, o); save(); return { ok: true, id: a.id, nuevo: false }; }
     const id = uid('a'); db.artistas.push({ ...o, id, Activo: true, Miembro_ID: m.id, Estado: 'Pendiente' }); m.Artista_ID = id; save();
     return { ok: true, id, nuevo: true };
   };
-  A.subirMiFoto = (d, m) => { const url = 'data:' + d.mime + ';base64,' + d.data; if (d.para === 'perfil') { m.Foto = url; save(); } return { ok: true, url }; };
+  A.subirMiFoto = (d, m) => { const url = 'data:' + d.mime + ';base64,' + d.data; if (d.para === 'perfil') { m.Foto = url; const a = miArt(m); if (a) a.Foto = url; save(); } return { ok: true, url }; };
+  /* ---- foto del artista = foto de perfil de su dueño ---- */
+  function artLinkDemo(a) { const r = db.miembros.find(x => x.Activo !== false && ((a.Miembro_ID && x.id === a.Miembro_ID) || x.Artista_ID === a.id)); return { Foto: (r && r.Foto) || a.Foto || '', Perfil_ID: r ? r.id : '' }; }
+  /* ---- seguimiento de pedidos ---- */
+  const reservasDemo = m => { const r = {}; db.pedidos.filter(p => p.Estado !== 'Cancelado').forEach(p => p.items.forEach(it => { const x = r[it.id] || (r[it.id] = { piezas: 0, pre: 0, gente: {}, abiertos: 0, mios: [] }); x.piezas += it.qty; x.gente[p.Miembro_ID] = 1; if (it.SobrePedido) { x.pre += it.qty; if (p.Estado !== 'Entregado') x.abiertos++; } if (m && p.Miembro_ID === m.id) x.mios.push({ folio: p.folio, qty: it.qty, Talla: it.Talla || '', Estado: p.Estado }); })); return r; };
+  function segDemo(m, todos) {
+    const res = reservasDemo(m);
+    return db.productos.filter(p => { const x = res[p.id], e = p.Seguimiento || ''; return todos || (e !== 'Cerrado' && (!!e || !!(x && x.abiertos))); })
+      .map(p => { const x = res[p.id], e = p.Seguimiento || ''; return { id: p.id, Nombre: p.Nombre, Imagen: p.Imagen || '', Tipo: p.Tipo, Etapa: e && e !== 'Cerrado' ? e : 'Juntando', EtapaRaw: e, Nota: p.Seguimiento_Nota || '', Fecha: p.Seguimiento_Fecha || 0, Llegada: p.Pedido_Llegada || '', Sobre_Pedido: !!p.Sobre_Pedido, piezas: x ? (x.pre || x.piezas) : 0, personas: x ? Object.keys(x.gente).length : 0, mios: x ? x.mios : [] }; })
+      .sort((a, b) => (b.mios.length > 0) - (a.mios.length > 0) || (b.piezas > 0) - (a.piezas > 0) || b.Fecha - a.Fecha);
+  }
+  /* ---- feed ---- */
+  db.posts = db.posts || []; db.plikes = db.plikes || []; db.pcoms = db.pcoms || [];
+  if (!db.postsSemilla) {
+    db.postsSemilla = true;
+    db.posts.push({ id: 'f1', Miembro_ID: 'dm1', Tipo: 'texto', Media: [], Texto: '🎬 Este viernes: función especial de terror en Cineteca Trikles. ¡Lleguen temprano, hay palomitas para la comunidad!', Aviso: true, Fecha: now - 5 * H, Activo: true },
+      { id: 'f2', Miembro_ID: 'dm2', Tipo: 'texto', Media: [], Texto: 'Trabajando en una chamarra nueva para el próximo drop 🔥', Aviso: false, Fecha: now - 30 * H, Activo: true });
+    save();
+  }
+  const esEq = r => !!r && (r.Equipo_Estado === 'Aprobado' || r.Rol === 'admin');
+  const postDemo = (p, m) => { const r = db.miembros.find(x => x.id === p.Miembro_ID) || {}, eq = esEq(r);
+    return { id: p.id, Tipo: p.Tipo, Media: p.Media || [], Texto: p.Texto || '', Aviso: !!p.Aviso && eq, Fecha: p.Fecha,
+      autor: { id: r.id, Nombre: r.Nombre, Foto: r.Foto || '', Equipo: eq, Puesto: r.Equipo_Estado === 'Aprobado' ? r.Puesto || '' : '', Artista_ID: r.Artista_ID || '' },
+      likes: db.plikes.filter(l => l.Post_ID === p.id).length, yaLike: !!m && db.plikes.some(l => l.Post_ID === p.id && l.Miembro_ID === m.id), comentarios: db.pcoms.filter(c => c.Post_ID === p.id).length }; };
+  const postsVis = () => db.posts.filter(p => p.Activo !== false && db.miembros.some(x => x.id === p.Miembro_ID && x.Activo !== false));
+  A.feed = (d, m) => {
+    let ps = postsVis().map(p => postDemo(p, m)), avisos = [];
+    if (d.autor) ps = ps.filter(p => p.autor.id === d.autor);
+    if (d.modo === 'reels') ps = ps.filter(p => p.Tipo === 'video');
+    if (!d.autor && d.modo !== 'reels') { avisos = ps.filter(p => p.Aviso && Date.now() - p.Fecha < 15 * 864e5).sort((a, b) => b.Fecha - a.Fecha).slice(0, 6); ps = ps.filter(p => !avisos.includes(p)); }
+    const peso = p => p.Fecha + (!d.autor && p.autor.Equipo ? 2 * 864e5 : 0); ps.sort((a, b) => peso(b) - peso(a));
+    const desde = +d.desde || 0; return { ok: true, avisos, posts: ps.slice(desde, desde + 18), mas: ps.length > desde + 18, total: ps.length };
+  };
+  A.post = (d, m) => { const p = postsVis().find(x => x.id === d.id); if (!p) return { ok: false, error: 'Esta publicación ya no está disponible.' };
+    return { ok: true, post: postDemo(p, m), comentarios: db.pcoms.filter(c => c.Post_ID === p.id).sort((a, b) => a.Fecha - b.Fecha).map(c => { const r = db.miembros.find(x => x.id === c.Miembro_ID) || {}; return { id: c.id, Texto: c.Texto, Fecha: c.Fecha, autor: { id: r.id || '', Nombre: r.Nombre || 'Alguien', Foto: r.Foto || '', Equipo: esEq(r) } }; }) }; };
+  A.publicar = (d, m) => { const media = (d.media || []).slice(0, 10), texto = String(d.texto || '').trim().slice(0, 2200);
+    if (!media.length && !texto) return { ok: false, error: 'Agrega una foto, un video o escribe algo.' };
+    const p = { id: uid('f'), Miembro_ID: m.id, Tipo: media.some(x => x.t === 'video') ? 'video' : media.length ? 'foto' : 'texto', Media: media, Texto: texto, Aviso: !!d.aviso && esEq(m), Fecha: Date.now(), Activo: true };
+    db.posts.push(p); save(); return { ok: true, id: p.id }; };
+  A.subirPostMedia = d => ({ ok: true, url: 'data:' + d.mime + ';base64,' + d.data });
+  A.likePost = (d, m) => { const i = db.plikes.findIndex(l => l.Post_ID === d.id && l.Miembro_ID === m.id), quiero = d.quiero === undefined ? i < 0 : !!d.quiero;
+    if (quiero && i < 0) db.plikes.push({ Post_ID: d.id, Miembro_ID: m.id, Fecha: Date.now() }); else if (!quiero && i >= 0) db.plikes.splice(i, 1);
+    save(); return { ok: true, yaLike: quiero, likes: db.plikes.filter(l => l.Post_ID === d.id).length }; };
+  A.comentarPost = (d, m) => { const t = String(d.texto || '').trim().slice(0, 500); if (!t) return { ok: false, error: 'Escribe un comentario' }; db.pcoms.push({ id: uid('k'), Post_ID: d.id, Miembro_ID: m.id, Texto: t, Fecha: Date.now() }); save(); return { ok: true }; };
+  A.borrarPost = (d, m) => { const p = db.posts.find(x => x.id === d.id); if (!p) return { ok: false, error: 'No encontrada' }; if (p.Miembro_ID !== m.id && m.Rol !== 'admin') return { ok: false, error: 'Solo quien la publicó puede borrarla.' }; p.Activo = false; save(); return { ok: true }; };
+  A.borrarComentarioPost = (d, m) => { const i = db.pcoms.findIndex(c => c.id === d.id); if (i < 0) return { ok: false, error: 'No encontrado' }; const c = db.pcoms[i], p = db.posts.find(x => x.id === c.Post_ID);
+    if (c.Miembro_ID !== m.id && m.Rol !== 'admin' && !(p && p.Miembro_ID === m.id)) return { ok: false, error: 'No puedes borrar este comentario.' }; db.pcoms.splice(i, 1); save(); return { ok: true }; };
   /* ---- miembro: mis pedidos ---- */
   const tipoDemo = r => (r.Equipo_Estado === 'Aprobado' || r.Rol === 'admin') ? 'equipo' : (r.Artista_ID && db.artistas.some(a => a.id === r.Artista_ID && (a.Estado || 'Aprobado') === 'Aprobado')) ? 'artista' : 'miembro';
   A.miQR = (d, m) => {
@@ -1197,7 +1331,21 @@ const Demo = (() => {
     adminData() {
       return { ok: true, productos: db.productos, artistas: db.artistas.map(a => ({ ...a, Estado: a.Estado || 'Aprobado', Solicitante: a.Miembro_ID ? (db.miembros.find(x => x.id === a.Miembro_ID) || {}).Nombre || '' : '' })), subastas: db.subastas.map(subPub),
         pedidos: db.pedidos.slice().reverse().map(p => ({ ...p, Nombre: (db.miembros.find(x => x.id === p.Miembro_ID) || {}).Nombre || p.Nombre || '', Email: (db.miembros.find(x => x.id === p.Miembro_ID) || {}).Email || '' })),
-        miembros: db.miembros.map(m => ({ ...pub(m), Activo: m.Activo !== false })), config: db.config };
+        miembros: db.miembros.map(m => ({ ...pub(m), Activo: m.Activo !== false })), config: db.config, seguimiento: segDemo(null, true) };
+    },
+    adminSeguimiento(d, m) {
+      const p = db.productos.find(x => x.id === d.id); if (!p) return { ok: false, error: 'Producto no encontrado' };
+      const prev = p.Seguimiento || '';
+      Object.assign(p, { Seguimiento: d.etapa || '', Seguimiento_Nota: String(d.nota || '').slice(0, 200), Seguimiento_Fecha: Date.now() });
+      if (d.llegada !== undefined) p.Pedido_Llegada = d.llegada;
+      const txt = { Pedida: '📦 ¡Ya pedimos la mercancía de “' + p.Nombre + '”!', Camino: '🚚 Tu pedido de “' + p.Nombre + '” ya viene en camino.', Cineteca: '✅ ¡Tu pedido de “' + p.Nombre + '” ya está en Cineteca Trikles!' }[d.etapa];
+      let avisados = 0;
+      if (d.avisar && txt && d.etapa !== prev) {
+        const quien = [...new Set(db.pedidos.filter(x => !['Cancelado', 'Entregado'].includes(x.Estado) && x.items.some(i => i.id === p.id)).map(x => x.Miembro_ID))].filter(id => id !== m.id);
+        quien.forEach(id => db.mensajes.push({ id: uid('d'), De: m.id, Para: id, Texto: txt + (p.Seguimiento_Nota ? '\n' + p.Seguimiento_Nota : '') + '\nVe cómo va en la sección Pedidos.', Fecha: Date.now(), Leido: false }));
+        avisados = quien.length;
+      }
+      save(); return { ok: true, avisados };
     },
     adminSave(d) {
       const arr = db[TAB[d.tabla]]; if (!arr || d.tabla === 'Opiniones') return { ok: false, error: 'Tabla no editable' };
@@ -1312,16 +1460,18 @@ $('#fReg').onsubmit = async e => {
    ===================================================================== */
 const CORTO = { 'Tri-Urban': 'Tienda', 'Arte × Urban': 'Colabs', 'En vivo': 'Vivo', 'Comunidad': 'Gente' }; // menú inferior del celular
 const SECCIONES = [
-  ['inicio', 'Inicio', '◐'], ['tienda', 'Tri-Urban', '▲'], ['colabs', 'Arte × Urban', '✦'],
-  ['galeria', 'Galería', '▣'], ['subastas', 'Subastas', '⚑'], ['artistas', 'Artistas', '☺'], ['comunidad', 'Comunidad', '◎'], ['vivo', 'En vivo', '●'],
+  ['inicio', 'Inicio', '◐'], ['feed', 'Feed', '▦'], ['tienda', 'Tri-Urban', '▲'], ['colabs', 'Arte × Urban', '✦'],
+  ['galeria', 'Galería', '▣'], ['subastas', 'Subastas', '⚑'], ['artistas', 'Artistas', '☺'], ['comunidad', 'Comunidad', '◎'], ['vivo', 'En vivo', '●'], ['pedidos', 'Pedidos', '📦'],
 ];
+const SIN_TABBAR = ['galeria', 'pedidos', 'subastas']; // en el celular se llega desde Inicio y el menú
 let timers = [];
-function stopTimers() { timers.forEach(clearInterval); timers = []; if (typeof pararCamara === 'function') pararCamara(); }
+var reelObs = null;
+function stopTimers() { timers.forEach(clearInterval); timers = []; if (typeof pararCamara === 'function') pararCamara(); if (reelObs) { reelObs.disconnect(); reelObs = null; } }
 function renderNav(cur) {
   const live = (S.data?.vivos || []).some(v => v.Estado === 'envivo');
   $('#nav').innerHTML = SECCIONES.map(([k, l]) => `<a href="#${k}" class="${k === cur ? 'on' : ''}">${l}${k === 'vivo' && live ? '<span class="dot"></span>' : ''}</a>`).join('') + (S.me.Rol === 'admin' ? `<a href="#admin" class="${cur === 'admin' ? 'on' : ''}">⚙ Panel</a>` : '');
   const adm = S.me.Rol === 'admin';
-  $('#tabbar').innerHTML = SECCIONES.filter(s => s[0] !== 'galeria' && !(adm && s[0] === 'inicio')).map(([k, l, i]) => `<a href="#${k}" class="${k === cur ? 'on' : ''}"><i>${k === 'vivo' && live ? '🔴' : i}</i>${CORTO[l] || l}</a>`).join('')
+  $('#tabbar').innerHTML = SECCIONES.filter(s => !SIN_TABBAR.includes(s[0]) && !(adm && s[0] === 'inicio')).map(([k, l, i]) => `<a href="#${k}" class="${k === cur ? 'on' : ''}"><i>${k === 'vivo' && live ? '🔴' : i}</i>${CORTO[l] || l}</a>`).join('')
     + (adm ? `<a href="#admin" class="${cur === 'admin' ? 'on' : ''}"><i>⚙</i>Panel</a>` : '');
 }
 function route() {
@@ -1331,13 +1481,15 @@ function route() {
   const esAdmin = S.me.Rol === 'admin' && sec === 'admin';
   const k = esAdmin ? 'admin' : SECCIONES.some(s => s[0] === sec) ? sec : 'inicio';
   renderNav(k);
-  const V = { inicio: vInicio, tienda: vTienda, colabs: vColabs, galeria: vGaleria, subastas: vSubastas, artistas: vArtistas, vivo: vVivo, admin: vAdmin, comunidad: vComunidad }[k];
+  const V = { inicio: vInicio, feed: vFeed, tienda: vTienda, colabs: vColabs, galeria: vGaleria, subastas: vSubastas, artistas: vArtistas, vivo: vVivo, admin: vAdmin, comunidad: vComunidad, pedidos: vPedidos }[k];
   $('#view').innerHTML = V(arg) + footer();
   window.scrollTo(0, 0);
   tickCountdowns(); timers.push(setInterval(tickCountdowns, 1000));
   if (k === 'vivo' && arg) startLive(arg);
   if (k === 'admin') loadAdmin();
   if (k === 'comunidad') loadComunidad();
+  if (k === 'feed') loadFeed();
+  if (k === 'pedidos') refrescarSeg();
 }
 window.addEventListener('hashchange', route);
 function footer() {
@@ -1374,7 +1526,9 @@ function vInicio() {
     </div>` : '<div class="hero-media"></div>'}
   </section>
   <div class="ticker"><div>${[...tick, ...tick].map((t, i) => `<span class="${i % 2 ? 'a' : ''}">${t}</span>`).join('')}</div></div>
+  ${avisoStrip()}
   <div class="live-strip qr-strip" onclick="openMiQR()" tabindex="0" onkeydown="if(event.key==='Enter')this.click()"><span class="qr-ico">🎟️</span><div style="flex:1"><b>Tu acceso a Cineteca Trikles</b> · <span class="mute">genera tu QR único para entrar</span></div><span>Generar QR →</span></div>
+  ${segStrip()}
   ${live ? `<div class="live-strip" onclick="location.hash='#vivo/${live.id}'"><span class="pill-live">EN VIVO</span><div style="flex:1"><b>${esc(artistaById(live.Artista_ID).Nombre)}</b> · <span class="mute">${esc(live.Titulo)}</span></div><span>Entrar →</span></div>` : ''}
   <section class="sec">
     <div class="sec-head"><h2 class="disp">Arte <span class="it" style="color:var(--gold)">×</span> Urban</h2><p>Prendas Tri-Urban intervenidas por artistas. Ediciones cortas, firmadas, con historia.</p></div>
@@ -1628,6 +1782,7 @@ async function openArtista(id) {
       <p>${esc(a.Bio || '')}</p>
       <div class="social">${safeUrl(a.Instagram) ? `<a href="${esc(safeUrl(a.Instagram))}" target="_blank" rel="noopener">Instagram ↗</a>` : ''}${safeUrl(a.Facebook) ? `<a href="${esc(safeUrl(a.Facebook))}" target="_blank" rel="noopener">Facebook ↗</a>` : ''}</div>
       ${obras.length ? `<div><div class="kicker" style="margin-bottom:10px">Sus piezas</div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">${obras.map(o => `<div style="cursor:pointer;aspect-ratio:4/5;overflow:hidden;border-radius:3px;position:relative" onclick="openProducto('${o.id}')" title="${esc(o.Nombre)}${esHistoria(o) ? ' · Historia de Tri-URBN' : ''}">${media(o)}${esHistoria(o) ? '<span class="hist-mini">📜</span>' : ''}</div>`).join('')}</div></div>` : ''}
+      ${a.Perfil_ID ? `<div id="artPosts"></div><button class="btn btn-ghost" onclick="openPerfil('${a.Perfil_ID}')">👤 Ver su perfil en la comunidad</button>` : ''}
     </div></div>
     <div class="pad" style="border-top:1px solid var(--line)">
       <h4 class="disp" style="font-size:30px">Opiniones de la comunidad</h4>
@@ -1641,6 +1796,7 @@ async function openArtista(id) {
       <div>${j.opiniones.map(o => `<div class="review"><div class="h"><span><b>${esc(o.Nombre)}</b> ${stars(o.Estrellas)}</span><span class="mute">${new Date(+o.Fecha).toLocaleDateString('es-MX', { day: 'numeric', month: 'short' })}${S.me.Rol === 'admin' ? ` <button class="mod-x" title="Borrar opinión" onclick="admBorrarOpinion('${o.id}','${a.id}')">✕</button>` : ''}</span></div>
         ${o.Texto ? `<p style="margin-top:6px">${esc(o.Texto)}</p>` : ''}${o.Recomienda ? '<div class="rec" style="margin-top:6px">✓ Lo recomienda</div>' : ''}</div>`).join('') || '<div class="mute">Aún no hay opiniones. ¡Sé el primero!</div>'}</div>
     </div>`);
+  if (a.Perfil_ID) pintarGridPerfil('artPosts', a.Perfil_ID);
   $$('#starIn button').forEach(b => b.onclick = () => { est = +b.dataset.n; $$('#starIn button').forEach(x => x.classList.toggle('on', +x.dataset.n <= est)); });
   $('#opForm').onsubmit = async e => {
     e.preventDefault(); if (!est) return toast('Elige de 1 a 5 estrellas');
@@ -1741,6 +1897,9 @@ $('#meBtn').onclick = () => openModal(`<div class="pad">${avatarHtml(S.me, 64)}
   <button class="btn btn-ghost btn-block" onclick="openMensajes()">💬 Mensajes</button>
   <div><span class="org ${S.me.Rol === 'miembro' ? 'ct' : 'tu'}">${{ miembro: 'Miembro', artista: 'Artista', admin: 'Administrador' }[S.me.Rol] || S.me.Rol}</span></div>
   <button class="btn btn-solid btn-block" onclick="openMisPedidos()">Mis pedidos</button>
+  <a class="btn btn-ghost btn-block" href="#pedidos" onclick="closeModal()">📦 Cómo van los pedidos</a>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%"><a class="btn btn-ghost" href="#subastas" onclick="closeModal()">⚑ Subastas</a><a class="btn btn-ghost" href="#galeria" onclick="closeModal()">▣ Galería</a></div>
+  <button class="btn btn-ghost btn-block" onclick="openPublicar()">＋ Publicar en el feed</button>
   <button class="btn btn-ghost btn-block" onclick="openMiArtista()">🎨 ${S.me.Artista_ID ? 'Mi perfil de artista' : 'Soy artista: crear mi perfil'}</button>
   ${S.me.Rol === 'admin' ? '<a class="btn btn-gold btn-block" href="#admin" onclick="closeModal()">⚙ Panel de administración</a>' : ''}
   <button class="btn btn-ghost btn-block" onclick="logout()">Cerrar sesión</button></div>`, true);
@@ -1816,15 +1975,319 @@ async function openMisPedidos() {
   openModal(`<div class="pad"><h3 class="disp" style="font-size:40px">Mis pedidos</h3>
     ${j.pedidos.map(p => `<div class="ord"><div class="ord-h"><b>${esc(p.folio)}</b>${pillEstado(p.Estado)}</div>
       <div class="mute" style="font-size:13px">${new Date(+p.Fecha).toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
-      <ul class="ord-items">${p.items.map(i => `<li>${i.qty}× ${esc(i.Nombre)}${i.Talla ? ' · ' + esc(i.Talla) : ''}${preTag(i)}</li>`).join('')}</ul>
+      <ul class="ord-items">${p.items.map(i => `<li>${i.qty}× ${esc(i.Nombre)}${i.Talla ? ' · ' + esc(i.Talla) : ''}${preTag(i)}${p.Estado !== 'Cancelado' && p.Estado !== 'Entregado' ? segTag(i.id) : ''}</li>`).join('')}</ul>
       <div class="ord-h"><span class="mute">Total</span><b>${money(p.total)}</b></div>
       ${p.Estado === 'Pendiente' ? `<div class="mute" style="font-size:12px">Transfiere a ${esc(j.config.Pago_Banco || '')} · ${esc(j.config.Pago_Numero || '')} con concepto ${esc(p.folio)}.</div>` : ''}</div>`).join('') || '<div class="empty">Aún no tienes pedidos.</div>'}
+    <a class="btn btn-ghost btn-block" href="#pedidos" onclick="closeModal()">📦 Ver cómo va la mercancía</a>
   </div>`, true);
 }
 
 /* =====================================================================
    PERFILES, COMUNIDAD Y MENSAJES
    ===================================================================== */
+/* =====================================================================
+   SEGUIMIENTO DE PEDIDOS — toda la comunidad ve cómo va la mercancía
+   ===================================================================== */
+const ETAPAS = [['Juntando', 'Juntando pedidos', '📝'], ['Pedida', 'Mercancía pedida', '📦'], ['Camino', 'En camino', '🚚'], ['Cineteca', 'Ya en Cineteca Trikles', '✅']];
+const etapaIdx = e => Math.max(0, ETAPAS.findIndex(x => x[0] === e));
+const etapaTxt = e => ETAPAS[etapaIdx(e)][1];
+function haceCuanto(ms) {
+  const s = (Date.now() - +ms) / 1000;
+  if (!+ms) return '';
+  if (s < 60) return 'ahora';
+  if (s < 3600) return 'hace ' + Math.floor(s / 60) + ' min';
+  if (s < 86400) return 'hace ' + Math.floor(s / 3600) + ' h';
+  if (s < 7 * 86400) return 'hace ' + Math.floor(s / 86400) + (Math.floor(s / 86400) === 1 ? ' día' : ' días');
+  return new Date(+ms).toLocaleDateString('es-MX', { day: 'numeric', month: 'short' });
+}
+const segTag = id => { const s = (S.data?.seguimiento || []).find(x => x.id === id); return s ? ` <span class="pre-tag seg-tag">${ETAPAS[etapaIdx(s.Etapa)][2]} ${esc(etapaTxt(s.Etapa))}</span>` : ''; };
+function segPasos(e) {
+  const k = etapaIdx(e);
+  return `<ol class="seg-pasos">${ETAPAS.map(([, l, i], n) => `<li class="${n < k ? 'hecho' : n === k ? 'aqui' : ''}"><span class="seg-dot">${n < k ? '✓' : i}</span><span>${l}</span></li>`).join('')}</ol>`;
+}
+function segCard(s) {
+  const mio = s.mios.length > 0, k = etapaIdx(s.Etapa);
+  return `<article class="seg ${mio ? 'mio' : ''} ${k === 3 ? 'listo' : ''}">
+    <div class="seg-top"><div class="seg-th">${media(s)}</div>
+      <div style="min-width:0;flex:1"><div class="kicker">${mio ? 'Tu pedido' : 'Pedido de la comunidad'}</div>
+        <div class="seg-n">${esc(s.Nombre)}</div>
+        <div class="seg-estado">${ETAPAS[k][2]} ${esc(ETAPAS[k][1])}</div>
+        <div class="mute" style="font-size:12px">${s.piezas ? s.piezas + (s.piezas === 1 ? ' pieza apartada' : ' piezas apartadas') + ' · ' + s.personas + (s.personas === 1 ? ' persona' : ' personas') : 'Aún sin pedidos'}${s.Fecha ? ' · actualizado ' + haceCuanto(s.Fecha) : ''}</div></div></div>
+    ${segPasos(s.Etapa)}
+    ${s.Nota ? `<div class="seg-nota">💬 ${esc(s.Nota)}</div>` : ''}
+    ${s.Llegada && k < 3 ? `<div class="seg-fila"><span class="mute">Llegada estimada</span><b>${fmtDia(s.Llegada, true)}</b></div>` : ''}
+    ${mio ? `<div class="seg-mio"><div class="kicker">Lo que tú pediste</div>${s.mios.map(x => `<div class="seg-fila"><span>${x.qty}× ${x.Talla ? 'talla ' + esc(x.Talla) + ' · ' : ''}${esc(x.folio)}</span>${pillEstado(x.Estado)}</div>`).join('')}
+      ${k === 3 && s.mios.some(x => x.Estado !== 'Entregado') ? '<div class="seg-listo">🎉 ¡Ya puedes pasar por tu pedido a Cineteca Trikles!</div>' : ''}
+      ${s.mios.some(x => x.Estado === 'Pendiente') ? '<div class="mute" style="font-size:12px">Tu pago aún está pendiente. <button class="btn-link" style="padding:0" onclick="openMisPedidos()">Ver datos para pagar</button></div>' : ''}</div>` : ''}
+  </article>`;
+}
+function vPedidos() {
+  const L = S.data.seguimiento || [], mios = L.filter(s => s.mios.length), otros = L.filter(s => !s.mios.length);
+  return `<section class="sec">
+    <div class="sec-head"><h2 class="disp">Pedidos</h2><p>Cómo va la mercancía que apartó la comunidad: si ya se pidió, si viene en camino y cuándo llega a Cineteca Trikles.</p></div>
+    ${L.length ? '' : '<div class="empty">Por ahora no hay mercancía en camino. Cuando apartes algo sobre pedido, aquí verás cómo va.</div>'}
+    ${mios.length ? `<div class="kicker" style="margin-bottom:12px">Tus pedidos</div><div class="seg-grid">${mios.map(segCard).join('')}</div>` : ''}
+    ${otros.length ? `<div class="kicker" style="margin:${mios.length ? 34 : 0}px 0 12px">De la comunidad</div><div class="seg-grid">${otros.map(segCard).join('')}</div>` : ''}
+    <div style="margin-top:22px;display:flex;gap:10px;flex-wrap:wrap"><button class="btn btn-ghost" onclick="openMisPedidos()">Mis pedidos y pagos</button><a class="btn btn-ghost" href="#tienda">Ir a la tienda</a></div>
+  </section>`;
+}
+async function refrescarSeg() { // trae la etapa más reciente sin bloquear la pantalla
+  const j = await apiReal('catalog'); if (!j.ok) return;
+  S.data = j; if ((location.hash.slice(1) || '').split('/')[0] === 'pedidos' && $('#view')) $('#view').innerHTML = vPedidos() + footer();
+}
+function segStrip() {
+  const L = S.data.seguimiento || [], m = L.find(s => s.mios.length);
+  if (!L.length) return '';
+  return m ? `<div class="live-strip seg-strip" onclick="location.hash='#pedidos'" tabindex="0" onkeydown="if(event.key==='Enter')this.click()"><span class="qr-ico">${ETAPAS[etapaIdx(m.Etapa)][2]}</span><div style="flex:1;min-width:0"><b>Tu pedido: ${esc(etapaTxt(m.Etapa))}</b> · <span class="mute">${esc(m.Nombre)}</span></div><span>Ver →</span></div>`
+    : `<div class="live-strip seg-strip" onclick="location.hash='#pedidos'" tabindex="0" onkeydown="if(event.key==='Enter')this.click()"><span class="qr-ico">📦</span><div style="flex:1;min-width:0"><b>Pedidos de la comunidad</b> · <span class="mute">mira cómo va la mercancía</span></div><span>Ver →</span></div>`;
+}
+function avisoStrip() {
+  const a = (S.data.avisos || [])[0]; if (!a) return '';
+  POSTS[a.id] = POSTS[a.id] || a;
+  return `<div class="live-strip aviso-strip" onclick="openPost('${a.id}')" tabindex="0" onkeydown="if(event.key==='Enter')this.click()"><span class="qr-ico">📢</span><div style="flex:1;min-width:0"><b>Aviso del Equipo Trikles</b> · <span class="mute">${esc(String(a.Texto || 'Nueva publicación').slice(0, 140))}</span></div><span>Ver →</span></div>`;
+}
+
+/* =====================================================================
+   FEED — publicaciones y reels (como Instagram, pero solo para la comunidad)
+   ===================================================================== */
+let feedModo = 'feed', FEED = { avisos: [], posts: [], mas: false };
+const POSTS = {}; // id → publicación (para me gusta y comentarios en cualquier vista)
+const guardaPosts = arr => arr.forEach(p => { POSTS[p.id] = p; });
+function vFeed() {
+  const reels = feedModo === 'reels';
+  return `<section class="sec feed-sec">
+    <div class="sec-head"><h2 class="disp">${reels ? 'Reels' : 'Feed'}</h2>${reels ? '' : '<p>Lo que comparte la comunidad: fotos, videos y avisos del Equipo Trikles. Todo se queda aquí, entre nosotros.</p>'}
+      <button class="btn btn-accent" onclick="openPublicar()">＋ Publicar</button></div>
+    <div class="filters">${[['feed', '▦ Publicaciones'], ['reels', '▶ Reels']].map(([k, l]) => `<button class="chip ${k === feedModo ? 'on' : ''}" onclick="feedModo='${k}';route()">${l}</button>`).join('')}</div>
+    <div id="feedBody"><div class="mute">Cargando…</div></div>
+  </section>`;
+}
+async function loadFeed(mas) {
+  const modo = feedModo, desde = mas ? FEED.posts.length : 0;
+  const r = await api('feed', { modo, desde });
+  if (!$('#feedBody') || modo !== feedModo) return;
+  if (!r.ok) { $('#feedBody').innerHTML = `<div class="empty">${esc(r.error || 'No se pudo cargar el feed')}</div>`; return; }
+  guardaPosts([...(r.avisos || []), ...r.posts]);
+  FEED = mas ? { avisos: FEED.avisos, posts: FEED.posts.concat(r.posts), mas: r.mas } : { avisos: r.avisos || [], posts: r.posts, mas: r.mas };
+  const y = scrollY; pintarFeed(); if (mas) scrollTo(0, y);
+}
+function pintarFeed() {
+  const el = $('#feedBody'); if (!el) return;
+  if (feedModo === 'reels') return pintarReels(el);
+  el.innerHTML = `${FEED.avisos.length ? `<div class="avisos"><div class="kicker">📢 Avisos del Equipo Trikles</div>${FEED.avisos.map(p => postCard(p)).join('')}</div>` : ''}
+    <div class="feed">${FEED.posts.map(p => postCard(p)).join('') || (FEED.avisos.length ? '' : '<div class="empty">Aún no hay publicaciones. ¡Estrena el feed!<br><br><button class="btn btn-accent" onclick="openPublicar()">＋ Publicar</button></div>')}</div>
+    ${FEED.mas ? '<div style="text-align:center;margin-top:22px"><button class="btn btn-ghost" onclick="loadFeed(true)">Ver más</button></div>' : ''}`;
+}
+const insMini = a => a.Equipo ? `<span class="ins eq">⭐ Equipo${a.Puesto ? ' · ' + esc(a.Puesto) : ''}</span>` : a.Artista_ID ? '<span class="ins art">🎨 Artista</span>' : '';
+function postSlide(x) { return x.t === 'video' ? videoHtml(x.u) : `<img src="${esc(imgUrl(x.u))}" alt="" loading="lazy">`; }
+function postMedia(p) {
+  const m = p.Media || []; if (!m.length) return '';
+  const tap = `onclick="postTap(event,'${p.id}',this)"`;
+  if (m.length === 1) return `<div class="media post-media" ${tap}><div class="gal"><div class="gal-s">${postSlide(m[0])}</div></div></div>`;
+  return `<div class="media post-media" ${tap}><div class="gal" onscroll="galDot(this)">${m.map(x => `<div class="gal-s">${postSlide(x)}</div>`).join('')}</div>
+    <button type="button" class="gal-nav prev" onclick="galMove(this,-1)" aria-label="Anterior">‹</button><button type="button" class="gal-nav next" onclick="galMove(this,1)" aria-label="Siguiente">›</button>
+    <div class="gal-dots">${m.map((_, i) => `<i class="${i ? '' : 'on'}" onclick="galIr(this,${i})"></i>`).join('')}</div></div>`;
+}
+function postCard(p, completo) {
+  const borrar = p.autor.id === S.me.id || esAdm();
+  return `<article class="post ${p.Aviso ? 'aviso' : ''}" data-post="${p.id}">
+    ${p.Aviso ? '<div class="aviso-tag">📢 Aviso del Equipo Trikles</div>' : ''}
+    <div class="post-h"><div class="post-a" onclick="openPerfil('${p.autor.id}')">${avatarHtml(p.autor, 38)}<div style="min-width:0"><div class="post-nom"><b>${esc(p.autor.Nombre)}</b>${insMini(p.autor)}</div><div class="mute" style="font-size:12px">${haceCuanto(p.Fecha)}</div></div></div>
+      ${borrar ? `<button class="mod-x" title="Borrar publicación" aria-label="Borrar publicación" onclick="borrarPost('${p.id}')">✕</button>` : ''}</div>
+    ${p.Media.length ? postMedia(p) : `<div class="post-big">${esc(p.Texto)}</div>`}
+    <div class="post-act"><button class="pa-like ${p.yaLike ? 'on' : ''}" onclick="darLike('${p.id}')" aria-label="Me gusta">${p.yaLike ? '❤️' : '🤍'} <span>${p.likes || ''}</span></button>
+      <button class="pa-com" onclick="openPost('${p.id}')" aria-label="Comentarios">💬 <span>${p.comentarios || ''}</span></button></div>
+    ${p.Media.length && p.Texto ? `<div class="post-txt ${completo ? 'full' : ''}" onclick="this.classList.add('full')"><b>${esc(nombreCorto(p.autor.Nombre))}</b> ${esc(p.Texto)}</div>` : ''}
+    ${completo ? '' : `<button class="btn-link post-vercom" onclick="openPost('${p.id}')">${p.comentarios ? 'Ver ' + (p.comentarios === 1 ? 'el comentario' : 'los ' + p.comentarios + ' comentarios') : 'Comentar…'}</button>`}
+  </article>`;
+}
+/* doble toque en la foto = me gusta (como Instagram) */
+let ultimoTap = { id: '', t: 0 };
+function postTap(ev, id, el) {
+  if (ev.target.closest('button,video,a,.gal-dots')) return;
+  const ahora = Date.now();
+  if (ultimoTap.id === id && ahora - ultimoTap.t < 380) { ultimoTap = { id: '', t: 0 }; const h = document.createElement('span'); h.className = 'heart-pop'; h.textContent = '❤️'; el.appendChild(h); setTimeout(() => h.remove(), 900); darLike(id, true); }
+  else ultimoTap = { id, t: ahora };
+}
+function pintarLike(id) {
+  const p = POSTS[id]; if (!p) return;
+  $$(`[data-post="${id}"] .pa-like`).forEach(b => { b.classList.toggle('on', p.yaLike); b.innerHTML = (p.yaLike ? '❤️' : '🤍') + ' <span>' + (p.likes || '') + '</span>'; });
+}
+async function darLike(id, quiero) {
+  const p = POSTS[id]; if (!p) return;
+  if (quiero && p.yaLike) return;
+  const ya = quiero ? true : !p.yaLike, antes = [p.yaLike, p.likes];
+  p.yaLike = ya; p.likes = Math.max(0, (p.likes || 0) + (ya ? 1 : -1)); pintarLike(id);
+  if (navigator.vibrate) navigator.vibrate(10);
+  const r = await api('likePost', { id, quiero: ya });
+  if (!r.ok) { [p.yaLike, p.likes] = antes; pintarLike(id); return toast(r.error || 'No se pudo'); }
+  p.yaLike = r.yaLike; p.likes = r.likes; pintarLike(id);
+}
+const comHtml = (c, p) => `<div class="com">${avatarHtml(c.autor, 30)}<div style="min-width:0;flex:1"><b style="cursor:pointer" onclick="openPerfil('${c.autor.id}')">${esc(c.autor.Nombre)}</b>${c.autor.Equipo ? ' <span class="ins eq">⭐</span>' : ''} <span class="com-t">${esc(c.Texto)}</span><div class="mute" style="font-size:11px">${haceCuanto(c.Fecha)}</div></div>${c.autor.id === S.me.id || p.autor.id === S.me.id || esAdm() ? `<button class="mod-x" title="Borrar comentario" onclick="borrarComPost('${c.id}','${p.id}')">✕</button>` : ''}</div>`;
+async function openPost(id) {
+  openModal('<div class="pad mute">Cargando…</div>', true);
+  const r = await api('post', { id }); if (!r.ok) return openModal(`<div class="pad">${esc(r.error)}</div>`, true);
+  const p = POSTS[id] = Object.assign(POSTS[id] || {}, r.post);
+  openModal(`<div class="pad post-modal">${postCard(p, true)}
+    <div class="kicker">Comentarios</div>
+    <div class="coms" id="coms">${r.comentarios.map(c => comHtml(c, p)).join('') || '<div class="mute" style="font-size:13px">Sé el primero en comentar.</div>'}</div>
+    <form class="dm-form" id="comForm" style="padding:0;border:0"><textarea id="comIn" rows="1" maxlength="500" placeholder="Escribe un comentario…" aria-label="Comentario"></textarea><button class="btn btn-accent" aria-label="Enviar">↑</button></form>
+  </div>`, true);
+  const c = $('#coms'); c.scrollTop = c.scrollHeight;
+  const inp = $('#comIn');
+  inp.addEventListener('input', () => { inp.style.height = 'auto'; inp.style.height = Math.min(inp.scrollHeight, 120) + 'px'; });
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); $('#comForm').requestSubmit(); } });
+  $('#comForm').onsubmit = async e => {
+    e.preventDefault(); const t = inp.value.trim(); if (!t) return;
+    const r2 = await api('comentarPost', { id, texto: t });
+    if (!r2.ok) return toast(r2.error || 'No se pudo comentar');
+    p.comentarios = (p.comentarios || 0) + 1;
+    $$(`[data-post="${id}"] .pa-com span`).forEach(s => s.textContent = p.comentarios);
+    openPost(id);
+  };
+}
+async function borrarComPost(cid, pid) {
+  if (!confirm('¿Borrar este comentario?')) return;
+  const r = await api('borrarComentarioPost', { id: cid }); if (!r.ok) return toast(r.error);
+  if (POSTS[pid]) POSTS[pid].comentarios = Math.max(0, (POSTS[pid].comentarios || 1) - 1);
+  $$(`[data-post="${pid}"] .pa-com span`).forEach(s => s.textContent = POSTS[pid].comentarios || '');
+  openPost(pid);
+}
+async function borrarPost(id) {
+  if (!confirm('¿Borrar esta publicación? Ya no la verá nadie.')) return;
+  const r = await api('borrarPost', { id }); if (!r.ok) return toast(r.error);
+  toast('Publicación borrada');
+  delete POSTS[id];
+  FEED.posts = FEED.posts.filter(p => p.id !== id); FEED.avisos = FEED.avisos.filter(p => p.id !== id);
+  if (S.data && S.data.avisos) S.data.avisos = S.data.avisos.filter(p => p.id !== id);
+  if (!$('#modal').hidden && $(`#modalBody [data-post="${id}"]`)) closeModal();
+  $$(`[data-post="${id}"]`).forEach(e => e.remove());
+  $$(`.pgrid-i[data-id="${id}"]`).forEach(e => e.remove());
+  if (location.hash === '' || location.hash.startsWith('#inicio')) route();
+}
+/* ---------- reels: videos a pantalla completa, uno por uno ---------- */
+function pintarReels(el) {
+  const vids = FEED.posts.filter(p => p.Media.some(x => x.t === 'video'));
+  if (!vids.length) { el.innerHTML = '<div class="empty">Aún no hay reels. Sube un video y estrena esta sección.<br><br><button class="btn btn-accent" onclick="openPublicar()">＋ Subir video</button></div>'; return; }
+  el.innerHTML = `<div class="reels" id="reels">${vids.map((p, i) => `<div class="reel" data-post="${p.id}">
+      <div class="reel-v" data-src="${esc(p.Media.find(x => x.t === 'video').u)}"></div>
+      <div class="reel-info"><div class="post-a" onclick="openPerfil('${p.autor.id}')">${avatarHtml(p.autor, 34)}<b>${esc(p.autor.Nombre)}</b>${insMini(p.autor)}</div>${p.Texto ? `<div class="reel-txt">${esc(p.Texto)}</div>` : ''}</div>
+      <div class="reel-side">
+        <button class="pa-like ${p.yaLike ? 'on' : ''}" onclick="darLike('${p.id}')" aria-label="Me gusta">${p.yaLike ? '❤️' : '🤍'} <span>${p.likes || ''}</span></button>
+        <button class="pa-com" onclick="openPost('${p.id}')" aria-label="Comentarios">💬 <span>${p.comentarios || ''}</span></button>
+        ${i > 0 ? `<button onclick="reelIr(${i - 1})" aria-label="Reel anterior">⌃</button>` : ''}
+        ${i < vids.length - 1 || FEED.mas ? `<button onclick="reelIr(${i + 1})" aria-label="Siguiente reel">⌄</button>` : ''}
+      </div>
+    </div>`).join('')}${FEED.mas ? '<div class="reel reel-mas"><button class="btn btn-ghost" onclick="loadFeed(true)">Cargar más reels</button></div>' : ''}</div>`;
+  if (reelObs) reelObs.disconnect();
+  reelObs = new IntersectionObserver(es => es.forEach(e => {
+    const v = e.target.querySelector('.reel-v'); if (!v) return;
+    if (e.isIntersecting && e.intersectionRatio >= .6) { if (!v.firstChild) v.innerHTML = reelVideo(v.dataset.src); }
+    else if (v.firstChild) v.innerHTML = ''; // al salir se detiene
+  }), { root: $('#reels'), threshold: [0, .6, 1] });
+  $$('#reels .reel').forEach(r => reelObs.observe(r));
+}
+function reelIr(i) { const r = $('#reels'); if (r && r.children[i]) r.scrollTo({ top: r.children[i].offsetTop, behavior: 'smooth' }); }
+function reelVideo(u) {
+  const y = /youtu/.test(u) ? ytId(u) : '';
+  if (y) return `<iframe src="https://www.youtube-nocookie.com/embed/${y}?autoplay=1&mute=1&loop=1&playlist=${y}&playsinline=1&rel=0&modestbranding=1" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen title="Reel"></iframe>`;
+  const d = driveId(u);
+  if (d) return `<iframe src="https://drive.google.com/file/d/${d}/preview" allow="autoplay" allowfullscreen title="Reel"></iframe>`;
+  return `<video src="${esc(u)}" autoplay muted loop playsinline controls></video>`;
+}
+/* ---------- cuadrícula de publicaciones en un perfil ---------- */
+function gridThumb(p) {
+  const m = p.Media[0];
+  if (!m) return `<span class="pgrid-txt">${esc(p.Texto.slice(0, 90))}</span>`;
+  if (m.t === 'video') {
+    const y = /youtu/.test(m.u) ? ytId(m.u) : '', d = driveId(m.u);
+    const th = y ? `https://i.ytimg.com/vi/${y}/hqdefault.jpg` : d ? `https://drive.google.com/thumbnail?id=${d}&sz=w400` : '';
+    return (th ? `<img src="${esc(th)}" alt="" loading="lazy" onerror="this.remove()">` : '') + '<span class="pgrid-ico">▶</span>';
+  }
+  return `<img src="${esc(imgUrl(m.u))}" alt="" loading="lazy">${p.Media.length > 1 ? '<span class="pgrid-ico">▣</span>' : ''}`;
+}
+async function pintarGridPerfil(elId, autor) {
+  const r = await apiReal('feed', { autor }); const el = $('#' + elId);
+  if (!r.ok || !el) return;
+  guardaPosts(r.posts);
+  el.innerHTML = r.posts.length ? `<div class="kicker" style="margin:8px 0 10px">Publicaciones · ${r.total}</div>
+    <div class="pgrid">${r.posts.map(p => `<button class="pgrid-i" data-id="${p.id}" onclick="openPost('${p.id}')" aria-label="Ver publicación">${gridThumb(p)}</button>`).join('')}</div>` : '';
+}
+/* ---------- nueva publicación ---------- */
+let pubArchivos = [];
+function openPublicar() {
+  pubArchivos = [];
+  const eq = S.me.Equipo_Estado === 'Aprobado' || esAdm();
+  openModal(`<form class="pad" id="pubForm" data-guard>
+    <div class="kicker">Feed de la comunidad</div>
+    <h3 class="disp" style="font-size:36px">Nueva publicación</h3>
+    <div class="pub-prev" id="pubPrev" hidden></div>
+    <div class="pub-btns">
+      <label class="btn btn-ghost btn-sm" style="cursor:pointer">📷 Fotos<input type="file" accept="image/*" multiple hidden onchange="pubAgregar(this,false)"></label>
+      <label class="btn btn-ghost btn-sm" style="cursor:pointer">🎬 Video<input type="file" accept="video/mp4,video/quicktime,video/webm" hidden onchange="pubAgregar(this,true)"></label>
+      <button type="button" class="btn btn-ghost btn-sm" onclick="pubLink()">🔗 Enlace de video</button>
+    </div>
+    <div class="mute" style="font-size:12px">Hasta 10 fotos o videos. Los videos de hasta 20 MB (≈ 1 minuto) se suben directo; si pesa más, súbelo a YouTube como “no listado” y pega el enlace. Los videos salen también en <b>Reels</b>.</div>
+    <div class="field"><label for="pubTxt">Texto</label><textarea id="pubTxt" rows="4" maxlength="2200" placeholder="¿Qué quieres compartir con la comunidad?"></textarea></div>
+    ${eq ? '<label class="toggle aviso-toggle"><input type="checkbox" id="pubAviso"> <span>📢 Publicar como <b>aviso del Equipo Trikles</b>: sale hasta arriba del feed y en Inicio durante 15 días.</span></label>' : ''}
+    <button class="btn btn-accent btn-block" id="pubBtn">Publicar</button>
+  </form>`, true);
+  $('#pubForm').onsubmit = publicar;
+  $('#pubForm')._onDiscard = () => pubArchivos.forEach(x => x.prev && URL.revokeObjectURL(x.prev));
+}
+function pintarPub() {
+  const el = $('#pubPrev'); if (!el) return;
+  el.innerHTML = pubArchivos.map((x, i) => `<div class="pub-th">${x.link ? '<span class="pub-link">🔗 Video</span>' : x.tipo === 'video' ? `<video src="${esc(x.prev)}" muted playsinline preload="metadata"></video><span class="pub-vid">▶</span>` : `<img src="${esc(x.prev)}" alt="">`}<button type="button" onclick="pubQuitar(${i})" aria-label="Quitar">✕</button></div>`).join('');
+  el.hidden = !pubArchivos.length;
+}
+function pubAgregar(inp, video) {
+  const files = [...inp.files]; inp.value = '';
+  for (const f of files) {
+    if (pubArchivos.length >= 10) { toast('Máximo 10 por publicación'); break; }
+    if (video) {
+      if (!/^video\/(mp4|quicktime|webm)$/.test(f.type)) { toast('Ese video no se puede subir. Usa MP4 o MOV.'); continue; }
+      if (f.size > 20 * 1024 * 1024) { toast('El video pesa más de 20 MB. Súbelo a YouTube como “no listado” y pega el enlace.'); continue; }
+    }
+    pubArchivos.push({ file: f, tipo: video ? 'video' : 'img', prev: URL.createObjectURL(f) });
+  }
+  $('#pubForm').dataset.dirty = '1'; pintarPub();
+}
+function pubLink() {
+  const u = (prompt('Pega el enlace del video (YouTube, Shorts o Google Drive):') || '').trim(); if (!u) return;
+  if (!safeUrl(u)) return toast('Ese enlace no es válido');
+  if (pubArchivos.length >= 10) return toast('Máximo 10 por publicación');
+  pubArchivos.push({ link: u, tipo: 'video', subido: { t: 'video', u } }); $('#pubForm').dataset.dirty = '1'; pintarPub();
+}
+function pubQuitar(i) { const x = pubArchivos.splice(i, 1)[0]; if (x && x.prev) URL.revokeObjectURL(x.prev); pintarPub(); }
+async function publicar(e) {
+  e.preventDefault();
+  const texto = $('#pubTxt').value.trim(), aviso = !!($('#pubAviso') && $('#pubAviso').checked), btn = $('#pubBtn');
+  if (!pubArchivos.length && !texto) return toast('Agrega una foto, un video o escribe algo');
+  btn.disabled = true;
+  try {
+    const media = [];
+    for (let i = 0; i < pubArchivos.length; i++) {
+      const x = pubArchivos[i];
+      if (!x.subido) {
+        TXT_CARGA.subirPostMedia = (x.tipo === 'video' ? 'Subiendo tu video… puede tardar un poco' : 'Subiendo foto') + (pubArchivos.length > 1 ? ` (${i + 1} de ${pubArchivos.length})` : '…');
+        const { data, mime } = x.tipo === 'video' ? { data: await leerBase64(x.file), mime: x.file.type } : await leerFoto(x.file);
+        const up = await api('subirPostMedia', { data, mime, name: 'post_' + Date.now() + (x.tipo === 'video' ? (mime === 'video/quicktime' ? '.mov' : '.mp4') : '.jpg') });
+        if (!up.ok) return toast(up.error || 'No se pudo subir. Intenta de nuevo.');
+        x.subido = { t: x.tipo === 'video' ? 'video' : 'img', u: up.url }; // si algo falla después, no se vuelve a subir
+      }
+      media.push(x.subido);
+    }
+    const r = await api('publicar', { media, texto, aviso });
+    if (!r.ok) return toast(r.error || 'No se pudo publicar');
+    $('#pubForm').dataset.dirty = ''; pubArchivos.forEach(x => x.prev && URL.revokeObjectURL(x.prev)); pubArchivos = [];
+    closeModal(); toast('¡Publicado! ✓');
+    if (aviso) loadCatalog();
+    feedModo = 'feed';
+    if ((location.hash.slice(1) || '').split('/')[0] === 'feed') route(); else location.hash = '#feed';
+  } catch (err) { toast(err && err.message === 'formato' ? MSG_FORMATO : 'No se pudo leer el archivo. Prueba con otro.'); }
+  finally { if (btn.isConnected) btn.disabled = false; }
+}
+
 let msgTimer = null;
 function avatarHtml(p, size = 44) {
   const u = imgUrl(p.Foto), r = rng(p.id || p.Nombre)(), hue = Math.round(r * 360);
@@ -1891,7 +2354,10 @@ async function openPerfil(id) {
     ${yo ? '<button class="btn btn-gold btn-block" onclick="openMiPerfil()">Editar mi perfil</button>'
       : `<button class="btn btn-accent btn-block" onclick="openChat('${p.id}')">💬 Enviar mensaje</button>`}
     ${p.Artista_ID ? `<button class="btn btn-ghost btn-block" onclick="openArtista('${p.Artista_ID}')">🎨 Ver su perfil de artista</button>` : ''}
+    ${yo ? '<button class="btn btn-accent btn-block" onclick="openPublicar()">＋ Publicar algo</button>' : ''}
+    <div id="perfilPosts" style="width:100%"></div>
   </div>`, true);
+  pintarGridPerfil('perfilPosts', p.id);
 }
 
 /* ---------- editar mi perfil ---------- */
@@ -2157,7 +2623,7 @@ async function openMiArtista() {
    PANEL DE ADMINISTRACIÓN (#admin) — el backend valida Rol = admin
    ===================================================================== */
 let ADM = null, admTab = 'pedidos', pedFiltro = 'Pendiente';
-const ADM_TABS = [['escanear', '📷 Escanear QR'], ['pedidos', 'Pedidos'], ['colabs', '✦ Colabs'], ['productos', 'Productos'], ['artistas', 'Artistas'], ['subastas', 'Subastas'], ['miembros', 'Miembros'], ['ajustes', 'Pagos']];
+const ADM_TABS = [['escanear', '📷 Escanear QR'], ['pedidos', 'Pedidos'], ['seguimiento', '📦 Seguimiento'], ['colabs', '✦ Colabs'], ['productos', 'Productos'], ['artistas', 'Artistas'], ['subastas', 'Subastas'], ['miembros', 'Miembros'], ['ajustes', 'Pagos']];
 const FORMS = {
   Productos: [
     ['Tipo', 'Tipo', 'select', [['prenda', 'Prenda Tri-Urban'], ['colab', 'Arte × Urban (colab)'], ['obra', 'Obra de galería']]],
@@ -2219,7 +2685,7 @@ function renderAdmin() {
   const pendArt = ADM.artistas.filter(a => a.Estado === 'Pendiente').length, pendPed = ADM.pedidos.filter(p => p.Estado === 'Pendiente').length, pendEq = ADM.miembros.filter(m => m.Equipo_Estado === 'Pendiente').length;
   $$('#admTabs .tab-dot').forEach(d => { const n = { artistas: pendArt, pedidos: pendPed, miembros: pendEq }[d.dataset.tab] || 0; d.textContent = n || ''; d.hidden = !n; });
   if (admTab !== 'escanear' || camAbierta) pararCamara();
-  const R = { escanear: admEscanear, pedidos: admPedidos, colabs: admColabs, productos: admProductos, artistas: admArtistas, subastas: admSubastas, miembros: admMiembros, ajustes: admAjustes }[admTab];
+  const R = { escanear: admEscanear, pedidos: admPedidos, seguimiento: admSeguimiento, colabs: admColabs, productos: admProductos, artistas: admArtistas, subastas: admSubastas, miembros: admMiembros, ajustes: admAjustes }[admTab];
   $('#admBody').innerHTML = R(); tickCountdowns();
 }
 const nombreArtista = id => (ADM.artistas.find(a => a.id === id) || {}).Nombre || '—';
@@ -2237,6 +2703,28 @@ function admPedidos() {
       <div class="ord-h"><span class="mute">Total</span><b>${money(p.total)}</b></div>
       <div class="adm-act">${p.Estado === 'Pendiente' ? btn(p, 'Pagado', 'Marcar pagado', 'btn-solid') : ''}${p.Estado === 'Pagado' ? btn(p, 'Entregado', 'Marcar entregado', 'btn-solid') : ''}${p.Estado !== 'Cancelado' && p.Estado !== 'Entregado' ? btn(p, 'Cancelado', 'Cancelar') : ''}</div>
     </div>`).join('') || '<div class="empty">No hay pedidos aquí.</div>'}</div>`;
+}
+let segTodos = false;
+function admSeguimiento() {
+  const L = (ADM.seguimiento || []).filter(s => segTodos || s.piezas || s.EtapaRaw || s.Sobre_Pedido);
+  const op = [['', '— Sin seguimiento'], ...ETAPAS.map(e => [e[0], e[2] + ' ' + e[1]]), ['Cerrado', '🏁 Concluido (ya no se muestra)']];
+  return `<div class="lock-note">📦 <span>Lo que marques aquí lo ve <b style="color:var(--text)">toda la comunidad</b> en <b style="color:var(--text)">Pedidos</b> (sin nombres: solo cuántas piezas y personas). Con “avisar”, cada quien que lo pidió recibe un mensaje privado tuyo.</span></div>
+    <div class="filters" style="margin-top:14px"><button class="chip ${!segTodos ? 'on' : ''}" onclick="segTodos=false;renderAdmin()">Con pedidos o en seguimiento</button><button class="chip ${segTodos ? 'on' : ''}" onclick="segTodos=true;renderAdmin()">Todos los productos</button></div>
+    <div class="adm-cards">${L.map(s => `<form class="ord seg-adm" onsubmit="admSeg(event,'${s.id}')">
+      <div class="ord-h"><b>${esc(s.Nombre)}</b><span class="mute" style="font-size:12px;white-space:nowrap">${s.piezas} pzs · ${s.personas} pers.</span></div>
+      <div class="seg-opts">${op.map(([v, l]) => `<label class="seg-opt"><input type="radio" name="etapa" value="${v}" ${(s.EtapaRaw || '') === v ? 'checked' : ''}> ${l}</label>`).join('')}</div>
+      <div class="field"><label>Nota para la comunidad (opcional)</label><input name="nota" maxlength="200" value="${esc(s.Nota || '')}" placeholder="Ej. El proveedor confirmó el envío"></div>
+      <div class="field"><label>Llegada estimada</label><input type="date" name="llegada" value="${esc(String(s.Llegada || '').slice(0, 10))}"></div>
+      <label class="toggle"><input type="checkbox" name="avisar" checked> Avisar por mensaje a quienes lo pidieron</label>
+      <button class="btn btn-solid btn-sm">Guardar</button>
+    </form>`).join('') || '<div class="empty">Todavía no hay piezas apartadas sobre pedido. Usa “Todos los productos” para marcar cualquiera.</div>'}</div>`;
+}
+async function admSeg(e, id) {
+  e.preventDefault(); const el = e.target.elements;
+  const r = await api('adminSeguimiento', { id, etapa: el.etapa.value || '', nota: el.nota.value, llegada: el.llegada.value, avisar: el.avisar.checked });
+  if (!r.ok) return toast(r.error);
+  toast('Seguimiento actualizado ✓' + (r.avisados ? ' · avisamos a ' + r.avisados + (r.avisados === 1 ? ' persona' : ' personas') : ''));
+  refreshAll();
 }
 async function admPedido(folio, estado) {
   if (estado === 'Cancelado' && !confirm('¿Cancelar el pedido ' + folio + '? Las piezas regresan al inventario.')) return;
