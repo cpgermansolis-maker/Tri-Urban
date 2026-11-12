@@ -750,6 +750,15 @@ footer{border-top:2px solid var(--ink)}
 .pub-link{display:grid;place-items:center;height:100%;font-size:13px;font-weight:700}
 .pub-btns{display:flex;gap:8px;flex-wrap:wrap}
 .aviso-toggle{border:2px solid var(--spray);padding:12px;align-items:flex-start;line-height:1.4}
+.post-embed{background:#fff;display:grid}
+.post-embed iframe{width:100%;border:0;display:block;background:#fff}
+.post-embed .emb-ig{height:620px}
+.post-embed .emb-fb{height:560px}
+.emb-link{display:block;padding:8px 12px;font-size:12px;font-weight:700;background:var(--bg3);color:var(--text);text-decoration:none}
+.reel-v .emb-ig,.reel-v .emb-fb{background:#fff}
+.o-paso{display:grid;gap:14px}
+.reset-code{font-family:var(--mono);font-size:34px;font-weight:800;letter-spacing:.18em;text-align:center;background:var(--spray);color:#000;padding:14px;margin:6px 0}
+#resetMsg{font-size:13px;resize:none}
 @media (max-width:900px){.reels{height:calc(100svh - 200px)}}
 @media (max-width:520px){.reels{border-left:0;border-right:0;margin:0 calc(-1 * var(--gut));max-width:none}}
 </style>
@@ -787,6 +796,7 @@ footer{border-top:2px solid var(--ink)}
       <div class="field"><label for="lPass">Contraseña</label><input id="lPass" type="password" required autocomplete="current-password"></div>
       <div class="err" id="lErr"></div>
       <button class="btn btn-solid btn-block" type="submit">Entrar</button>
+      <button type="button" class="btn-link" id="lOlvide">¿Olvidaste tu contraseña?</button>
     </form>
     <form id="fReg" class="field" style="gap:14px" hidden autocomplete="on">
       <input id="rClave" type="hidden">
@@ -796,6 +806,25 @@ footer{border-top:2px solid var(--ink)}
       <label class="toggle"><input type="checkbox" id="rArtista"> 🎨 Soy artista</label>
       <div class="err" id="rErr"></div>
       <button class="btn btn-accent btn-block" type="submit">Unirme</button>
+    </form>
+    <form id="fOlvide" class="field" style="gap:14px" hidden autocomplete="on" novalidate>
+      <div class="kicker">Cambiar mi contraseña</div>
+      <div class="field"><label for="oEmail">Tu correo</label><input id="oEmail" type="email" autocomplete="email"></div>
+      <div id="oPaso1" class="o-paso">
+        <div class="lock-note">📧 <span>Te mandamos un código a tu correo para que elijas una contraseña nueva.</span></div>
+        <button type="button" class="btn btn-solid btn-block" id="oEnviar">Enviarme un código</button>
+        <button type="button" class="btn-link" id="oTengo">Ya tengo un código del equipo Trikles</button>
+      </div>
+      <div id="oPaso2" class="o-paso" hidden>
+        <div class="lock-note" id="oNota"></div>
+        <div class="field"><label for="oCodigo">Código</label><input id="oCodigo" autocomplete="one-time-code" autocapitalize="characters" spellcheck="false" maxlength="12"></div>
+        <div class="field"><label for="oPass">Contraseña nueva (mín. 8)</label><input id="oPass" type="password" minlength="8" autocomplete="new-password"></div>
+        <div class="field"><label for="oPass2">Repite la contraseña nueva</label><input id="oPass2" type="password" minlength="8" autocomplete="new-password"></div>
+        <button class="btn btn-accent btn-block" type="submit" id="oCambiar">Cambiar contraseña y entrar</button>
+        <button type="button" class="btn-link" id="oOtro">No me llegó: mandar otro código</button>
+      </div>
+      <div class="err" id="oErr"></div>
+      <button type="button" class="btn-link" id="oVolver">← Volver a entrar</button>
     </form>
     </div>
     <div class="demo-hint" id="demoHint" hidden>Modo demo (sin backend): la clave de la comunidad es <b>TRIKLES-DEMO</b>. Los datos viven solo en este navegador.</div>
@@ -1004,6 +1033,7 @@ const TXT_CARGA = { llave: 'Verificando tu llave…', login: 'Entrando…', regi
   pedido: 'Apartando tu pedido…', pujar: 'Registrando tu puja…', opinar: 'Publicando tu opinión…', subirMiFoto: 'Subiendo tu foto… (en datos móviles puede tardar)',
   guardarPerfil: 'Guardando tu perfil…', guardarMiArtista: 'Guardando tu perfil de artista…', adminSave: 'Guardando…', adminDelete: 'Borrando…',
   adminData: 'Cargando el panel…', misPedidos: 'Buscando tus pedidos…', comunidad: 'Cargando la comunidad…', conversaciones: 'Cargando tus mensajes…',
+  olvide: 'Enviando tu código…', restablecer: 'Cambiando tu contraseña…', adminResetClave: 'Generando el código…',
   vivoIniciar: 'Abriendo tu transmisión…', logout: 'Cerrando sesión…', miQR: 'Generando tu QR…', adminEscanear: 'Verificando el QR…',
   feed: 'Cargando el feed…', publicar: 'Publicando…', post: 'Abriendo la publicación…', comentarPost: 'Enviando tu comentario…',
   borrarPost: 'Borrando…', borrarComentarioPost: 'Borrando…', subirPostMedia: 'Subiendo…', adminSeguimiento: 'Actualizando el seguimiento…' };
@@ -1290,7 +1320,7 @@ const Demo = (() => {
     if (d.modo === 'reels') ps = ps.filter(p => p.Tipo === 'video');
     if (!d.autor && d.modo !== 'reels') { avisos = ps.filter(p => p.Aviso && Date.now() - p.Fecha < 15 * 864e5).sort((a, b) => b.Fecha - a.Fecha).slice(0, 6); ps = ps.filter(p => !avisos.includes(p)); }
     const peso = p => p.Fecha + (!d.autor && p.autor.Equipo ? 2 * 864e5 : 0); ps.sort((a, b) => peso(b) - peso(a));
-    const desde = +d.desde || 0; return { ok: true, avisos, posts: ps.slice(desde, desde + 18), mas: ps.length > desde + 18, total: ps.length };
+    const desde = +d.desde || 0; return { ok: true, avisos, posts: ps.slice(desde, desde + 18), mas: ps.length > desde + 18, total: ps.length, reels: postsVis().filter(p => p.Tipo === 'video').length };
   };
   A.post = (d, m) => { const p = postsVis().find(x => x.id === d.id); if (!p) return { ok: false, error: 'Esta publicación ya no está disponible.' };
     return { ok: true, post: postDemo(p, m), comentarios: db.pcoms.filter(c => c.Post_ID === p.id).sort((a, b) => a.Fecha - b.Fecha).map(c => { const r = db.miembros.find(x => x.id === c.Miembro_ID) || {}; return { id: c.id, Texto: c.Texto, Fecha: c.Fecha, autor: { id: r.id || '', Nombre: r.Nombre || 'Alguien', Foto: r.Foto || '', Equipo: esEq(r) } }; }) }; };
@@ -1298,7 +1328,18 @@ const Demo = (() => {
     if (!media.length && !texto) return { ok: false, error: 'Agrega una foto, un video o escribe algo.' };
     const p = { id: uid('f'), Miembro_ID: m.id, Tipo: media.some(x => x.t === 'video') ? 'video' : media.length ? 'foto' : 'texto', Media: media, Texto: texto, Aviso: !!d.aviso && esEq(m), Fecha: Date.now(), Activo: true };
     db.posts.push(p); save(); return { ok: true, id: p.id }; };
-  A.subirPostMedia = d => ({ ok: true, url: 'data:' + d.mime + ';base64,' + d.data });
+  A.subirPostMedia = d => /^video\//.test(d.mime || '') ? { ok: false, error: 'Por ahora los videos se comparten con enlace.' } : { ok: true, url: 'data:' + d.mime + ';base64,' + d.data };
+  /* ---- restablecer contraseña ---- */
+  db.resets = db.resets || {};
+  A.olvide = d => { if (String(d.clave || '').trim().toUpperCase() !== CLAVE) return { ok: false, error: 'Abre primero con la llave Trikles.' };
+    const m = db.miembros.find(x => x.Email === String(d.email || '').trim().toLowerCase()); const resp = { ok: true, msg: 'Si ese correo está registrado, te enviamos un código. Revisa tu bandeja y también spam.' };
+    if (!m) return resp; const c = String(Math.floor(Math.random() * 1e6)).padStart(6, '0'); db.resets[m.id] = { c, exp: Date.now() + 30 * 60e3 }; save(); return { ...resp, demo: c }; };
+  A.restablecer = d => { if (String(d.clave || '').trim().toUpperCase() !== CLAVE) return { ok: false, error: 'Abre primero con la llave Trikles.' };
+    const m = db.miembros.find(x => x.Email === String(d.email || '').trim().toLowerCase()), r = m && db.resets[m.id], cod = String(d.codigo || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+    if (!r || r.exp < Date.now() || r.c !== cod) return { ok: false, error: 'El código no es correcto o ya venció. Revisa tu correo o pide otro.' };
+    if (String(d.password || '').length < 8) return { ok: false, error: 'La contraseña nueva debe tener al menos 8 caracteres.' };
+    m.Pass = d.password; delete db.resets[m.id]; Object.keys(db.sesiones).forEach(t => { if (db.sesiones[t] === m.id) delete db.sesiones[t]; });
+    const t = uid('t'); db.sesiones[t] = m.id; save(); return { ok: true, token: t, me: pub(m) }; };
   A.likePost = (d, m) => { const i = db.plikes.findIndex(l => l.Post_ID === d.id && l.Miembro_ID === m.id), quiero = d.quiero === undefined ? i < 0 : !!d.quiero;
     if (quiero && i < 0) db.plikes.push({ Post_ID: d.id, Miembro_ID: m.id, Fecha: Date.now() }); else if (!quiero && i >= 0) db.plikes.splice(i, 1);
     save(); return { ok: true, yaLike: quiero, likes: db.plikes.filter(l => l.Post_ID === d.id).length }; };
@@ -1332,6 +1373,12 @@ const Demo = (() => {
       return { ok: true, productos: db.productos, artistas: db.artistas.map(a => ({ ...a, Estado: a.Estado || 'Aprobado', Solicitante: a.Miembro_ID ? (db.miembros.find(x => x.id === a.Miembro_ID) || {}).Nombre || '' : '' })), subastas: db.subastas.map(subPub),
         pedidos: db.pedidos.slice().reverse().map(p => ({ ...p, Nombre: (db.miembros.find(x => x.id === p.Miembro_ID) || {}).Nombre || p.Nombre || '', Email: (db.miembros.find(x => x.id === p.Miembro_ID) || {}).Email || '' })),
         miembros: db.miembros.map(m => ({ ...pub(m), Activo: m.Activo !== false })), config: db.config, seguimiento: segDemo(null, true) };
+    },
+    adminResetClave(d) {
+      const r = db.miembros.find(x => x.id === d.id); if (!r) return { ok: false, error: 'Miembro no encontrado' };
+      const ABC = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'; let c = ''; for (let i = 0; i < 8; i++) c += ABC[Math.floor(Math.random() * ABC.length)];
+      db.resets[r.id] = { c, exp: Date.now() + 24 * 3600e3 }; save();
+      return { ok: true, codigo: c.slice(0, 4) + '-' + c.slice(4), nombre: r.Nombre, email: r.Email, horas: 24 };
     },
     adminSeguimiento(d, m) {
       const p = db.productos.find(x => x.id === d.id); if (!p) return { ok: false, error: 'Producto no encontrado' };
@@ -1386,7 +1433,7 @@ const Demo = (() => {
   return {
     run(action, d, token) {
       const fn = A[action]; if (!fn) return { ok: false, error: 'Acción desconocida' };
-      if (['register', 'login'].includes(action)) return fn(d);
+      if (['register', 'login', 'olvide', 'restablecer'].includes(action)) return fn(d);
       if (action === 'llave') return fn({ ...d, token });
       const m = who(token); if (!m) { logout(true); return { ok: false, error: 'SESION' }; }
       return fn(d, m, token);
@@ -1434,8 +1481,42 @@ function logout(silent) {
 }
 $$('[data-gtab]').forEach(b => b.onclick = () => {
   $$('[data-gtab]').forEach(x => x.classList.toggle('on', x === b));
-  $('#fLogin').hidden = b.dataset.gtab !== 'login'; $('#fReg').hidden = b.dataset.gtab !== 'registro';
+  $('#fLogin').hidden = b.dataset.gtab !== 'login'; $('#fReg').hidden = b.dataset.gtab !== 'registro'; $('#fOlvide').hidden = true;
 });
+/* ---------- ¿olvidaste tu contraseña? (código por correo o del equipo) ---------- */
+function olvidePaso(n, nota) {
+  $('#oPaso1').hidden = n !== 1; $('#oPaso2').hidden = n !== 2; $('#oErr').textContent = '';
+  if (nota) $('#oNota').innerHTML = nota;
+  setTimeout(() => (n === 1 ? $('#oEmail') : $('#oCodigo')).focus(), 50);
+}
+$('#lOlvide').onclick = () => {
+  $('#fLogin').hidden = true; $('#fReg').hidden = true; $('#fOlvide').hidden = false; $('.tabs2').hidden = true;
+  if (!$('#oEmail').value) $('#oEmail').value = $('#lEmail').value.trim();
+  olvidePaso(1);
+};
+$('#oVolver').onclick = () => { $('#fOlvide').hidden = true; $('.tabs2').hidden = false; $('[data-gtab="login"]').click(); };
+$('#oTengo').onclick = () => olvidePaso(2, '🔑 <span>Escribe tu correo, el código que te dio el equipo Trikles y elige tu contraseña nueva.</span>');
+$('#oOtro').onclick = () => olvidePaso(1);
+$('#oEnviar').onclick = async () => {
+  const email = $('#oEmail').value.trim();
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { $('#oErr').textContent = 'Escribe tu correo'; return $('#oEmail').focus(); }
+  const j = await busy($('#oEnviar'), 'Enviando…', () => api('olvide', { email, clave: $('#rClave').value }));
+  if (!j.ok) { $('#oErr').textContent = j.error; return; }
+  olvidePaso(2, `📧 <span>${esc(j.msg)} El código dura 30 minutos.${j.demo ? ' <b>(Demo: tu código es ' + esc(j.demo) + ')</b>' : ''}</span>`);
+};
+$('#fOlvide').onsubmit = async e => {
+  e.preventDefault();
+  if (!$('#oPaso1').hidden) return $('#oEnviar').click();
+  const email = $('#oEmail').value.trim(), codigo = $('#oCodigo').value.trim(), p1 = $('#oPass').value, p2 = $('#oPass2').value;
+  const err = !email ? 'Escribe tu correo' : !codigo ? 'Escribe el código' : p1.length < 8 ? 'La contraseña nueva debe tener al menos 8 caracteres' : p1 !== p2 ? 'Las contraseñas no coinciden' : '';
+  if (err) { $('#oErr').textContent = err; return; }
+  const j = await busy($('#oCambiar'), 'Cambiando…', () => api('restablecer', { email, codigo, password: p1, clave: $('#rClave').value }));
+  if (!j.ok) { $('#oErr').textContent = j.error; return; }
+  ['#oCodigo', '#oPass', '#oPass2'].forEach(s => $(s).value = '');
+  $('#fOlvide').hidden = true; $('.tabs2').hidden = false; $('#fLogin').hidden = false;
+  S.token = j.token; S.me = j.me; lsSet(LS.token, j.token);
+  toast('¡Listo! Tu contraseña quedó cambiada ✓'); enterApp();
+};
 $('#fLogin').onsubmit = async e => {
   e.preventDefault(); const btn = e.submitter; btn.disabled = true; $('#lErr').textContent = '';
   try {
@@ -2058,7 +2139,7 @@ function vFeed() {
   return `<section class="sec feed-sec">
     <div class="sec-head"><h2 class="disp">${reels ? 'Reels' : 'Feed'}</h2>${reels ? '' : '<p>Lo que comparte la comunidad: fotos, videos y avisos del Equipo Trikles. Todo se queda aquí, entre nosotros.</p>'}
       <button class="btn btn-accent" onclick="openPublicar()">＋ Publicar</button></div>
-    <div class="filters">${[['feed', '▦ Publicaciones'], ['reels', '▶ Reels']].map(([k, l]) => `<button class="chip ${k === feedModo ? 'on' : ''}" onclick="feedModo='${k}';route()">${l}</button>`).join('')}</div>
+    <div class="filters">${[['feed', '▦ Publicaciones'], ['reels', '▶ Reels']].map(([k, l]) => `<button class="chip ${k === feedModo ? 'on' : ''}" ${k === 'reels' ? `id="chipReels" ${FEED.reels || reels ? '' : 'hidden'}` : ''} onclick="feedModo='${k}';route()">${l}</button>`).join('')}</div>
     <div id="feedBody"><div class="mute">Cargando…</div></div>
   </section>`;
 }
@@ -2068,7 +2149,8 @@ async function loadFeed(mas) {
   if (!$('#feedBody') || modo !== feedModo) return;
   if (!r.ok) { $('#feedBody').innerHTML = `<div class="empty">${esc(r.error || 'No se pudo cargar el feed')}</div>`; return; }
   guardaPosts([...(r.avisos || []), ...r.posts]);
-  FEED = mas ? { avisos: FEED.avisos, posts: FEED.posts.concat(r.posts), mas: r.mas } : { avisos: r.avisos || [], posts: r.posts, mas: r.mas };
+  FEED = mas ? { ...FEED, posts: FEED.posts.concat(r.posts), mas: r.mas } : { avisos: r.avisos || [], posts: r.posts, mas: r.mas, reels: modo === 'reels' ? r.posts.length : r.reels || 0 };
+  const ch = $('#chipReels'); if (ch) ch.hidden = !(FEED.reels || modo === 'reels');
   const y = scrollY; pintarFeed(); if (mas) scrollTo(0, y);
 }
 function pintarFeed() {
@@ -2079,10 +2161,27 @@ function pintarFeed() {
     ${FEED.mas ? '<div style="text-align:center;margin-top:22px"><button class="btn btn-ghost" onclick="loadFeed(true)">Ver más</button></div>' : ''}`;
 }
 const insMini = a => a.Equipo ? `<span class="ins eq">⭐ Equipo${a.Puesto ? ' · ' + esc(a.Puesto) : ''}</span>` : a.Artista_ID ? '<span class="ins art">🎨 Artista</span>' : '';
-function postSlide(x) { return x.t === 'video' ? videoHtml(x.u) : `<img src="${esc(imgUrl(x.u))}" alt="" loading="lazy">`; }
+/* videos por enlace: YouTube, Instagram (posts y reels) y Facebook */
+const RED_VIDEO = /^https:\/\/([\w-]+\.)?(youtube\.com|youtu\.be|instagram\.com|facebook\.com|fb\.watch)\//i;
+function igEmbed(u) { const m = String(u).match(/instagram\.com\/(?:[\w.]+\/)?(p|reels?|tv)\/([\w-]+)/i); return m ? `https://www.instagram.com/${/^reel/i.test(m[1]) ? 'reel' : m[1].toLowerCase()}/${m[2]}/embed/` : ''; }
+function fbEmbed(u) {
+  if (!/^https:\/\/([\w-]+\.)?(facebook\.com|fb\.watch)\//i.test(u)) return '';
+  const vid = /fb\.watch|\/videos?\/|\/reels?\/|\/watch|\/share\/[vr]\//i.test(u);
+  return `https://www.facebook.com/plugins/${vid ? 'video' : 'post'}.php?href=${encodeURIComponent(u)}&show_text=${vid ? 'false' : 'true'}&width=500`;
+}
+const redDe = u => igEmbed(u) ? 'Instagram' : fbEmbed(u) ? 'Facebook' : /youtu/.test(u) ? 'YouTube' : '';
+function embedHtml(u) {
+  const ig = igEmbed(u), fb = fbEmbed(u);
+  if (ig) return `<iframe class="emb-ig" src="${esc(ig)}" loading="lazy" allowfullscreen scrolling="no" title="Instagram"></iframe>`;
+  if (fb) return `<iframe class="emb-fb" src="${esc(fb)}" loading="lazy" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" allowfullscreen scrolling="no" title="Facebook"></iframe>`;
+  return videoHtml(u);
+}
+function postSlide(x) { return x.t === 'video' ? embedHtml(x.u) : `<img src="${esc(imgUrl(x.u))}" alt="" loading="lazy">`; }
 function postMedia(p) {
   const m = p.Media || []; if (!m.length) return '';
   const tap = `onclick="postTap(event,'${p.id}',this)"`;
+  if (m.length === 1 && m[0].t === 'video' && (igEmbed(m[0].u) || fbEmbed(m[0].u))) // Instagram/Facebook: con su propio alto y enlace de respaldo
+    return `<div class="post-embed">${embedHtml(m[0].u)}<a class="emb-link" href="${esc(m[0].u)}" target="_blank" rel="noopener">Abrir en ${redDe(m[0].u)} ↗</a></div>`;
   if (m.length === 1) return `<div class="media post-media" ${tap}><div class="gal"><div class="gal-s">${postSlide(m[0])}</div></div></div>`;
   return `<div class="media post-media" ${tap}><div class="gal" onscroll="galDot(this)">${m.map(x => `<div class="gal-s">${postSlide(x)}</div>`).join('')}</div>
     <button type="button" class="gal-nav prev" onclick="galMove(this,-1)" aria-label="Anterior">‹</button><button type="button" class="gal-nav next" onclick="galMove(this,1)" aria-label="Siguiente">›</button>
@@ -2193,6 +2292,7 @@ function reelVideo(u) {
   if (y) return `<iframe src="https://www.youtube-nocookie.com/embed/${y}?autoplay=1&mute=1&loop=1&playlist=${y}&playsinline=1&rel=0&modestbranding=1" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen title="Reel"></iframe>`;
   const d = driveId(u);
   if (d) return `<iframe src="https://drive.google.com/file/d/${d}/preview" allow="autoplay" allowfullscreen title="Reel"></iframe>`;
+  if (igEmbed(u) || fbEmbed(u)) return embedHtml(u);
   return `<video src="${esc(u)}" autoplay muted loop playsinline controls></video>`;
 }
 /* ---------- cuadrícula de publicaciones en un perfil ---------- */
@@ -2202,7 +2302,7 @@ function gridThumb(p) {
   if (m.t === 'video') {
     const y = /youtu/.test(m.u) ? ytId(m.u) : '', d = driveId(m.u);
     const th = y ? `https://i.ytimg.com/vi/${y}/hqdefault.jpg` : d ? `https://drive.google.com/thumbnail?id=${d}&sz=w400` : '';
-    return (th ? `<img src="${esc(th)}" alt="" loading="lazy" onerror="this.remove()">` : '') + '<span class="pgrid-ico">▶</span>';
+    return (th ? `<img src="${esc(th)}" alt="" loading="lazy" onerror="this.remove()">` : `<span class="pgrid-txt">▶ ${redDe(m.u) || 'Video'}</span>`) + '<span class="pgrid-ico">▶</span>';
   }
   return `<img src="${esc(imgUrl(m.u))}" alt="" loading="lazy">${p.Media.length > 1 ? '<span class="pgrid-ico">▣</span>' : ''}`;
 }
@@ -2224,10 +2324,9 @@ function openPublicar() {
     <div class="pub-prev" id="pubPrev" hidden></div>
     <div class="pub-btns">
       <label class="btn btn-ghost btn-sm" style="cursor:pointer">📷 Fotos<input type="file" accept="image/*" multiple hidden onchange="pubAgregar(this,false)"></label>
-      <label class="btn btn-ghost btn-sm" style="cursor:pointer">🎬 Video<input type="file" accept="video/mp4,video/quicktime,video/webm" hidden onchange="pubAgregar(this,true)"></label>
-      <button type="button" class="btn btn-ghost btn-sm" onclick="pubLink()">🔗 Enlace de video</button>
+      <button type="button" class="btn btn-ghost btn-sm" onclick="pubLink()">🔗 Video de YouTube, Instagram o Facebook</button>
     </div>
-    <div class="mute" style="font-size:12px">Hasta 10 fotos o videos. Los videos de hasta 20 MB (≈ 1 minuto) se suben directo; si pesa más, súbelo a YouTube como “no listado” y pega el enlace. Los videos salen también en <b>Reels</b>.</div>
+    <div class="mute" style="font-size:12px">Hasta 10 fotos. ¿Un video? Pega el enlace de YouTube (puede ser “no listado”), de un post o reel de Instagram, o de Facebook; para que se vea aquí, la publicación debe ser pública. Los videos salen también en <b>Reels</b>.</div>
     <div class="field"><label for="pubTxt">Texto</label><textarea id="pubTxt" rows="4" maxlength="2200" placeholder="¿Qué quieres compartir con la comunidad?"></textarea></div>
     ${eq ? '<label class="toggle aviso-toggle"><input type="checkbox" id="pubAviso"> <span>📢 Publicar como <b>aviso del Equipo Trikles</b>: sale hasta arriba del feed y en Inicio durante 15 días.</span></label>' : ''}
     <button class="btn btn-accent btn-block" id="pubBtn">Publicar</button>
@@ -2253,8 +2352,9 @@ function pubAgregar(inp, video) {
   $('#pubForm').dataset.dirty = '1'; pintarPub();
 }
 function pubLink() {
-  const u = (prompt('Pega el enlace del video (YouTube, Shorts o Google Drive):') || '').trim(); if (!u) return;
-  if (!safeUrl(u)) return toast('Ese enlace no es válido');
+  const u = (prompt('Pega el enlace del video o publicación (YouTube, Instagram o Facebook):') || '').trim().replace(/^http:\/\//i, 'https://'); if (!u) return;
+  if (!safeUrl(u) || !RED_VIDEO.test(u)) return toast('Pega un enlace de YouTube, Instagram o Facebook');
+  if (/instagram\.com/i.test(u) && !igEmbed(u)) return toast('Usa el enlace de un post o reel de Instagram (toca ⋯ → Copiar enlace)');
   if (pubArchivos.length >= 10) return toast('Máximo 10 por publicación');
   pubArchivos.push({ link: u, tipo: 'video', subido: { t: 'video', u } }); $('#pubForm').dataset.dirty = '1'; pintarPub();
 }
@@ -3077,8 +3177,29 @@ function admMiembros() {
         <select onchange="admMiembro('${m.id}',{Rol:this.value})" aria-label="Rol">${[['miembro', 'Miembro'], ['artista', 'Artista'], ['admin', 'Admin']].map(([v, l]) => `<option value="${v}" ${m.Rol === v ? 'selected' : ''}>${l}</option>`).join('')}</select>
         <select onchange="admMiembro('${m.id}',{Artista_ID:this.value})" aria-label="Perfil de artista"><option value="">Sin perfil</option>${ADM.artistas.map(a => `<option value="${a.id}" ${a.id === m.Artista_ID ? 'selected' : ''}>${esc(a.Nombre)}</option>`).join('')}</select>
         <label class="btn btn-ghost btn-sm" style="cursor:pointer">📷 ${m.Foto ? 'Cambiar foto' : 'Poner foto'}<input type="file" accept="image/*" hidden onchange="admFotoMiembro(this,'${m.id}')"></label>
+        <button class="btn btn-ghost btn-sm" onclick="admResetClave('${m.id}')">🔑 Restablecer contraseña</button>
         <label class="toggle"><input type="checkbox" ${m.Activo ? 'checked' : ''} onchange="admMiembro('${m.id}',{Activo:this.checked})"> Activo</label>
       </div></div>`).join('')}</div>`;
+}
+async function admResetClave(id) {
+  const m = ADM.miembros.find(x => x.id === id); if (!m) return;
+  if (!confirm('¿Generar un código para que ' + m.Nombre + ' cambie su contraseña?\n\nSu contraseña actual sigue funcionando hasta que use el código.')) return;
+  const r = await api('adminResetClave', { id }); if (!r.ok) return toast(r.error);
+  const msg = `Hola ${String(r.nombre).split(' ')[0]} 👋 Tu código para cambiar tu contraseña de Tri-Urban × Trikles es: ${r.codigo}\n\n1. Entra a la app y abre con la llave Trikles.\n2. Toca “¿Olvidaste tu contraseña?” → “Ya tengo un código del equipo Trikles”.\n3. Escribe tu correo (${r.email}), el código y tu contraseña nueva.\n\nEl código vence en ${r.horas} horas y solo sirve una vez.`;
+  openModal(`<div class="pad">
+    <div class="kicker">Restablecer contraseña</div>
+    <h3 class="it" style="font-size:28px;line-height:1.1">${esc(r.nombre)}</h3>
+    <div class="reset-code">${esc(r.codigo)}</div>
+    <p class="mute" style="font-size:13px">Mándale este código por WhatsApp o en persona. Vence en ${r.horas} horas, solo sirve una vez y deja de valer si generas otro. Por seguridad, nadie puede ver las contraseñas: ni tú ni el sistema.</p>
+    <textarea id="resetMsg" rows="7" readonly>${esc(msg)}</textarea>
+    <button class="btn btn-accent btn-block" onclick="copiarTexto($('#resetMsg').value,'Mensaje copiado ✓')">📋 Copiar mensaje para enviárselo</button>
+    <a class="btn wa btn-block" href="https://wa.me/?text=${encodeURIComponent(msg)}" target="_blank" rel="noopener">Enviar por WhatsApp</a>
+    <button class="btn btn-ghost btn-block" onclick="closeModal()">Listo</button>
+  </div>`, true);
+}
+async function copiarTexto(t, ok) {
+  try { await navigator.clipboard.writeText(t); toast(ok || 'Copiado ✓'); }
+  catch (_) { const a = $('#resetMsg'); if (a) { a.select(); document.execCommand('copy'); toast(ok || 'Copiado ✓'); } }
 }
 async function admFotoMiembro(inp, id) {
   const file = inp.files[0]; inp.value = ''; if (!file) return;
