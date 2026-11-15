@@ -637,8 +637,10 @@ footer{border-top:2px solid var(--ink)}
 .scan-wrap{display:grid;gap:14px;max-width:520px}
 #lector{width:100%;overflow:hidden;border-radius:8px}
 #lector:not(.on){display:none}
-#lector.on{min-height:260px;background:#000}
-#lector video{width:100%!important;height:auto!important;display:block}
+#lector.on{position:relative;min-height:240px;background:#000;overflow:hidden}
+#lector video{width:100%;height:auto;max-height:70vh;display:block;object-fit:cover;background:#000}
+#lector .cam-marco{position:absolute;top:50%;left:50%;height:min(72%,320px);aspect-ratio:1;max-width:80%;transform:translate(-50%,-50%);border:3px solid rgba(255,255,255,.9);border-radius:14px;box-shadow:0 0 0 9999px rgba(0,0,0,.35);pointer-events:none}
+#lector .cam-txt{position:absolute;left:0;right:0;bottom:10px;text-align:center;color:#fff;font-size:13px;font-weight:700;text-shadow:0 1px 4px #000;pointer-events:none}
 .scan-manual{display:flex;gap:8px}.scan-manual input{flex:1;min-width:0}
 .acc{border-radius:14px;overflow:hidden;border:2px solid #1f8a4c;background:var(--bg2,#151515)}
 .acc-banda{background:#1f8a4c;color:#fff;font-weight:800;font-size:20px;letter-spacing:.04em;padding:14px 16px;display:grid;gap:2px}
@@ -2994,37 +2996,65 @@ function msgCamara(e) {
   if (!window.isSecureContext) return 'La cámara solo funciona desde la dirección segura (https) de la app.';
   return 'No se pudo abrir la cámara (' + n.trim().slice(0, 80) + '). Intenta de nuevo o pega el código abajo.';
 }
+/* Lector propio: <video playsinline muted> + BarcodeDetector (Android/Chrome) o jsQR (iPhone/iPad y el resto) */
+let camStream = null, camTimer = 0, detectorQR = null;
 async function abrirLector() {
   if (abriendoCam) return; abriendoCam = true;
   const res = $('#scanRes'); if (res) res.innerHTML = '';
   const b = $('#bCam');
   try {
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return toast(msgCamara({ name: window.isSecureContext ? 'NotFound' : '' }));
-    try { await cargarScript('https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js'); } catch (_) { return toast('No se pudo cargar el lector. Revisa tu internet.'); }
-    await paroCamara; // espera a que la cámara anterior termine de apagarse
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) throw { name: window.isSecureContext ? 'NotFound' : '' };
+    pararCamara();
+    if ('BarcodeDetector' in window) { try { if ((await BarcodeDetector.getSupportedFormats()).includes('qr_code')) detectorQR = new BarcodeDetector({ formats: ['qr_code'] }); } catch (_) { detectorQR = null; } }
+    if (!detectorQR) { try { await cargarScript('https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js'); } catch (_) { throw { message: 'No se pudo cargar el lector. Revisa tu internet.' }; } }
     const el = $('#lector'); if (!el) return;
-    el.classList.add('on'); el.scrollIntoView({ behavior: 'smooth', block: 'center' }); // visible y con ancho ANTES de arrancar
     if (b) b.textContent = 'Abriendo cámara…';
-    if (!lector || !document.body.contains(lector._el)) { lector = new Html5Qrcode('lector'); lector._el = el; }
-    const cfg = { fps: 10, qrbox: (w, h) => { const q = Math.max(160, Math.floor(Math.min(w || 300, h || 300) * 0.75)); return { width: q, height: q }; } };
-    const alLeer = txt => { if (leyendoQR) return; leyendoQR = true; if (navigator.vibrate) navigator.vibrate(60); pararCamara(); consultarQR(txt).finally(() => { leyendoQR = false; }); };
-    try { await lector.start({ facingMode: 'environment' }, cfg, alLeer, () => {}); }
+    el.innerHTML = '<video autoplay muted playsinline webkit-playsinline></video><div class="cam-marco"></div><div class="cam-txt">Apunta al QR dentro del cuadro</div>';
+    el.classList.add('on');
+    const v = el.querySelector('video'); v.muted = true; v.playsInline = true;
+    try { camStream = await navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } } }); }
     catch (e1) {
-      if (/NotAllowed|Permission|denied/i.test((e1 && e1.name || '') + e1)) throw e1;
-      const cams = await Html5Qrcode.getCameras().catch(() => []); // sin cámara trasera: usa la que haya
-      if (!cams.length) throw e1;
-      await lector.start(cams[cams.length - 1].id, cfg, alLeer, () => {});
+      if (/NotAllowed|Permission|denied|Security/i.test((e1 && e1.name || '') + ' ' + (e1 && e1.message || ''))) throw e1;
+      camStream = await navigator.mediaDevices.getUserMedia({ audio: false, video: true }); // sin cámara trasera: la que haya
     }
+    if (!$('#lector')) { pararCamara(); return; } // se cambió de pestaña mientras pedía permiso
+    v.srcObject = camStream;
+    await v.play().catch(() => {});
     camAbierta = true; if (b) { b.textContent = '⏹ Detener cámara'; b.classList.replace('btn-accent', 'btn-ghost'); }
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    buscarQR(v);
   } catch (e) {
-    console.error(e); const el = $('#lector'); if (el) el.classList.remove('on');
-    if (b) b.textContent = '📷 Abrir cámara';
-    const box = $('#scanRes'); if (box) box.innerHTML = `<div class="st-box can">📷 <span>${esc(msgCamara(e))}</span></div>`;
+    console.error(e); pararCamara();
+    const box = $('#scanRes'); if (box) box.innerHTML = `<div class="st-box can">📷 <span>${esc(e && e.message && !e.name ? e.message : msgCamara(e))}</span></div>`;
   } finally { abriendoCam = false; }
 }
+function buscarQR(v) {
+  const cv = document.createElement('canvas'), cx = cv.getContext('2d', { willReadFrequently: true });
+  const paso = async () => {
+    if (!camAbierta || !v.isConnected) return;
+    let txt = '';
+    try {
+      if (v.readyState >= 2 && v.videoWidth) {
+        if (v.paused) v.play().catch(() => {});
+        if (detectorQR) { const c = await detectorQR.detect(v); txt = c && c[0] ? c[0].rawValue : ''; }
+        else {
+          const k = Math.min(1, 720 / Math.max(v.videoWidth, v.videoHeight)); cv.width = Math.round(v.videoWidth * k); cv.height = Math.round(v.videoHeight * k);
+          cx.drawImage(v, 0, 0, cv.width, cv.height);
+          const r = jsQR(cx.getImageData(0, 0, cv.width, cv.height).data, cv.width, cv.height, { inversionAttempts: 'dontInvert' });
+          txt = r ? r.data : '';
+        }
+      }
+    } catch (_) {}
+    if (txt && !leyendoQR) { leyendoQR = true; if (navigator.vibrate) navigator.vibrate(60); pararCamara(); consultarQR(txt).finally(() => { leyendoQR = false; }); return; }
+    camTimer = setTimeout(paso, 180);
+  };
+  paso();
+}
 function pararCamara() {
-  if (lector && camAbierta) paroCamara = lector.stop().then(() => lector.clear()).catch(() => {});
-  camAbierta = false; const el = $('#lector'); if (el) el.classList.remove('on');
+  clearTimeout(camTimer);
+  if (camStream) { camStream.getTracks().forEach(t => t.stop()); camStream = null; }
+  camAbierta = false;
+  const el = $('#lector'); if (el) { const v = el.querySelector('video'); if (v) v.srcObject = null; el.innerHTML = ''; el.classList.remove('on'); }
   const b = $('#bCam'); if (b) { b.textContent = '📷 Abrir cámara'; b.classList.replace('btn-ghost', 'btn-accent'); }
 }
 async function consultarQR(txt) {
