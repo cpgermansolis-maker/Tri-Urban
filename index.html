@@ -1181,7 +1181,7 @@ const Demo = (() => {
       { id: 'dm3', Nombre: 'Diego Ramírez', Email: 'demo3@x', Pass: uid('x'), Rol: 'miembro', Bio: 'Cinéfilo de domingo.', Fecha: now - 300 * H });
     save();
   }
-  const perfilDemo = r => { const eq = r.Equipo_Estado === 'Aprobado'; return { id: r.id, Nombre: r.Nombre, Foto: r.Foto || '', Bio: r.Bio || '', Instagram: r.Instagram || '', Facebook: r.Facebook || '',
+  const perfilDemo = r => { const eq = r.Equipo_Estado === 'Aprobado' || r.Rol === 'admin'; return { id: r.id, Nombre: r.Nombre, Foto: r.Foto || '', Bio: r.Bio || '', Instagram: r.Instagram || '', Facebook: r.Facebook || '',
     Artista_ID: r.Artista_ID && db.artistas.some(a => a.id === r.Artista_ID && (!a.Estado || a.Estado === 'Aprobado')) ? r.Artista_ID : '', Equipo: eq, Puesto: eq ? r.Puesto || '' : '', Desde: r.Fecha || Date.now() }; };
   const who = t => db.miembros.find(m => m.id === db.sesiones[t]);
   const ratings = id => { const o = db.opiniones.filter(x => x.Artista_ID === id); return { prom: o.length ? o.reduce((a, b) => a + +b.Estrellas, 0) / o.length : 0, n: o.length, recs: o.filter(x => x.Recomienda).length }; };
@@ -1329,7 +1329,8 @@ const Demo = (() => {
   };
   A.subirMiFoto = (d, m) => { const url = 'data:' + d.mime + ';base64,' + d.data; if (d.para === 'perfil') { m.Foto = url; const a = miArt(m); if (a) a.Foto = url; save(); } return { ok: true, url }; };
   /* ---- foto del artista = foto de perfil de su dueño ---- */
-  function artLinkDemo(a) { const r = db.miembros.find(x => x.Activo !== false && ((a.Miembro_ID && x.id === a.Miembro_ID) || x.Artista_ID === a.id)); return { Foto: (r && r.Foto) || a.Foto || '', Perfil_ID: r ? r.id : '' }; }
+  function artLinkDemo(a) { const r = db.miembros.find(x => x.Activo !== false && ((a.Miembro_ID && x.id === a.Miembro_ID) || x.Artista_ID === a.id)); const eq = !!r && (r.Equipo_Estado === 'Aprobado' || r.Rol === 'admin');
+    return { Foto: (r && r.Foto) || a.Foto || '', Perfil_ID: r ? r.id : '', Equipo: eq, Puesto: eq ? r.Puesto || '' : '' }; }
   /* ---- seguimiento de pedidos ---- */
   const reservasDemo = m => { const r = {}; db.pedidos.filter(p => p.Estado !== 'Cancelado').forEach(p => p.items.forEach(it => { const x = r[it.id] || (r[it.id] = { piezas: 0, pre: 0, gente: {}, abiertos: 0, mios: [] }); x.piezas += it.qty; x.gente[p.Miembro_ID] = 1; if (it.SobrePedido) { x.pre += it.qty; if (p.Estado !== 'Entregado') x.abiertos++; } if (m && p.Miembro_ID === m.id) x.mios.push({ folio: p.folio, qty: it.qty, Talla: it.Talla || '', Estado: p.Estado }); })); return r; };
   function segDemo(m, todos) {
@@ -1411,7 +1412,7 @@ const Demo = (() => {
       db.accesos.push({ Miembro_ID: r.id, Resultado: activo ? 'Permitido' : 'Denegado', Fecha: Date.now(), Admin: m.Nombre });
       db.visitasCT = db.visitasCT || []; let visita = null, yaDentro = false;
       if (activo) { const ab = db.visitasCT.filter(v => v.Miembro_ID === r.id && !v.Salida && v.Entrada > Date.now() - 18 * 3600e3).pop();
-        if (ab) { visita = ab; yaDentro = true; } else { visita = { id: uid('w'), Miembro_ID: r.id, Nombre: r.Nombre, Tipo: tipo, Sede: d.sede || '', Entrada: Date.now(), Salida: 0, Recibio: m.Nombre, Salida_Por: '', Nota: '', Estrellas: 0, Comentario: '' }; db.visitasCT.push(visita); } }
+        if (ab) { visita = ab; yaDentro = true; } else { visita = { id: uid('w'), Miembro_ID: r.id, Nombre: r.Nombre, Tipo: tipo + (tipo === 'equipo' && art ? ',artista' : ''), Sede: d.sede || '', Entrada: Date.now(), Salida: 0, Recibio: m.Nombre, Salida_Por: '', Nota: '', Estrellas: 0, Comentario: '' }; db.visitasCT.push(visita); } }
       save();
       return { ok: true, existe: true, activo, tipo, ultimo: previos.length ? previos[previos.length - 1].Fecha : 0, visitas: previos.length + (activo ? 1 : 0), visita, yaDentro,
         perfil: { ...perfilDemo(r), Puesto: r.Equipo_Estado === 'Aprobado' ? (r.Puesto || '') : '', Rol: r.Rol }, artista: art ? { Nombre: art.Nombre, Disciplina: art.Disciplina || '', Origen: art.Origen || '' } : null };
@@ -1769,7 +1770,7 @@ function vSubastas() {
 function artistCard(a) {
   return `<button class="artist" onclick="openArtista('${a.id}')">
     <div class="ph">${media(a, 'artista')}</div>
-    ${orgTag(a.Origen)}
+    <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">${orgTag(a.Origen)}${a.Equipo ? '<span class="ins eq">⭐ Equipo Trikles</span>' : ''}</div>
     <div class="n">${esc(a.Nombre)}</div>
     <div class="mute" style="font-size:13px">${esc(a.Disciplina || '')}</div>
     <div style="display:flex;gap:10px;align-items:center;font-size:12px">${stars(a.prom)} <span class="mute">${a.n || 0} opiniones · ${a.recs || 0} lo recomiendan</span></div>
@@ -1921,7 +1922,7 @@ async function openArtista(id) {
   openModal(`<div class="detail">
     <div class="media" style="aspect-ratio:1">${media(a, 'artista')}</div>
     <div class="body">
-      ${orgTag(a.Origen)}
+      <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">${orgTag(a.Origen)}${a.Equipo ? `<span class="ins eq">⭐ Equipo Trikles${a.Puesto ? ' · ' + esc(a.Puesto) : ''}</span>` : ''}</div>
       <h3 class="it" style="font-size:clamp(34px,4vw,50px);line-height:1">${esc(a.Nombre)}</h3>
       <div class="mute">${esc(a.Disciplina || '')}</div>
       <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">${stars(a.prom)}<span>${a.prom ? a.prom.toFixed(1) : '—'}</span><span class="mute" style="font-size:13px">${a.n} opiniones · <b style="color:var(--acid)">${a.recs}</b> lo recomiendan</span></div>
@@ -2225,7 +2226,7 @@ function pintarFeed() {
     <div class="feed">${FEED.posts.map(p => postCard(p)).join('') || (FEED.avisos.length ? '' : '<div class="empty">Aún no hay publicaciones. ¡Estrena el feed!<br><br><button class="btn btn-accent" onclick="openPublicar()">＋ Publicar</button></div>')}</div>
     ${FEED.mas ? '<div style="text-align:center;margin-top:22px"><button class="btn btn-ghost" onclick="loadFeed(true)">Ver más</button></div>' : ''}`;
 }
-const insMini = a => a.Equipo ? `<span class="ins eq">⭐ Equipo${a.Puesto ? ' · ' + esc(a.Puesto) : ''}</span>` : a.Artista_ID ? '<span class="ins art">🎨 Artista</span>' : '';
+const insMini = a => (a.Equipo ? `<span class="ins eq">⭐ Equipo${a.Puesto ? ' · ' + esc(a.Puesto) : ''}</span>` : '') + (a.Artista_ID ? '<span class="ins art">🎨 Artista</span>' : '');
 /* videos por enlace: YouTube, Instagram (posts y reels) y Facebook */
 const RED_VIDEO = /^https:\/\/([\w-]+\.)?(youtube\.com|youtu\.be|instagram\.com|facebook\.com|fb\.watch)\//i;
 function igEmbed(u) { const m = String(u).match(/instagram\.com\/(?:[\w.]+\/)?(p|reels?|tv)\/([\w-]+)/i); return m ? `https://www.instagram.com/${/^reel/i.test(m[1]) ? 'reel' : m[1].toLowerCase()}/${m[2]}/embed/` : ''; }
@@ -3030,7 +3031,7 @@ async function openMiQR(regenerar) {
       ${gold ? '<div class="cred-ribbon">★ PREMIUM ★</div>' : ''}
       <div class="cred-top"><span>CINETECA TRIKLES</span><span>ACCESO</span></div>
       <div class="cred-who"><div class="cred-foto"><img src="${esc(imgUrl(p.Foto))}" alt=""></div>
-        <div style="min-width:0"><div class="cred-nombre">${esc(p.Nombre)}</div><div class="cred-tipo">${ico} ${nom}${gold && p.Puesto ? ' · ' + esc(p.Puesto) : ''}</div><div class="cred-sub">${sub}</div></div></div>
+        <div style="min-width:0"><div class="cred-nombre">${esc(p.Nombre)}</div><div class="cred-tipo">${ico} ${nom}${gold && p.Puesto ? ' · ' + esc(p.Puesto) : ''}</div>${gold && p.Artista_ID ? '<div class="cred-tipo">🎨 Artista Trikles</div>' : ''}<div class="cred-sub">${sub}</div></div></div>
       <div class="cred-qr"><img src="${png}" alt="Tu código QR de acceso"></div>
       <div class="cred-foot">Muéstralo en la entrada · personal e intransferible</div>
     </div>
@@ -3186,6 +3187,9 @@ async function cargarVisitas(silencio) {
   if (!r.ok) { if (!silencio) $('#visBody').innerHTML = `<div class="empty">${esc(r.error || 'No se pudieron cargar las visitas')}</div>`; return; }
   VIS.data = r; pintarVisitas();
 }
+const visTipos = t => String(t || 'miembro').split(',').filter(Boolean);
+const visTipoTags = t => visTipos(t).map(x => `<span class="vis-tipo t-${esc(x)}">${(TIPO_ACC[x] || TIPO_ACC.miembro)[1]}</span>`).join(' ');
+const visTipoTxt = t => visTipos(t).map(x => (TIPO_ACC[x] || TIPO_ACC.miembro)[1]).join(' · ');
 const visFiltra = v => (VIS.sede === 'Todas' || v.Sede === VIS.sede) && (!VIS.busca || String(v.Nombre).toLowerCase().includes(VIS.busca.toLowerCase()));
 const visEstrellas = n => n ? `<span class="vis-est">${'★'.repeat(n)}<span class="off">${'★'.repeat(5 - n)}</span></span>` : '';
 function visAva(v, s) { return avatarHtml({ id: v.Miembro_ID, Nombre: v.Nombre, Foto: v.Foto }, s); }
@@ -3221,7 +3225,7 @@ function pintarVisitas() {
   const estancia = cerradas.length ? cerradas.reduce((a, v) => a + (v.Salida - v.Entrada), 0) / cerradas.length : 0;
   const grupos = {}; hist.forEach(v => (grupos[diaKey(v.Entrada)] = grupos[diaKey(v.Entrada)] || []).push(v));
   const fila = v => `<div class="vis-fila">${visAva(v, 40)}
-      <div style="min-width:0;flex:1"><b>${esc(v.Nombre)}</b> <span class="vis-tipo t-${esc(v.Tipo)}">${(TIPO_ACC[v.Tipo] || TIPO_ACC.miembro)[1]}</span>${v.Sede ? ` <span class="mute" style="font-size:12px">📍 ${esc(v.Sede)}</span>` : ''}
+      <div style="min-width:0;flex:1"><b>${esc(v.Nombre)}</b> ${visTipoTags(v.Tipo)}${v.Sede ? ` <span class="mute" style="font-size:12px">📍 ${esc(v.Sede)}</span>` : ''}
         <div class="vis-meta">🟢 ${horaMx(v.Entrada)} → ${v.Salida ? '🔴 ' + horaMx(v.Salida) + ' · ' + fmtDur(v.Salida - v.Entrada) : '<b>sigue dentro</b> · ' + fmtDur(ahora - v.Entrada)}</div>
         <div class="vis-meta">Lo recibió <b>${esc(v.Recibio || '—')}</b>${v.Salida_Por ? ` · salida por <b>${esc(v.Salida_Por)}</b>` : ''}</div>
         ${v.Nota ? `<div class="vis-meta">📝 ${esc(v.Nota)}</div>` : ''}
@@ -3234,7 +3238,7 @@ function pintarVisitas() {
     <section class="vis-sec">
       <h3 class="disp vis-h">Dentro ahora <span class="vis-n">${dentro.length}</span></h3>
       ${dentro.length ? `<div class="vis-dentro">${dentro.map(v => `<div class="vis-card">
-        <div class="vis-card-top">${visAva(v, 56)}<div style="min-width:0;flex:1"><b>${esc(v.Nombre)}</b><div class="mute" style="font-size:12px">${(TIPO_ACC[v.Tipo] || TIPO_ACC.miembro)[1]}${v.Sede ? ' · 📍 ' + esc(v.Sede) : ''}</div>
+        <div class="vis-card-top">${visAva(v, 56)}<div style="min-width:0;flex:1"><b>${esc(v.Nombre)}</b><div class="mute" style="font-size:12px">${visTipoTxt(v.Tipo)}${v.Sede ? ' · 📍 ' + esc(v.Sede) : ''}</div>
           <div class="vis-meta">Entró ${horaMx(v.Entrada)}${diaKey(v.Entrada) !== diaKey(Date.now()) ? ' (' + new Date(v.Entrada).toLocaleDateString('es-MX', { day: 'numeric', month: 'short' }) + ')' : ''} · lleva <b>${fmtDur(ahora - v.Entrada)}</b></div>
           <div class="vis-meta">Lo recibió ${esc(v.Recibio || '—')}</div></div></div>
         <form class="vis-nota" onsubmit="event.preventDefault();visNota('${v.id}',this.nota.value)"><input name="nota" maxlength="300" value="${esc(v.Nota || '')}" placeholder="Nota: mesa, lo acordado por mensaje…"><button class="btn btn-ghost btn-sm">Guardar</button></form>
