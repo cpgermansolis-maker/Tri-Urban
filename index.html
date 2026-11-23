@@ -761,6 +761,29 @@ footer{border-top:2px solid var(--ink)}
 .emb-link{display:block;padding:8px 12px;font-size:12px;font-weight:700;background:var(--bg3);color:var(--text);text-decoration:none}
 .reel-v .emb-ig,.reel-v .emb-fb{background:#fff}
 .o-paso{display:grid;gap:14px}
+/* ---------- cursos ---------- */
+.ins.cur{background:rgba(0,209,255,.12);color:var(--cian)}
+.acc-tag.t-curso{color:var(--cian)}
+.cur-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(360px,100%),1fr));gap:16px}
+.cur{background:var(--bg2);border:2px solid var(--line);display:grid;min-width:0}
+.cur-img{aspect-ratio:16/9;overflow:hidden;background:var(--bg3)}.cur-img img{width:100%;height:100%;object-fit:cover}
+.cur-body{padding:16px;display:grid;gap:12px}
+.cur-n{font-size:24px;font-weight:800;line-height:1.1}
+.cur-datos{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px}
+.cur-profes{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.cur-profe{display:flex;gap:8px;align-items:center;padding:4px 10px 4px 4px;border:1px solid var(--line);border-radius:999px;font-size:13px;font-weight:700}
+.cur-dias{display:flex;flex-wrap:wrap;gap:6px}
+.cur-dias label{cursor:pointer}.cur-dias input{display:none}
+.cur-dias span{display:inline-block;padding:8px 12px;border:1px solid var(--line);font-weight:700;font-size:13px}
+.cur-dias input:checked+span{background:var(--spray);color:#000;border-color:var(--spray)}
+.cur-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.asis{gap:12px}
+.asis-alumnos{display:grid;gap:6px}
+.asis-a{display:flex;gap:10px;align-items:center;font-size:14px}
+.asis-pct{font-size:12px;font-weight:800;padding:2px 8px;border-radius:999px;min-width:48px;text-align:center}
+.asis-pct.ok{background:#1f8a4c;color:#fff}.asis-pct.med{background:var(--spray);color:#000}.asis-pct.bajo{background:var(--accent);color:#000}
+.asis-clase{border:1px solid var(--line);padding:10px 12px;display:grid;gap:4px}
+.asis-h{display:flex;justify-content:space-between;gap:10px}
 /* ---------- visitas ---------- */
 .vis-sede{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .vis-box{width:100%;display:grid;gap:10px;text-align:left;border:2px solid #1f8a4c;background:rgba(31,138,76,.1);padding:12px;font-size:14px}
@@ -1294,8 +1317,38 @@ const Demo = (() => {
     else if (m.Equipo_Estado !== 'Aprobado' || d.Puesto !== (m.Puesto || '')) { m.Equipo_Estado = m.Rol === 'admin' ? 'Aprobado' : 'Pendiente'; m.Puesto = d.Puesto; }
     save(); return { ok: true, equipo: m.Equipo_Estado };
   };
-  A.comunidad = () => ({ ok: true, miembros: db.miembros.filter(x => x.Activo !== false).map(perfilDemo).sort((a, b) => a.Nombre.localeCompare(b.Nombre, 'es')) });
-  A.perfil = d => { const r = db.miembros.find(x => x.id === d.id); return r ? { ok: true, perfil: perfilDemo(r) } : { ok: false, error: 'Perfil no encontrado' }; };
+  A.comunidad = () => ({ ok: true, miembros: db.miembros.filter(x => x.Activo !== false).map(r => ({ ...perfilDemo(r), Cursos: cursosDeD(r.id) })).sort((a, b) => a.Nombre.localeCompare(b.Nombre, 'es')) });
+  A.perfil = d => { const r = db.miembros.find(x => x.id === d.id); return r ? { ok: true, perfil: { ...perfilDemo(r), Cursos: cursosDeD(r.id) } } : { ok: false, error: 'Perfil no encontrado' }; };
+  /* ---- cursos ---- */
+  db.cursos = db.cursos || []; db.insc = db.insc || [];
+  const vigenteD = c => c.Activo !== false && (!c.Fin || c.Fin >= hoyISO());
+  const claseHoyD = c => vigenteD(c) && (!c.Inicio || c.Inicio <= hoyISO()) && String(c.Dias || '').includes('DLMXJVS'[new Date().getDay()]);
+  function cursosDeD(id) { return db.insc.filter(i => i.Miembro_ID === id && i.Estado === 'Activo').map(i => { const c = db.cursos.find(x => x.id === i.Curso_ID); return c && vigenteD(c) ? { id: c.id, Nombre: c.Nombre, Rol: i.Rol, Sede: c.Sede, hoy: claseHoyD(c) } : null; }).filter(Boolean); }
+  const perD = id => db.miembros.find(x => x.id === id);
+  A.cursos = (d, m) => ({ ok: true, cursos: db.cursos.filter(vigenteD).map(c => { const de = db.insc.filter(i => i.Curso_ID === c.id), yo = de.find(i => i.Miembro_ID === m.id && i.Estado !== 'Baja');
+    return { ...c, alumnos: de.filter(i => i.Rol === 'Alumno' && i.Estado === 'Activo').length, miRol: yo ? yo.Rol : '', miEstado: yo ? yo.Estado : '',
+      profesores: de.filter(i => i.Rol === 'Profesor' && i.Estado === 'Activo' && perD(i.Miembro_ID)).map(i => ({ id: i.Miembro_ID, Nombre: perD(i.Miembro_ID).Nombre, Foto: perD(i.Miembro_ID).Foto || '' })) }; }) });
+  A.inscribirme = (d, m) => { const c = db.cursos.find(x => x.id === d.id); if (!c || !vigenteD(c)) return { ok: false, error: 'Este curso ya no está disponible.' };
+    const de = db.insc.filter(i => i.Curso_ID === c.id), prev = de.find(i => i.Miembro_ID === m.id && i.Estado !== 'Baja');
+    if (prev) return { ok: false, error: prev.Estado === 'Pendiente' ? 'Tu solicitud ya está en revisión.' : 'Ya estás en este curso.' };
+    if (+c.Cupo && de.filter(i => i.Rol === 'Alumno' && i.Estado === 'Activo').length >= c.Cupo) return { ok: false, error: 'El curso ya está lleno. Escríbele al equipo Trikles.' };
+    db.insc.push({ id: uid('i'), Curso_ID: c.id, Miembro_ID: m.id, Rol: 'Alumno', Estado: 'Pendiente', Fecha: Date.now() }); save(); return { ok: true }; };
+  A.cancelarSolicitud = (d, m) => { const i = db.insc.find(x => x.Curso_ID === d.id && x.Miembro_ID === m.id && x.Estado === 'Pendiente'); if (i) { i.Estado = 'Baja'; save(); } return { ok: true }; };
+  function asistenciaD(c) {
+    const ins = db.insc.filter(i => i.Curso_ID === c.id && i.Estado === 'Activo');
+    const per = rol => ins.filter(i => i.Rol === rol && perD(i.Miembro_ID)).map(i => ({ id: i.Miembro_ID, Nombre: perD(i.Miembro_ID).Nombre, Foto: perD(i.Miembro_ID).Foto || '' }));
+    const alumnos = per('Alumno'), profesores = per('Profesor'), del = new Set([...alumnos, ...profesores].map(p => p.id)), porDia = {};
+    (db.visitasCT || []).forEach(v => { if (!del.has(v.Miembro_ID)) return; if (v.Curso_ID !== c.id && c.Sede && v.Sede && v.Sede !== c.Sede) return; const k = diaKey(v.Entrada); (porDia[k] = porDia[k] || {})[v.Miembro_ID] = { e: v.Entrada, s: v.Salida }; });
+    const hoy = hoyISO(), ini = c.Inicio || Object.keys(porDia).sort()[0] || hoy, fin = c.Fin && c.Fin < hoy ? c.Fin : hoy, fechas = [];
+    const [y, mo, dd] = ini.split('-').map(Number), d = new Date(y, mo - 1, dd);
+    for (let n = 0; n < 500; n++) { const k = diaKey(d.getTime()); if (k > fin) break; if (c.Dias ? c.Dias.includes('DLMXJVS'[d.getDay()]) : porDia[k]) fechas.push(k); d.setDate(d.getDate() + 1); }
+    const esA = new Set(alumnos.map(a => a.id)), clases = fechas.reverse().map(k => ({ fecha: k, asistencia: porDia[k] || {}, presentes: Object.keys(porDia[k] || {}).filter(id => esA.has(id)) }));
+    alumnos.forEach(a => a.asistencias = clases.filter(x => x.asistencia[a.id]).length);
+    return { curso: c, alumnos, profesores, clases };
+  }
+  A.cursoAsistencia = (d, m) => { const c = db.cursos.find(x => x.id === d.id); if (!c) return { ok: false, error: 'Curso no encontrado' };
+    const prof = db.insc.some(i => i.Curso_ID === c.id && i.Miembro_ID === m.id && i.Rol === 'Profesor' && i.Estado === 'Activo');
+    if (!prof && m.Rol !== 'admin') return { ok: false, error: 'Solo los profesores del curso pueden ver la asistencia.' }; return { ok: true, ...asistenciaD(c) }; };
   A.noLeidos = (d, m) => ({ ok: true, n: db.mensajes.filter(x => x.Para === m.id && !x.Leido).length });
   A.conversaciones = (d, m) => {
     const c = {};
@@ -1412,15 +1465,31 @@ const Demo = (() => {
       db.accesos.push({ Miembro_ID: r.id, Resultado: activo ? 'Permitido' : 'Denegado', Fecha: Date.now(), Admin: m.Nombre });
       db.visitasCT = db.visitasCT || []; let visita = null, yaDentro = false;
       if (activo) { const ab = db.visitasCT.filter(v => v.Miembro_ID === r.id && !v.Salida && v.Entrada > Date.now() - 18 * 3600e3).pop();
-        if (ab) { visita = ab; yaDentro = true; } else { visita = { id: uid('w'), Miembro_ID: r.id, Nombre: r.Nombre, Tipo: tipo + (tipo === 'equipo' && art ? ',artista' : ''), Sede: d.sede || '', Entrada: Date.now(), Salida: 0, Recibio: m.Nombre, Salida_Por: '', Nota: '', Estrellas: 0, Comentario: '' }; db.visitasCT.push(visita); } }
+        const clase = cursosDeD(r.id).find(c => c.hoy && (!c.Sede || !d.sede || c.Sede === d.sede));
+        if (ab) { visita = ab; yaDentro = true; } else { visita = { id: uid('w'), Curso_ID: clase ? clase.id : '', Curso: clase ? clase.Nombre : '', Miembro_ID: r.id, Nombre: r.Nombre, Tipo: tipo + (tipo === 'equipo' && art ? ',artista' : ''), Sede: d.sede || '', Entrada: Date.now(), Salida: 0, Recibio: m.Nombre, Salida_Por: '', Nota: '', Estrellas: 0, Comentario: '' }; db.visitasCT.push(visita); } }
       save();
-      return { ok: true, existe: true, activo, tipo, ultimo: previos.length ? previos[previos.length - 1].Fecha : 0, visitas: previos.length + (activo ? 1 : 0), visita, yaDentro,
+      return { ok: true, existe: true, activo, tipo, ultimo: previos.length ? previos[previos.length - 1].Fecha : 0, visitas: previos.length + (activo ? 1 : 0), visita, yaDentro, cursos: cursosDeD(r.id),
         perfil: { ...perfilDemo(r), Puesto: r.Equipo_Estado === 'Aprobado' ? (r.Puesto || '') : '', Rol: r.Rol }, artista: art ? { Nombre: art.Nombre, Disciplina: art.Disciplina || '', Origen: art.Origen || '' } : null };
     },
     adminData() {
       return { ok: true, productos: db.productos, artistas: db.artistas.map(a => ({ ...a, Estado: a.Estado || 'Aprobado', Solicitante: a.Miembro_ID ? (db.miembros.find(x => x.id === a.Miembro_ID) || {}).Nombre || '' : '' })), subastas: db.subastas.map(subPub),
         pedidos: db.pedidos.slice().reverse().map(p => ({ ...p, Nombre: (db.miembros.find(x => x.id === p.Miembro_ID) || {}).Nombre || p.Nombre || '', Email: (db.miembros.find(x => x.id === p.Miembro_ID) || {}).Email || '' })),
         miembros: db.miembros.map(m => ({ ...pub(m), Activo: m.Activo !== false })), config: db.config, seguimiento: segDemo(null, true) };
+    },
+    adminCursos() {
+      return { ok: true, cursos: db.cursos.map(c => ({ Activo: true, ...c })), inscripciones: db.insc.filter(i => i.Estado !== 'Baja').map(i => { const r = perD(i.Miembro_ID) || {}; return { ...i, Nombre: r.Nombre || '—', Foto: r.Foto || '', Email: r.Email || '' }; }) };
+    },
+    adminCursoSave(d) {
+      const o = d.curso || {}; if (!String(o.Nombre || '').trim()) return { ok: false, error: 'Escribe el nombre del curso.' };
+      const c = { Nombre: o.Nombre.trim(), Sede: o.Sede, Descripcion: o.Descripcion || '', Dias: o.Dias || '', Min_Inicio: +o.Min_Inicio || 0, Min_Fin: +o.Min_Fin || 0, Inicio: o.Inicio || '', Fin: o.Fin || '', Cupo: +o.Cupo || 0, Imagen: o.Imagen || '', Activo: o.Activo !== false };
+      let x = o.id && db.cursos.find(k => k.id === o.id); if (x) Object.assign(x, c); else { x = { ...c, id: uid('cu') }; db.cursos.push(x); } save(); return { ok: true, id: x.id };
+    },
+    adminInscripcion(d, m) {
+      const c = db.cursos.find(x => x.id === d.curso_id), r = perD(d.miembro_id); if (!c || !r) return { ok: false, error: 'Curso o persona no encontrados' };
+      const rol = d.rol === 'Profesor' ? 'Profesor' : 'Alumno', prev = db.insc.find(i => i.Curso_ID === c.id && i.Miembro_ID === r.id && i.Estado !== 'Baja');
+      if (prev) Object.assign(prev, { Rol: rol, Estado: d.estado }); else if (d.estado !== 'Baja') db.insc.push({ id: uid('i'), Curso_ID: c.id, Miembro_ID: r.id, Rol: rol, Estado: d.estado, Fecha: Date.now() });
+      if (d.estado === 'Activo' && r.id !== m.id) db.mensajes.push({ id: uid('d'), De: m.id, Para: r.id, Texto: rol === 'Profesor' ? '🎧 Ya apareces como profesor de “' + c.Nombre + '”.' : '🎓 ¡Listo! Ya estás inscrito en “' + c.Nombre + '”. Muestra tu QR de acceso en la entrada.', Fecha: Date.now(), Leido: false });
+      save(); return { ok: true };
     },
     adminVisitas(d) {
       const fotos = {}; db.miembros.forEach(r => fotos[r.id] = r.Foto || ''); const todas = (db.visitasCT || []).map(v => ({ ...v, Foto: fotos[v.Miembro_ID] || '' }));
@@ -1602,9 +1671,9 @@ $('#fReg').onsubmit = async e => {
 const CORTO = { 'Tri-Urban': 'Tienda', 'Arte × Urban': 'Colabs', 'En vivo': 'Vivo', 'Comunidad': 'Gente' }; // menú inferior del celular
 const SECCIONES = [
   ['inicio', 'Inicio', '◐'], ['feed', 'Feed', '▦'], ['tienda', 'Tri-Urban', '▲'], ['colabs', 'Arte × Urban', '✦'],
-  ['galeria', 'Galería', '▣'], ['subastas', 'Subastas', '⚑'], ['artistas', 'Artistas', '☺'], ['comunidad', 'Comunidad', '◎'], ['vivo', 'En vivo', '●'], ['pedidos', 'Pedidos', '📦'],
+  ['galeria', 'Galería', '▣'], ['subastas', 'Subastas', '⚑'], ['artistas', 'Artistas', '☺'], ['comunidad', 'Comunidad', '◎'], ['vivo', 'En vivo', '●'], ['cursos', 'Cursos', '🎓'], ['pedidos', 'Pedidos', '📦'],
 ];
-const SIN_TABBAR = ['galeria', 'pedidos', 'subastas']; // en el celular se llega desde Inicio y el menú
+const SIN_TABBAR = ['galeria', 'pedidos', 'subastas', 'cursos']; // en el celular se llega desde Inicio y el menú
 let timers = [];
 var reelObs = null;
 function stopTimers() { timers.forEach(clearInterval); timers = []; if (typeof pararCamara === 'function') pararCamara(); if (reelObs) { reelObs.disconnect(); reelObs = null; } }
@@ -1628,7 +1697,7 @@ function route() {
   const esAdmin = S.me.Rol === 'admin' && sec === 'admin';
   const k = esAdmin ? 'admin' : SECCIONES.some(s => s[0] === sec) ? sec : 'inicio';
   renderNav(k);
-  const V = { inicio: vInicio, feed: vFeed, tienda: vTienda, colabs: vColabs, galeria: vGaleria, subastas: vSubastas, artistas: vArtistas, vivo: vVivo, admin: vAdmin, comunidad: vComunidad, pedidos: vPedidos }[k];
+  const V = { inicio: vInicio, feed: vFeed, tienda: vTienda, colabs: vColabs, galeria: vGaleria, subastas: vSubastas, artistas: vArtistas, vivo: vVivo, admin: vAdmin, comunidad: vComunidad, pedidos: vPedidos, cursos: vCursos }[k];
   $('#view').innerHTML = V(arg) + footer();
   window.scrollTo(0, 0);
   tickCountdowns(); timers.push(setInterval(tickCountdowns, 1000));
@@ -2045,6 +2114,7 @@ $('#meBtn').onclick = () => openModal(`<div class="pad">${avatarHtml(S.me, 64)}
   <div><span class="org ${S.me.Rol === 'miembro' ? 'ct' : 'tu'}">${{ miembro: 'Miembro', artista: 'Artista', admin: 'Administrador' }[S.me.Rol] || S.me.Rol}</span></div>
   <button class="btn btn-solid btn-block" onclick="openMisPedidos()">Mis pedidos</button>
   <a class="btn btn-ghost btn-block" href="#pedidos" onclick="closeModal()">📦 Cómo van los pedidos</a>
+  <a class="btn btn-ghost btn-block" href="#cursos" onclick="closeModal()">🎓 Cursos</a>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%"><a class="btn btn-ghost" href="#subastas" onclick="closeModal()">⚑ Subastas</a><a class="btn btn-ghost" href="#galeria" onclick="closeModal()">▣ Galería</a></div>
   <button class="btn btn-ghost btn-block" onclick="openPublicar()">＋ Publicar en el feed</button>
   <button class="btn btn-ghost btn-block" onclick="openMiArtista()">🎨 ${S.me.Artista_ID ? 'Mi perfil de artista' : 'Soy artista: crear mi perfil'}</button>
@@ -2462,7 +2532,8 @@ function avatarHtml(p, size = 44) {
 }
 function insignias(p) {
   return (p.Equipo ? `<span class="ins eq">⭐ Equipo Trikles${p.Puesto ? ' · ' + esc(p.Puesto) : ''}</span>` : '')
-    + (p.Artista_ID ? '<span class="ins art">🎨 Artista</span>' : '');
+    + (p.Artista_ID ? '<span class="ins art">🎨 Artista</span>' : '')
+    + (p.Cursos || []).map(c => `<span class="ins cur">${c.Rol === 'Profesor' ? '🎧 Profesor' : '🎓 Alumno'} · ${esc(c.Nombre)}</span>`).join('');
 }
 function pintarMeBtn() {
   const b = $('#meBtn'), u = imgUrl(S.me.Foto);
@@ -2789,7 +2860,7 @@ async function openMiArtista() {
    PANEL DE ADMINISTRACIÓN (#admin) — el backend valida Rol = admin
    ===================================================================== */
 let ADM = null, admTab = 'pedidos', pedFiltro = 'Pendiente';
-const ADM_TABS = [['escanear', '📷 Escanear QR'], ['visitas', '🚪 Visitas'], ['pedidos', 'Pedidos'], ['seguimiento', '📦 Seguimiento'], ['colabs', '✦ Colabs'], ['productos', 'Productos'], ['artistas', 'Artistas'], ['subastas', 'Subastas'], ['miembros', 'Miembros'], ['ajustes', 'Pagos']];
+const ADM_TABS = [['escanear', '📷 Escanear QR'], ['visitas', '🚪 Visitas'], ['cursos', '🎓 Cursos'], ['pedidos', 'Pedidos'], ['seguimiento', '📦 Seguimiento'], ['colabs', '✦ Colabs'], ['productos', 'Productos'], ['artistas', 'Artistas'], ['subastas', 'Subastas'], ['miembros', 'Miembros'], ['ajustes', 'Pagos']];
 const FORMS = {
   Productos: [
     ['Tipo', 'Tipo', 'select', [['prenda', 'Prenda Tri-Urban'], ['colab', 'Arte × Urban (colab)'], ['obra', 'Obra de galería']]],
@@ -2852,7 +2923,7 @@ function renderAdmin() {
   $$('#admTabs .tab-dot').forEach(d => { const n = { artistas: pendArt, pedidos: pendPed, miembros: pendEq }[d.dataset.tab] || 0; d.textContent = n || ''; d.hidden = !n; });
   if (admTab !== 'escanear' || camAbierta) pararCamara();
   if (admTab !== 'visitas') clearInterval(visTimer);
-  const R = { escanear: admEscanear, visitas: admVisitas, pedidos: admPedidos, seguimiento: admSeguimiento, colabs: admColabs, productos: admProductos, artistas: admArtistas, subastas: admSubastas, miembros: admMiembros, ajustes: admAjustes }[admTab];
+  const R = { escanear: admEscanear, visitas: admVisitas, cursos: admCursos, pedidos: admPedidos, seguimiento: admSeguimiento, colabs: admColabs, productos: admProductos, artistas: admArtistas, subastas: admSubastas, miembros: admMiembros, ajustes: admAjustes }[admTab];
   $('#admBody').innerHTML = R(); tickCountdowns();
 }
 const nombreArtista = id => (ADM.artistas.find(a => a.id === id) || {}).Nombre || '—';
@@ -3144,6 +3215,7 @@ function tarjetaAcceso(r) {
       <div class="acc-nombre">${esc(p.Nombre)}</div>
       <div class="acc-tags">${r.tipo === 'artista' && r.artista ? '' : `<span class="acc-tag t-${r.tipo}">${ico} ${nom}${r.tipo === 'equipo' && p.Puesto ? ' · ' + esc(p.Puesto) : ''}</span>`}
         ${r.artista ? `<span class="acc-tag t-artista">🎨 Artista · ${esc(r.artista.Nombre)}${r.artista.Disciplina ? ' · ' + esc(r.artista.Disciplina) : ''}</span>` : ''}
+        ${(r.cursos || []).map(c => `<span class="acc-tag t-curso">${c.Rol === 'Profesor' ? '🎧 Profesor' : '🎓 Alumno'} · ${esc(c.Nombre)}${c.hoy ? ' · <b>clase hoy</b>' : ''}</span>`).join('')}
         </div>
       <div class="mute" style="font-size:13px">${p.Desde ? 'En la comunidad desde ' + new Date(+p.Desde).toLocaleDateString('es-MX', { month: 'long', year: 'numeric' }) + ' · ' : ''}${r.ultimo ? 'Último acceso: ' + fecha(r.ultimo) : 'Primera visita'}</div>
       ${r.visita ? visitaBox(r.visita, r.yaDentro) : ''}
@@ -3154,6 +3226,7 @@ const horaMx = ms => new Date(+ms).toLocaleTimeString('es-MX', { hour: '2-digit'
 function visitaBox(v, yaDentro) {
   return `<div class="vis-box ${yaDentro ? 'ya' : ''}" id="vb_${v.id}">
     <div>${yaDentro ? `🟢 <b>Ya estaba dentro</b> desde las ${horaMx(v.Entrada)} · lo recibió ${esc(v.Recibio)}` : `🟢 <b>Entrada registrada</b> a las ${horaMx(v.Entrada)}${v.Sede ? ' · ' + esc(v.Sede) : ''} · lo recibes tú`}</div>
+    ${v.Curso ? `<div>📚 Cuenta como <b>asistencia a ${esc(v.Curso)}</b></div>` : ''}
     <form class="vis-nota" onsubmit="event.preventDefault();visNota('${v.id}',this.nota.value)"><input name="nota" maxlength="300" value="${esc(v.Nota || '')}" placeholder="Nota: mesa reservada, lo que acordaron por mensaje…"><button class="btn btn-ghost btn-sm">Guardar</button></form>
     ${yaDentro ? `<button class="btn btn-solid btn-sm btn-block" onclick="visSalida('${v.id}','${esc(String(v.Nombre).replace(/'/g, ''))}')">🚪 Marcar su salida ahora</button>` : ''}
   </div>`;
@@ -3228,6 +3301,7 @@ function pintarVisitas() {
       <div style="min-width:0;flex:1"><b>${esc(v.Nombre)}</b> ${visTipoTags(v.Tipo)}${v.Sede ? ` <span class="mute" style="font-size:12px">📍 ${esc(v.Sede)}</span>` : ''}
         <div class="vis-meta">🟢 ${horaMx(v.Entrada)} → ${v.Salida ? '🔴 ' + horaMx(v.Salida) + ' · ' + fmtDur(v.Salida - v.Entrada) : '<b>sigue dentro</b> · ' + fmtDur(ahora - v.Entrada)}</div>
         <div class="vis-meta">Lo recibió <b>${esc(v.Recibio || '—')}</b>${v.Salida_Por ? ` · salida por <b>${esc(v.Salida_Por)}</b>` : ''}</div>
+        ${v.Curso ? `<div class="vis-meta">📚 ${esc(v.Curso)}</div>` : ''}
         ${v.Nota ? `<div class="vis-meta">📝 ${esc(v.Nota)}</div>` : ''}
         ${v.Estrellas ? `<div class="vis-meta">${visEstrellas(v.Estrellas)}${v.Comentario ? ' “' + esc(v.Comentario) + '”' : ''}</div>` : v.Salida ? '<div class="vis-meta mute">Aún no califica su visita</div>' : ''}</div>
       ${v.Salida ? '' : `<button class="btn btn-solid btn-sm" onclick="visSalida('${v.id}','${esc(String(v.Nombre).replace(/'/g, ''))}')">Marcar salida</button>`}</div>`;
@@ -3274,6 +3348,153 @@ async function visNota(id, nota) {
   toast('Nota guardada ✓');
   if (VIS.data) [...VIS.data.dentro, ...VIS.data.visitas].forEach(v => { if (v.id === id) v.Nota = nota; });
 }
+/* =====================================================================
+   CURSOS (DJ, canto, …): inscripción, acceso con QR y asistencia
+   ===================================================================== */
+const DIAS_C = 'DLMXJVS', DIAS_ORDEN = 'LMXJVSD';
+const DIAS_TXT = { L: 'Lun', M: 'Mar', X: 'Mié', J: 'Jue', V: 'Vie', S: 'Sáb', D: 'Dom' };
+const DIAS_LARGO = { L: 'lunes', M: 'martes', X: 'miércoles', J: 'jueves', V: 'viernes', S: 'sábado', D: 'domingo' };
+const hm = n => String(Math.floor(n / 60)).padStart(2, '0') + ':' + String(n % 60).padStart(2, '0');
+const aMin = t => { const [h, m] = String(t || '').split(':').map(Number); return (h || 0) * 60 + (m || 0); };
+function horarioCurso(c) {
+  const d = DIAS_ORDEN.split('').filter(x => (c.Dias || '').includes(x)).map(x => DIAS_TXT[x]).join(', ');
+  return [d, c.Min_Fin > c.Min_Inicio ? hm(c.Min_Inicio) + ' a ' + hm(c.Min_Fin) : ''].filter(Boolean).join(' · ');
+}
+const fechasCurso = c => c.Inicio || c.Fin ? [c.Inicio ? 'Del ' + fmtDia(c.Inicio) : '', c.Fin ? 'al ' + fmtDia(c.Fin) : ''].filter(Boolean).join(' ') : '';
+function vCursos() {
+  setTimeout(loadCursos, 0);
+  return `<section class="sec">
+    <div class="sec-head"><h2 class="disp">Cursos</h2><p>Talleres y cursos en Cineteca Trikles. Inscríbete aquí; para entrar a tus clases muestra tu <b>QR de acceso</b> en la entrada: sin QR no se puede entrar.</p></div>
+    <div id="cursosBody"><div class="mute">Cargando…</div></div>
+  </section>`;
+}
+async function loadCursos() {
+  const r = await api('cursos'); const el = $('#cursosBody'); if (!el) return;
+  if (!r.ok) { el.innerHTML = `<div class="empty">${esc(r.error || 'No se pudieron cargar los cursos')}</div>`; return; }
+  el.innerHTML = r.cursos.length ? `<div class="cur-grid">${r.cursos.map(cursoCard).join('')}</div>` : '<div class="empty">Por ahora no hay cursos abiertos. ¡Pronto habrá más!</div>';
+}
+function cursoCard(c) {
+  const lleno = c.Cupo && c.alumnos >= c.Cupo;
+  const accion = c.miRol === 'Profesor' && c.miEstado === 'Activo' ? `<button class="btn btn-gold btn-block" onclick="openAsistencia('${c.id}')">🎧 Eres profesor · Ver alumnos y asistencia</button>`
+    : c.miEstado === 'Activo' ? `<div class="st-box ok">✓ <span><b>Estás inscrito.</b> Muestra tu QR en la entrada de ${esc(c.Sede || 'Cineteca Trikles')} para pasar a clase.</span></div><button class="btn btn-ghost btn-block" onclick="openMiQR()">🎟️ Ver mi QR de acceso</button>`
+    : c.miEstado === 'Pendiente' ? `<div class="st-box pend">⏳ <span>Tu solicitud está <b>en revisión</b>. Te avisamos por mensaje.</span></div><button class="btn-link" onclick="cancelarSolicitud('${c.id}')">Cancelar mi solicitud</button>`
+    : lleno ? '<button class="btn btn-ghost btn-block" disabled>Curso lleno</button>'
+    : `<button class="btn btn-accent btn-block" onclick="inscribirme('${c.id}','${esc(String(c.Nombre).replace(/'/g, ''))}')">Quiero inscribirme</button>`;
+  return `<article class="cur">
+    ${c.Imagen ? `<div class="cur-img"><img src="${esc(imgUrl(c.Imagen))}" alt="" loading="lazy"></div>` : ''}
+    <div class="cur-body">
+      <h3 class="cur-n">${esc(c.Nombre)}</h3>
+      <div class="cur-datos">${c.Sede ? `<span>📍 ${esc(c.Sede)}</span>` : ''}${horarioCurso(c) ? `<span>🗓 ${esc(horarioCurso(c))}</span>` : ''}${fechasCurso(c) ? `<span>📆 ${esc(fechasCurso(c))}</span>` : ''}<span>🎓 ${c.alumnos}${c.Cupo ? ' de ' + c.Cupo : ''} alumnos</span></div>
+      ${c.Descripcion ? `<p class="mute" style="font-size:14px;white-space:pre-line">${esc(c.Descripcion)}</p>` : ''}
+      ${c.profesores.length ? `<div class="cur-profes"><span class="kicker">Imparte${c.profesores.length > 1 ? 'n' : ''}</span>${c.profesores.map(p => `<button class="cur-profe" onclick="openPerfil('${p.id}')">${avatarHtml(p, 30)}<span>${esc(p.Nombre)}</span></button>`).join('')}</div>` : ''}
+      ${accion}
+    </div></article>`;
+}
+async function inscribirme(id, nombre) {
+  if (!confirm('¿Quieres inscribirte a ' + nombre + '?\n\nEl equipo Trikles revisa tu solicitud y te avisa por mensaje.')) return;
+  const r = await api('inscribirme', { id }); if (!r.ok) return toast(r.error);
+  toast('¡Solicitud enviada! Te avisamos al aprobarla.'); loadCursos();
+}
+async function cancelarSolicitud(id) {
+  if (!confirm('¿Cancelar tu solicitud?')) return;
+  const r = await api('cancelarSolicitud', { id }); if (!r.ok) return toast(r.error); loadCursos();
+}
+const diaLargo = k => { const [y, m, d] = k.split('-').map(Number); const t = new Date(y, m - 1, d).toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' }); return t[0].toUpperCase() + t.slice(1); };
+async function openAsistencia(id) {
+  openModal('<div class="pad mute">Cargando…</div>', true);
+  const r = await api('cursoAsistencia', { id }); if (!r.ok) return openModal(`<div class="pad">${esc(r.error)}</div>`, true);
+  const c = r.curso, n = r.clases.length;
+  openModal(`<div class="pad asis">
+    <div class="kicker">Asistencia</div>
+    <h3 class="disp" style="font-size:34px">${esc(c.Nombre)}</h3>
+    <div class="cur-datos">${c.Sede ? `<span>📍 ${esc(c.Sede)}</span>` : ''}${horarioCurso(c) ? `<span>🗓 ${esc(horarioCurso(c))}</span>` : ''}<span>${n} clase${n === 1 ? '' : 's'} hasta hoy</span></div>
+    <div class="kicker" style="margin-top:6px">Alumnos (${r.alumnos.length})</div>
+    <div class="asis-alumnos">${r.alumnos.map(a => { const pct = n ? Math.round(a.asistencias / n * 100) : 0; return `<div class="asis-a">${avatarHtml(a, 34)}<span style="flex:1;min-width:0">${esc(a.Nombre)}</span><b>${a.asistencias}/${n}</b><span class="asis-pct ${pct >= 80 ? 'ok' : pct >= 50 ? 'med' : 'bajo'}">${pct}%</span></div>`; }).join('') || '<div class="mute">Aún no hay alumnos inscritos.</div>'}</div>
+    <div class="kicker" style="margin-top:6px">Por clase</div>
+    ${r.clases.map(k => { const faltan = r.alumnos.filter(a => !k.asistencia[a.id]), profe = r.profesores.filter(p => k.asistencia[p.id]);
+      return `<div class="asis-clase"><div class="asis-h"><b>${diaLargo(k.fecha)}</b><span>${k.presentes.length}/${r.alumnos.length}</span></div>
+        ${profe.length ? `<div class="vis-meta">🎧 ${profe.map(p => esc(p.Nombre)).join(', ')}</div>` : ''}
+        ${k.presentes.length ? `<div class="vis-meta">✅ ${k.presentes.map(id => { const a = r.alumnos.find(x => x.id === id), t = k.asistencia[id]; return esc(a.Nombre) + ' <span class="mute">' + horaMx(t.e) + (t.s ? '–' + horaMx(t.s) : '') + '</span>'; }).join(', ')}</div>` : ''}
+        ${faltan.length ? `<div class="vis-meta">❌ ${faltan.map(a => esc(a.Nombre)).join(', ')}</div>` : ''}</div>`; }).join('') || '<div class="mute">Todavía no hay clases.</div>'}
+    <div class="mute" style="font-size:12px">La asistencia se toma del QR: cuenta si la persona entró a Cineteca${c.Sede ? ' ' + esc(c.Sede) : ''} ese día.</div>
+  </div>`, true);
+}
+/* ---------- panel → cursos ---------- */
+let CUR = null;
+function admCursos() { setTimeout(cargarCursosAdm, 0); return '<div id="curAdm"><div class="mute">Cargando cursos…</div></div>'; }
+async function cargarCursosAdm(silencio) {
+  const r = await (silencio ? apiReal : api)('adminCursos'); if (!r.ok) return toast(r.error);
+  CUR = r; pintarCursosAdm();
+  if (!$('#modal').hidden && $('#curPersonas')) pintarPersonas($('#curPersonas').dataset.id);
+}
+function pintarCursosAdm() {
+  const el = $('#curAdm'); if (!el || !CUR) return;
+  el.innerHTML = `<div style="margin-bottom:16px;display:flex;gap:10px;flex-wrap:wrap;align-items:center"><button class="btn btn-accent" onclick="cursoForm()">+ Nuevo curso</button><span class="mute" style="font-size:13px">Sirve para cualquier curso: DJ, canto… Al escanear el QR de un alumno en su día de clase cuenta como asistencia.</span></div>
+    <div class="adm-cards">${CUR.cursos.map(c => { const de = CUR.inscripciones.filter(i => i.Curso_ID === c.id), pend = de.filter(i => i.Estado === 'Pendiente').length;
+      const profes = de.filter(i => i.Rol === 'Profesor' && i.Estado === 'Activo'), alum = de.filter(i => i.Rol === 'Alumno' && i.Estado === 'Activo').length;
+      return `<div class="ord ${c.Activo ? '' : 'off'}">
+        <div class="ord-h"><b style="font-size:18px">${esc(c.Nombre)}</b>${c.Activo ? (c.Fin && c.Fin < hoyISO() ? '<span class="st">Terminó</span>' : '<span class="st st-pag">Activo</span>') : '<span class="st">Oculto</span>'}</div>
+        <div class="cur-datos">${c.Sede ? `<span>📍 ${esc(c.Sede)}</span>` : ''}${horarioCurso(c) ? `<span>🗓 ${esc(horarioCurso(c))}</span>` : ''}${fechasCurso(c) ? `<span>📆 ${esc(fechasCurso(c))}</span>` : ''}</div>
+        <div class="vis-meta">🎧 ${profes.length ? profes.map(p => esc(p.Nombre)).join(', ') : '<span class="mute">sin profesor</span>'} · 🎓 ${alum}${c.Cupo ? '/' + c.Cupo : ''} alumnos${pend ? ` · <b style="color:var(--spray)">⏳ ${pend} por aprobar</b>` : ''}</div>
+        <div class="adm-act" style="justify-content:flex-start"><button class="btn btn-solid btn-sm" onclick="openPersonas('${c.id}')">👥 Profesores y alumnos${pend ? ' (' + pend + ')' : ''}</button><button class="btn btn-ghost btn-sm" onclick="openAsistencia('${c.id}')">📋 Asistencia</button><button class="btn btn-ghost btn-sm" onclick="cursoForm('${c.id}')">✏️ Editar</button></div>
+      </div>`; }).join('') || '<div class="empty">Aún no hay cursos. Crea el primero con “+ Nuevo curso”.</div>'}</div>`;
+}
+function cursoForm(id) {
+  const c = (CUR && CUR.cursos.find(x => x.id === id)) || { Sede: 'Puebla', Activo: true, Dias: '' };
+  openModal(`<form class="pad" id="curForm" data-guard>
+    <div class="kicker">${id ? 'Editar curso' : 'Nuevo curso'}</div>
+    <div class="field"><label>Nombre del curso</label><input name="Nombre" maxlength="80" required value="${esc(c.Nombre || '')}" placeholder="Ej. Curso de DJ"></div>
+    <div class="field"><label>Sede</label><select name="Sede">${['Puebla', 'Tlaxcala'].map(s => `<option ${s === c.Sede ? 'selected' : ''}>${s}</option>`).join('')}</select></div>
+    <div class="field"><label>Días de clase</label><div class="cur-dias">${DIAS_ORDEN.split('').map(x => `<label><input type="checkbox" name="dia" value="${x}" ${(c.Dias || '').includes(x) ? 'checked' : ''}><span>${DIAS_TXT[x]}</span></label>`).join('')}</div></div>
+    <div class="cur-2"><div class="field"><label>Hora de inicio</label><input type="time" name="hIni" value="${c.Min_Fin > c.Min_Inicio ? hm(c.Min_Inicio) : ''}"></div><div class="field"><label>Hora de fin</label><input type="time" name="hFin" value="${c.Min_Fin > c.Min_Inicio ? hm(c.Min_Fin) : ''}"></div></div>
+    <div class="cur-2"><div class="field"><label>Empieza</label><input type="date" name="Inicio" value="${esc(c.Inicio || '')}"></div><div class="field"><label>Termina (opcional)</label><input type="date" name="Fin" value="${esc(c.Fin || '')}"></div></div>
+    <div class="field"><label>Cupo de alumnos (0 = sin límite)</label><input type="number" name="Cupo" min="0" value="${+c.Cupo || 0}"></div>
+    <div class="field"><label>Descripción (la ven los miembros)</label><textarea name="Descripcion" rows="3" maxlength="600" placeholder="Qué van a aprender, qué traer, nivel…">${esc(c.Descripcion || '')}</textarea></div>
+    <label class="toggle"><input type="checkbox" name="Activo" ${c.Activo !== false ? 'checked' : ''}> Visible para la comunidad</label>
+    <button class="btn btn-accent btn-block" id="curGuardar">${id ? 'Guardar cambios' : 'Crear curso'}</button>
+  </form>`, true);
+  $('#curForm').onsubmit = async e => {
+    e.preventDefault(); const f = e.target, el = f.elements;
+    const curso = { id: id || '', Nombre: el.Nombre.value.trim(), Sede: el.Sede.value, Dias: $$('input[name=dia]:checked', f).map(x => x.value).join(''),
+      Min_Inicio: aMin(el.hIni.value), Min_Fin: aMin(el.hFin.value), Inicio: el.Inicio.value, Fin: el.Fin.value, Cupo: +el.Cupo.value || 0, Descripcion: el.Descripcion.value.trim(), Activo: el.Activo.checked, Imagen: c.Imagen || '' };
+    if (!curso.Nombre) return toast('Escribe el nombre del curso');
+    if (!curso.Dias) return toast('Marca al menos un día de clase');
+    if (el.hIni.value && el.hFin.value && curso.Min_Fin <= curso.Min_Inicio) return toast('La hora de fin debe ser después del inicio');
+    const r = await busy($('#curGuardar'), 'Guardando…', () => api('adminCursoSave', { curso }));
+    if (!r.ok) return toast(r.error);
+    f.dataset.dirty = ''; closeModal(); toast(id ? 'Curso actualizado ✓' : 'Curso creado ✓ · ahora agrega a sus profesores y alumnos');
+    await cargarCursosAdm(); if (!id) openPersonas(r.id);
+  };
+}
+let curBusca = '';
+function openPersonas(id) { curBusca = ''; openModal(`<div class="pad" id="curPersonas" data-id="${id}"></div>`, true); pintarPersonas(id); }
+function pintarPersonas(id) {
+  const box = $('#curPersonas'); if (!box || !CUR) return;
+  const c = CUR.cursos.find(x => x.id === id); if (!c) return;
+  const de = CUR.inscripciones.filter(i => i.Curso_ID === id);
+  const fila = (i, botones) => `<div class="vis-fila">${avatarHtml({ id: i.Miembro_ID, Nombre: i.Nombre, Foto: i.Foto }, 38)}<div style="min-width:0;flex:1"><b>${esc(i.Nombre)}</b><div class="mute" style="font-size:12px;overflow:hidden;text-overflow:ellipsis">${esc(i.Email)}</div></div><div class="adm-act">${botones}</div></div>`;
+  const b = (mid, rol, estado, txt, cls = 'btn-ghost') => `<button class="btn ${cls} btn-sm" onclick="curInsc('${id}','${mid}','${rol}','${estado}')">${txt}</button>`;
+  const pend = de.filter(i => i.Estado === 'Pendiente'), profes = de.filter(i => i.Rol === 'Profesor' && i.Estado === 'Activo'), alumnos = de.filter(i => i.Rol === 'Alumno' && i.Estado === 'Activo');
+  const ya = new Set(de.map(i => i.Miembro_ID)), q = curBusca.trim().toLowerCase();
+  const cand = q ? (ADM ? ADM.miembros : []).filter(m => m.Activo && !ya.has(m.id) && (m.Nombre + ' ' + m.Email).toLowerCase().includes(q)).slice(0, 8) : [];
+  const enfocado = document.activeElement && document.activeElement.id === 'curBusca';
+  box.innerHTML = `<div class="kicker">Profesores y alumnos</div><h3 class="disp" style="font-size:30px">${esc(c.Nombre)}</h3>
+    ${pend.length ? `<div class="kicker" style="color:var(--spray)">⏳ Solicitudes por aprobar (${pend.length})</div>${pend.map(i => fila(i, b(i.Miembro_ID, 'Alumno', 'Activo', '✓ Aprobar', 'btn-solid') + b(i.Miembro_ID, 'Alumno', 'Baja', 'Rechazar'))).join('')}` : ''}
+    <div class="kicker">🎧 Profesores (${profes.length})</div>${profes.map(i => fila(i, b(i.Miembro_ID, 'Profesor', 'Baja', 'Quitar'))).join('') || '<div class="mute" style="font-size:13px">Sin profesores todavía.</div>'}
+    <div class="kicker">🎓 Alumnos (${alumnos.length}${c.Cupo ? ' de ' + c.Cupo : ''})</div>${alumnos.map(i => fila(i, b(i.Miembro_ID, 'Alumno', 'Baja', 'Dar de baja'))).join('') || '<div class="mute" style="font-size:13px">Sin alumnos todavía.</div>'}
+    <div class="kicker">＋ Agregar a alguien de la comunidad</div>
+    <input id="curBusca" type="search" placeholder="Busca por nombre o correo…" value="${esc(curBusca)}" oninput="curBusca=this.value;pintarPersonas('${id}')" autocomplete="off">
+    ${cand.map(m => fila({ Miembro_ID: m.id, Nombre: m.Nombre, Foto: m.Foto, Email: m.Email }, b(m.id, 'Alumno', 'Activo', '+ Alumno', 'btn-solid') + b(m.id, 'Profesor', 'Activo', '+ Profesor'))).join('') || (q ? '<div class="mute" style="font-size:13px">Nadie coincide. Si aún no tiene cuenta, pídele que se registre en la app con la llave Trikles.</div>' : '')}
+    <div class="mute" style="font-size:12px">Cada alumno y profesor necesita su cuenta con foto para generar su QR de acceso. Al aprobarlos les llega un mensaje con instrucciones.</div>`;
+  if (enfocado) { const i = $('#curBusca'); i.focus(); i.setSelectionRange(i.value.length, i.value.length); }
+}
+async function curInsc(curso_id, miembro_id, rol, estado) {
+  if (estado === 'Baja' && !confirm('¿Quitar a esta persona del curso?')) return;
+  const r = await api('adminInscripcion', { curso_id, miembro_id, rol, estado }); if (!r.ok) return toast(r.error);
+  toast(estado === 'Baja' ? 'Listo, quedó fuera del curso' : 'Listo ✓ · le avisamos por mensaje'); curBusca = estado === 'Activo' ? '' : curBusca;
+  await cargarCursosAdm(true);
+}
+
 /* ---------- el cliente califica su visita (1 a 5 estrellas) ---------- */
 const CAL_TXT = ['', 'Mala 😕', 'Regular 😐', 'Buena 🙂', 'Muy buena 😄', '¡Increíble! 🤩'];
 async function openCalificar(id, pre) {
