@@ -761,6 +761,39 @@ footer{border-top:2px solid var(--ink)}
 .emb-link{display:block;padding:8px 12px;font-size:12px;font-weight:700;background:var(--bg3);color:var(--text);text-decoration:none}
 .reel-v .emb-ig,.reel-v .emb-fb{background:#fff}
 .o-paso{display:grid;gap:14px}
+/* ---------- visitas ---------- */
+.vis-sede{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.vis-box{width:100%;display:grid;gap:10px;text-align:left;border:2px solid #1f8a4c;background:rgba(31,138,76,.1);padding:12px;font-size:14px}
+.vis-box.ya{border-color:var(--spray);background:rgba(255,212,0,.08)}
+.vis-nota{display:flex;gap:6px}.vis-nota input{flex:1;min-width:0;padding:9px 10px;font-size:14px}
+.vis-tools{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin-bottom:18px}
+.vis-tools input{max-width:280px}
+.vis-sec{margin-bottom:34px}
+.vis-h{font-size:30px;display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.vis-n{font-family:var(--mono,monospace);font-size:16px;background:#1f8a4c;color:#fff;padding:3px 10px;border-radius:999px}
+.vis-dentro{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(320px,100%),1fr));gap:12px}
+.vis-card{border:2px solid #1f8a4c;background:var(--bg2);padding:14px;display:grid;gap:10px;min-width:0}
+.vis-card-top{display:flex;gap:12px;align-items:center}
+.vis-meta{font-size:13px;margin-top:3px;overflow-wrap:anywhere}
+.vis-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin:14px 0 18px}
+.vis-stats div{background:var(--bg2);border:2px solid var(--line);padding:12px;display:grid;gap:2px}
+.vis-stats b{font-size:22px;color:var(--spray)}.vis-stats span{font-size:12px;color:var(--mute)}
+.vis-grupo{margin-bottom:16px}.vis-gh{padding:8px 0;border-bottom:1px solid var(--line);margin-bottom:4px}
+.vis-fila{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--line)}
+.vis-tipo{font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;border:1px solid currentColor;color:var(--mute)}
+.vis-tipo.t-equipo{color:var(--spray)}.vis-tipo.t-artista{color:var(--cian)}
+.vis-est{color:var(--spray);letter-spacing:1px}.vis-est .off{color:var(--line)}
+.vis-cal{display:grid;gap:10px;max-width:420px;margin:6px 0 4px}
+.vis-cal-h{display:flex;gap:10px;align-items:center}.vis-cal-h input{width:auto}
+.vis-sem,.vis-dias{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.vis-sem button{font-weight:800;font-size:12px;padding:6px 0;border:1px solid var(--line);color:var(--spray)}
+.vis-dia{position:relative;aspect-ratio:1;border:1px solid var(--line);background:var(--bg2);font-weight:700;font-size:14px;display:grid;place-items:center}
+.vis-dia small{position:absolute;right:3px;bottom:1px;font-size:9px;color:var(--cian)}
+.vis-dia.on{background:var(--spray);color:#000;border-color:var(--spray)}.vis-dia.on small{color:#000}
+.cal-form{text-align:center;align-items:center}
+.cal-stars{justify-content:center;gap:8px}.cal-stars button{font-size:46px}
+.cal-stars button.on{color:var(--spray)}
+.cal-txt{font-weight:700;min-height:22px}
 .reset-code{font-family:var(--mono);font-size:34px;font-weight:800;letter-spacing:.18em;text-align:center;background:var(--spray);color:#000;padding:14px;margin:6px 0}
 #resetMsg{font-size:13px;resize:none}
 @media (max-width:900px){.reels{height:calc(100svh - 200px)}}
@@ -1187,6 +1220,7 @@ const Demo = (() => {
     catalog(d, m) {
       return { ok: true,
         productos: db.productos.filter(p => p.Activo !== false), config: db.config, seguimiento: segDemo(m), avisos: A.feed({}, m).avisos.slice(0, 3),
+        porCalificar: (db.visitasCT || []).filter(v => v.Miembro_ID === m.id && v.Salida > Date.now() - 7 * 864e5 && !v.Estrellas).pop() || null,
         artistas: db.artistas.filter(a => a.Activo !== false && (!a.Estado || a.Estado === 'Aprobado')).map(a => ({ ...a, ...artLinkDemo(a), ...ratings(a.id) })),
         subastas: db.subastas.filter(x => x.Estado !== 'Oculta').map(subPub),
         vivos: db.vivos.filter(v => v.Estado !== 'terminado') };
@@ -1333,6 +1367,11 @@ const Demo = (() => {
     const p = { id: uid('f'), Miembro_ID: m.id, Tipo: media.some(x => x.t === 'video') ? 'video' : media.length ? 'foto' : 'texto', Media: media, Texto: texto, Aviso: !!d.aviso && esEq(m), Fecha: Date.now(), Activo: true };
     db.posts.push(p); save(); return { ok: true, id: p.id }; };
   A.subirPostMedia = d => /^video\//.test(d.mime || '') ? { ok: false, error: 'Por ahora los videos se comparten con enlace.' } : { ok: true, url: 'data:' + d.mime + ';base64,' + d.data };
+  /* ---- visitas: el cliente califica ---- */
+  A.miVisita = (d, m) => { const v = (db.visitasCT || []).find(x => x.id === d.id && x.Miembro_ID === m.id); return v ? { ok: true, visita: v } : { ok: false, error: 'No encontramos esa visita en tu cuenta.' }; };
+  A.calificarVisita = (d, m) => { const v = (db.visitasCT || []).find(x => x.id === d.id && x.Miembro_ID === m.id); if (!v) return { ok: false, error: 'No encontramos esa visita en tu cuenta.' };
+    if (!v.Salida) return { ok: false, error: 'Podrás calificar tu visita cuando salgas de Cineteca Trikles.' }; const e = Math.round(+d.estrellas || 0); if (e < 1 || e > 5) return { ok: false, error: 'Elige de 1 a 5 estrellas.' };
+    v.Estrellas = e; v.Comentario = String(d.comentario || '').slice(0, 500); save(); return { ok: true }; };
   /* ---- restablecer contraseña ---- */
   db.resets = db.resets || {};
   A.olvide = d => { if (String(d.clave || '').trim().toUpperCase() !== CLAVE) return { ok: false, error: 'Abre primero con la llave Trikles.' };
@@ -1369,8 +1408,12 @@ const Demo = (() => {
       db.accesos = db.accesos || [];
       const previos = db.accesos.filter(a => a.Miembro_ID === r.id && a.Resultado === 'Permitido'), activo = r.Activo !== false, tipo = tipoDemo(r);
       const art = r.Artista_ID ? db.artistas.find(a => a.id === r.Artista_ID) : null;
-      db.accesos.push({ Miembro_ID: r.id, Resultado: activo ? 'Permitido' : 'Denegado', Fecha: Date.now(), Admin: m.Nombre }); save();
-      return { ok: true, existe: true, activo, tipo, ultimo: previos.length ? previos[previos.length - 1].Fecha : 0, visitas: previos.length + (activo ? 1 : 0),
+      db.accesos.push({ Miembro_ID: r.id, Resultado: activo ? 'Permitido' : 'Denegado', Fecha: Date.now(), Admin: m.Nombre });
+      db.visitasCT = db.visitasCT || []; let visita = null, yaDentro = false;
+      if (activo) { const ab = db.visitasCT.filter(v => v.Miembro_ID === r.id && !v.Salida && v.Entrada > Date.now() - 18 * 3600e3).pop();
+        if (ab) { visita = ab; yaDentro = true; } else { visita = { id: uid('w'), Miembro_ID: r.id, Nombre: r.Nombre, Tipo: tipo, Sede: d.sede || '', Entrada: Date.now(), Salida: 0, Recibio: m.Nombre, Salida_Por: '', Nota: '', Estrellas: 0, Comentario: '' }; db.visitasCT.push(visita); } }
+      save();
+      return { ok: true, existe: true, activo, tipo, ultimo: previos.length ? previos[previos.length - 1].Fecha : 0, visitas: previos.length + (activo ? 1 : 0), visita, yaDentro,
         perfil: { ...perfilDemo(r), Puesto: r.Equipo_Estado === 'Aprobado' ? (r.Puesto || '') : '', Rol: r.Rol }, artista: art ? { Nombre: art.Nombre, Disciplina: art.Disciplina || '', Origen: art.Origen || '' } : null };
     },
     adminData() {
@@ -1378,6 +1421,17 @@ const Demo = (() => {
         pedidos: db.pedidos.slice().reverse().map(p => ({ ...p, Nombre: (db.miembros.find(x => x.id === p.Miembro_ID) || {}).Nombre || p.Nombre || '', Email: (db.miembros.find(x => x.id === p.Miembro_ID) || {}).Email || '' })),
         miembros: db.miembros.map(m => ({ ...pub(m), Activo: m.Activo !== false })), config: db.config, seguimiento: segDemo(null, true) };
     },
+    adminVisitas(d) {
+      const fotos = {}; db.miembros.forEach(r => fotos[r.id] = r.Foto || ''); const todas = (db.visitasCT || []).map(v => ({ ...v, Foto: fotos[v.Miembro_ID] || '' }));
+      return { ok: true, ahora: Date.now(), dentro: todas.filter(v => !v.Salida).sort((a, b) => a.Entrada - b.Entrada), visitas: todas.filter(v => v.Entrada >= +d.desde && v.Entrada < +d.hasta).sort((a, b) => b.Entrada - a.Entrada) };
+    },
+    adminSalida(d, m) {
+      const v = (db.visitasCT || []).find(x => x.id === d.id); if (!v) return { ok: false, error: 'Visita no encontrada' }; if (v.Salida) return { ok: false, error: 'Ya tenía su salida registrada.' };
+      v.Salida = Date.now(); v.Salida_Por = m.Nombre;
+      if (v.Miembro_ID !== m.id) db.mensajes.push({ id: uid('d'), De: m.id, Para: v.Miembro_ID, Texto: '¡Gracias por visitarnos hoy! 💛 ¿Qué te pareció tu visita a Cineteca Trikles? Califícala de 1 a 5 estrellas: te aparece al abrir la app.', Fecha: Date.now(), Leido: false });
+      save(); return { ok: true, correo: false };
+    },
+    adminVisitaNota(d) { const v = (db.visitasCT || []).find(x => x.id === d.id); if (!v) return { ok: false, error: 'Visita no encontrada' }; v.Nota = String(d.nota || '').slice(0, 300); save(); return { ok: true }; },
     adminResetClave(d) {
       const r = db.miembros.find(x => x.id === d.id); if (!r) return { ok: false, error: 'Miembro no encontrado' };
       const ABC = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'; let c = ''; for (let i = 0; i < 8; i++) c += ABC[Math.floor(Math.random() * ABC.length)];
@@ -1474,6 +1528,7 @@ async function enterApp() {
   route();
   const nuevo = S.recienLlegado; S.recienLlegado = null;
   if (nuevo || (!S.me.Foto && !lsGet('tu_onb_' + S.me.id, false))) setTimeout(() => openBienvenida(nuevo ? nuevo.artista : false), 350);
+  else { const pc = S.data && S.data.porCalificar; if (pc && !lsGet('tu_calif_skip_' + pc.id, false) && $('#modal').hidden) setTimeout(() => openCalificar(pc.id), 700); }
 }
 async function loadCatalog() {
   const j = await api('catalog');
@@ -1563,6 +1618,12 @@ function route() {
   if (!S.me) return;
   stopTimers();
   const [sec, arg] = (location.hash.slice(1) || 'inicio').split('/');
+  if (sec === 'calificar') { // enlace del correo: #calificar/<visita>/<estrellas>
+    const p = location.hash.slice(1).split('/');
+    history.replaceState(null, '', location.pathname + location.search + '#inicio');
+    setTimeout(() => openCalificar(p[1], +p[2] || 0), 500);
+    return route();
+  }
   const esAdmin = S.me.Rol === 'admin' && sec === 'admin';
   const k = esAdmin ? 'admin' : SECCIONES.some(s => s[0] === sec) ? sec : 'inicio';
   renderNav(k);
@@ -2727,7 +2788,7 @@ async function openMiArtista() {
    PANEL DE ADMINISTRACIÓN (#admin) — el backend valida Rol = admin
    ===================================================================== */
 let ADM = null, admTab = 'pedidos', pedFiltro = 'Pendiente';
-const ADM_TABS = [['escanear', '📷 Escanear QR'], ['pedidos', 'Pedidos'], ['seguimiento', '📦 Seguimiento'], ['colabs', '✦ Colabs'], ['productos', 'Productos'], ['artistas', 'Artistas'], ['subastas', 'Subastas'], ['miembros', 'Miembros'], ['ajustes', 'Pagos']];
+const ADM_TABS = [['escanear', '📷 Escanear QR'], ['visitas', '🚪 Visitas'], ['pedidos', 'Pedidos'], ['seguimiento', '📦 Seguimiento'], ['colabs', '✦ Colabs'], ['productos', 'Productos'], ['artistas', 'Artistas'], ['subastas', 'Subastas'], ['miembros', 'Miembros'], ['ajustes', 'Pagos']];
 const FORMS = {
   Productos: [
     ['Tipo', 'Tipo', 'select', [['prenda', 'Prenda Tri-Urban'], ['colab', 'Arte × Urban (colab)'], ['obra', 'Obra de galería']]],
@@ -2789,7 +2850,8 @@ function renderAdmin() {
   const pendArt = ADM.artistas.filter(a => a.Estado === 'Pendiente').length, pendPed = ADM.pedidos.filter(p => p.Estado === 'Pendiente').length, pendEq = ADM.miembros.filter(m => m.Equipo_Estado === 'Pendiente').length;
   $$('#admTabs .tab-dot').forEach(d => { const n = { artistas: pendArt, pedidos: pendPed, miembros: pendEq }[d.dataset.tab] || 0; d.textContent = n || ''; d.hidden = !n; });
   if (admTab !== 'escanear' || camAbierta) pararCamara();
-  const R = { escanear: admEscanear, pedidos: admPedidos, seguimiento: admSeguimiento, colabs: admColabs, productos: admProductos, artistas: admArtistas, subastas: admSubastas, miembros: admMiembros, ajustes: admAjustes }[admTab];
+  if (admTab !== 'visitas') clearInterval(visTimer);
+  const R = { escanear: admEscanear, visitas: admVisitas, pedidos: admPedidos, seguimiento: admSeguimiento, colabs: admColabs, productos: admProductos, artistas: admArtistas, subastas: admSubastas, miembros: admMiembros, ajustes: admAjustes }[admTab];
   $('#admBody').innerHTML = R(); tickCountdowns();
 }
 const nombreArtista = id => (ADM.artistas.find(a => a.id === id) || {}).Nombre || '—';
@@ -2978,9 +3040,11 @@ async function openMiQR(regenerar) {
 /* ---------- escáner (solo admins) ---------- */
 let lector = null, camAbierta = false, leyendoQR = false;
 function irEscanear() { closeModal(); admTab = 'escanear'; if (location.hash === '#admin') renderAdmin(); else location.hash = '#admin'; }
+const sedeScan = () => lsGet('tu_sede_scan', 'Tlaxcala');
 function admEscanear() {
   return `<div class="scan-wrap">
-    <p class="mute">Escanea el QR de acceso de la persona. Verás su foto: compárala con quien tienes enfrente.</p>
+    <div class="vis-sede"><span class="kicker">📍 Estás recibiendo en</span>${['Tlaxcala', 'Puebla'].map(s => `<button class="chip ${s === sedeScan() ? 'on' : ''}" onclick="lsSet('tu_sede_scan','${s}');renderAdmin()">${s}</button>`).join('')}</div>
+    <p class="mute">Escanea el QR de acceso de la persona. Verás su foto: compárala con quien tienes enfrente. Al permitirle el paso queda registrada su <b>entrada</b> y que tú lo recibiste.</p>
     <button class="btn btn-accent btn-block" id="bCam" onclick="toggleCamara()">📷 Abrir cámara</button>
     <div id="lector"></div>
     <form class="scan-manual" onsubmit="event.preventDefault();consultarQR($('#qrManual').value)"><input id="qrManual" placeholder="o pega aquí el código del QR" autocomplete="off"><button class="btn btn-ghost" type="submit">Buscar</button></form>
@@ -3059,7 +3123,7 @@ function pararCamara() {
 }
 async function consultarQR(txt) {
   txt = String(txt || '').trim(); if (!txt) return;
-  const r = await api('adminEscanear', { codigo: txt });
+  const r = await api('adminEscanear', { codigo: txt, sede: sedeScan() });
   const box = $('#scanRes'); if (!box) return;
   if (!r.ok) { box.innerHTML = `<div class="acc acc-no"><div class="acc-banda">⚠ ${esc(r.error || 'Error')}</div></div>`; return; }
   if (navigator.vibrate) navigator.vibrate(r.existe && r.activo ? 120 : [200, 100, 200]);
@@ -3081,8 +3145,159 @@ function tarjetaAcceso(r) {
         ${r.artista ? `<span class="acc-tag t-artista">🎨 Artista · ${esc(r.artista.Nombre)}${r.artista.Disciplina ? ' · ' + esc(r.artista.Disciplina) : ''}</span>` : ''}
         </div>
       <div class="mute" style="font-size:13px">${p.Desde ? 'En la comunidad desde ' + new Date(+p.Desde).toLocaleDateString('es-MX', { month: 'long', year: 'numeric' }) + ' · ' : ''}${r.ultimo ? 'Último acceso: ' + fecha(r.ultimo) : 'Primera visita'}</div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-ghost btn-sm" onclick="openPerfil('${p.id}')">Ver perfil completo</button></div>
+      ${r.visita ? visitaBox(r.visita, r.yaDentro) : ''}
+      <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center"><button class="btn btn-ghost btn-sm" onclick="openPerfil('${p.id}')">Ver perfil completo</button><button class="btn btn-ghost btn-sm" onclick="admTab='visitas';renderAdmin()">🚪 Quién está dentro</button></div>
       ${otro}</div></div>`;
+}
+const horaMx = ms => new Date(+ms).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
+function visitaBox(v, yaDentro) {
+  return `<div class="vis-box ${yaDentro ? 'ya' : ''}" id="vb_${v.id}">
+    <div>${yaDentro ? `🟢 <b>Ya estaba dentro</b> desde las ${horaMx(v.Entrada)} · lo recibió ${esc(v.Recibio)}` : `🟢 <b>Entrada registrada</b> a las ${horaMx(v.Entrada)}${v.Sede ? ' · ' + esc(v.Sede) : ''} · lo recibes tú`}</div>
+    <form class="vis-nota" onsubmit="event.preventDefault();visNota('${v.id}',this.nota.value)"><input name="nota" maxlength="300" value="${esc(v.Nota || '')}" placeholder="Nota: mesa reservada, lo que acordaron por mensaje…"><button class="btn btn-ghost btn-sm">Guardar</button></form>
+    ${yaDentro ? `<button class="btn btn-solid btn-sm btn-block" onclick="visSalida('${v.id}','${esc(String(v.Nombre).replace(/'/g, ''))}')">🚪 Marcar su salida ahora</button>` : ''}
+  </div>`;
+}
+
+/* =====================================================================
+   VISITAS: quién entró, quién sigue dentro, salidas y calificaciones
+   ===================================================================== */
+const hoy0 = () => { const h = new Date(); h.setHours(0, 0, 0, 0); return h; };
+const mesActual = () => { const h = new Date(); return h.getFullYear() + '-' + String(h.getMonth() + 1).padStart(2, '0'); };
+const diaKey = ms => { const d = new Date(+ms); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
+const fmtDur = ms => { const m = Math.max(0, Math.round(ms / 60000)), h = Math.floor(m / 60); return h ? h + ' h ' + (m % 60) + ' min' : m + ' min'; };
+let VIS = { periodo: 'hoy', sede: 'Todas', mes: mesActual(), dias: new Set(), busca: '', data: null }, visTimer = null;
+function visRango() {
+  const h = hoy0();
+  if (VIS.periodo === 'hoy') return [h.getTime(), h.getTime() + 864e5];
+  if (VIS.periodo === 'semana') { const ini = new Date(h); ini.setDate(h.getDate() - (h.getDay() + 6) % 7); const fin = new Date(ini); fin.setDate(ini.getDate() + 7); return [ini.getTime(), fin.getTime()]; }
+  if (VIS.periodo === 'mes') return [new Date(h.getFullYear(), h.getMonth(), 1).getTime(), new Date(h.getFullYear(), h.getMonth() + 1, 1).getTime()];
+  if (VIS.periodo === 'anio') return [new Date(h.getFullYear(), 0, 1).getTime(), new Date(h.getFullYear() + 1, 0, 1).getTime()];
+  const [y, mo] = VIS.mes.split('-').map(Number); return [new Date(y, mo - 1, 1).getTime(), new Date(y, mo, 1).getTime()];
+}
+function admVisitas() {
+  setTimeout(() => cargarVisitas(), 0);
+  clearInterval(visTimer); visTimer = setInterval(() => { if (admTab === 'visitas' && $('#visBody') && !document.hidden) cargarVisitas(true); else if (admTab !== 'visitas') clearInterval(visTimer); }, 20000);
+  return `<div id="visBody"><div class="mute">Cargando visitas…</div></div>`;
+}
+async function cargarVisitas(silencio) {
+  const [desde, hasta] = visRango();
+  const r = await (silencio ? apiReal : api)('adminVisitas', { desde, hasta });
+  if (!$('#visBody')) return;
+  if (!r.ok) { if (!silencio) $('#visBody').innerHTML = `<div class="empty">${esc(r.error || 'No se pudieron cargar las visitas')}</div>`; return; }
+  VIS.data = r; pintarVisitas();
+}
+const visFiltra = v => (VIS.sede === 'Todas' || v.Sede === VIS.sede) && (!VIS.busca || String(v.Nombre).toLowerCase().includes(VIS.busca.toLowerCase()));
+const visEstrellas = n => n ? `<span class="vis-est">${'★'.repeat(n)}<span class="off">${'★'.repeat(5 - n)}</span></span>` : '';
+function visAva(v, s) { return avatarHtml({ id: v.Miembro_ID, Nombre: v.Nombre, Foto: v.Foto }, s); }
+function visCal() {
+  const [y, mo] = VIS.mes.split('-').map(Number), first = new Date(y, mo - 1, 1), n = new Date(y, mo, 0).getDate(), off = (first.getDay() + 6) % 7;
+  const cuenta = {}; (VIS.data ? VIS.data.visitas : []).filter(visFiltra).forEach(v => { const k = diaKey(v.Entrada); cuenta[k] = (cuenta[k] || 0) + 1; });
+  const dias = [];
+  for (let i = 0; i < off; i++) dias.push('<span></span>');
+  for (let d = 1; d <= n; d++) { const k = VIS.mes + '-' + String(d).padStart(2, '0'); dias.push(`<button type="button" class="vis-dia ${VIS.dias.has(k) ? 'on' : ''}" onclick="visDia('${k}')">${d}${cuenta[k] ? `<small>${cuenta[k]}</small>` : ''}</button>`); }
+  return `<div class="vis-cal">
+    <div class="vis-cal-h"><input type="month" value="${VIS.mes}" onchange="VIS.mes=this.value||mesActual();VIS.dias.clear();cargarVisitas()" aria-label="Mes"><button type="button" class="btn-link" onclick="VIS.dias.clear();pintarVisitas()">Limpiar</button></div>
+    <div class="vis-sem">${['L', 'M', 'M', 'J', 'V', 'S', 'D'].map((l, i) => `<button type="button" title="Todos los ${['lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábados', 'domingos'][i]} del mes" onclick="visDiaSemana(${i})">${l}</button>`).join('')}</div>
+    <div class="vis-dias">${dias.join('')}</div>
+    <div class="mute" style="font-size:12px">Toca los días que quieres ver, o una letra de arriba para elegir todos esos días del mes (ej. <b>S</b> = todos los sábados). El número chico es cuántas visitas hubo.</div>
+  </div>`;
+}
+function visDia(k) { VIS.dias.has(k) ? VIS.dias.delete(k) : VIS.dias.add(k); pintarVisitas(); }
+function visDiaSemana(i) {
+  const [y, mo] = VIS.mes.split('-').map(Number), n = new Date(y, mo, 0).getDate(), ks = [];
+  for (let d = 1; d <= n; d++) if ((new Date(y, mo - 1, d).getDay() + 6) % 7 === i) ks.push(VIS.mes + '-' + String(d).padStart(2, '0'));
+  const todos = ks.every(k => VIS.dias.has(k)); ks.forEach(k => todos ? VIS.dias.delete(k) : VIS.dias.add(k)); pintarVisitas();
+}
+function pintarVisitas() {
+  const box = $('#visBody'), D = VIS.data; if (!box || !D) return;
+  const enfocado = document.activeElement && document.activeElement.id === 'visBusca';
+  const ahora = D.ahora + (Date.now() - (D._t || (D._t = Date.now())));
+  const dentro = D.dentro.filter(visFiltra);
+  let hist = D.visitas.filter(visFiltra);
+  if (VIS.periodo === 'dias') hist = hist.filter(v => VIS.dias.has(diaKey(v.Entrada)));
+  const cerradas = hist.filter(v => v.Salida), calif = hist.filter(v => v.Estrellas);
+  const personas = new Set(hist.map(v => v.Miembro_ID)).size;
+  const prom = calif.length ? (calif.reduce((a, v) => a + v.Estrellas, 0) / calif.length) : 0;
+  const estancia = cerradas.length ? cerradas.reduce((a, v) => a + (v.Salida - v.Entrada), 0) / cerradas.length : 0;
+  const grupos = {}; hist.forEach(v => (grupos[diaKey(v.Entrada)] = grupos[diaKey(v.Entrada)] || []).push(v));
+  const fila = v => `<div class="vis-fila">${visAva(v, 40)}
+      <div style="min-width:0;flex:1"><b>${esc(v.Nombre)}</b> <span class="vis-tipo t-${esc(v.Tipo)}">${(TIPO_ACC[v.Tipo] || TIPO_ACC.miembro)[1]}</span>${v.Sede ? ` <span class="mute" style="font-size:12px">📍 ${esc(v.Sede)}</span>` : ''}
+        <div class="vis-meta">🟢 ${horaMx(v.Entrada)} → ${v.Salida ? '🔴 ' + horaMx(v.Salida) + ' · ' + fmtDur(v.Salida - v.Entrada) : '<b>sigue dentro</b> · ' + fmtDur(ahora - v.Entrada)}</div>
+        <div class="vis-meta">Lo recibió <b>${esc(v.Recibio || '—')}</b>${v.Salida_Por ? ` · salida por <b>${esc(v.Salida_Por)}</b>` : ''}</div>
+        ${v.Nota ? `<div class="vis-meta">📝 ${esc(v.Nota)}</div>` : ''}
+        ${v.Estrellas ? `<div class="vis-meta">${visEstrellas(v.Estrellas)}${v.Comentario ? ' “' + esc(v.Comentario) + '”' : ''}</div>` : v.Salida ? '<div class="vis-meta mute">Aún no califica su visita</div>' : ''}</div>
+      ${v.Salida ? '' : `<button class="btn btn-solid btn-sm" onclick="visSalida('${v.id}','${esc(String(v.Nombre).replace(/'/g, ''))}')">Marcar salida</button>`}</div>`;
+  const tituloDia = k => { const [y, m, d] = k.split('-').map(Number); return new Date(y, m - 1, d).toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }); };
+  box.innerHTML = `
+    <div class="vis-tools"><div class="filters" style="margin:0">${['Todas', 'Tlaxcala', 'Puebla'].map(s => `<button class="chip ${s === VIS.sede ? 'on' : ''}" onclick="VIS.sede='${s}';pintarVisitas()">${s === 'Todas' ? 'Todas las sedes' : '📍 ' + s}</button>`).join('')}</div>
+      <input id="visBusca" type="search" placeholder="Buscar por nombre…" value="${esc(VIS.busca)}" oninput="VIS.busca=this.value;pintarVisitas()" autocomplete="off"></div>
+    <section class="vis-sec">
+      <h3 class="disp vis-h">Dentro ahora <span class="vis-n">${dentro.length}</span></h3>
+      ${dentro.length ? `<div class="vis-dentro">${dentro.map(v => `<div class="vis-card">
+        <div class="vis-card-top">${visAva(v, 56)}<div style="min-width:0;flex:1"><b>${esc(v.Nombre)}</b><div class="mute" style="font-size:12px">${(TIPO_ACC[v.Tipo] || TIPO_ACC.miembro)[1]}${v.Sede ? ' · 📍 ' + esc(v.Sede) : ''}</div>
+          <div class="vis-meta">Entró ${horaMx(v.Entrada)}${diaKey(v.Entrada) !== diaKey(Date.now()) ? ' (' + new Date(v.Entrada).toLocaleDateString('es-MX', { day: 'numeric', month: 'short' }) + ')' : ''} · lleva <b>${fmtDur(ahora - v.Entrada)}</b></div>
+          <div class="vis-meta">Lo recibió ${esc(v.Recibio || '—')}</div></div></div>
+        <form class="vis-nota" onsubmit="event.preventDefault();visNota('${v.id}',this.nota.value)"><input name="nota" maxlength="300" value="${esc(v.Nota || '')}" placeholder="Nota: mesa, lo acordado por mensaje…"><button class="btn btn-ghost btn-sm">Guardar</button></form>
+        <button class="btn btn-solid btn-block" onclick="visSalida('${v.id}','${esc(String(v.Nombre).replace(/'/g, ''))}')">🚪 Marcar salida</button>
+      </div>`).join('')}</div>` : '<div class="empty" style="padding:28px">No hay nadie registrado dentro en este momento.</div>'}
+    </section>
+    <section class="vis-sec">
+      <h3 class="disp vis-h">Historial</h3>
+      <div class="filters">${[['hoy', 'Hoy'], ['semana', 'Esta semana'], ['mes', 'Este mes'], ['anio', 'Este año'], ['dias', '📅 Días específicos']].map(([k, l]) => `<button class="chip ${k === VIS.periodo ? 'on' : ''}" onclick="VIS.periodo='${k}';cargarVisitas()">${l}</button>`).join('')}</div>
+      ${VIS.periodo === 'dias' ? visCal() : ''}
+      <div class="vis-stats">
+        <div><b>${hist.length}</b><span>visitas</span></div>
+        <div><b>${personas}</b><span>personas</span></div>
+        <div><b>${hist.length - cerradas.length}</b><span>siguen dentro</span></div>
+        <div><b>${estancia ? fmtDur(estancia) : '—'}</b><span>estancia promedio</span></div>
+        <div><b>${prom ? prom.toFixed(1) + ' ★' : '—'}</b><span>${calif.length} calificaci${calif.length === 1 ? 'ón' : 'ones'}</span></div>
+      </div>
+      ${VIS.periodo === 'dias' && !VIS.dias.size ? '<div class="empty" style="padding:24px">Elige uno o varios días en el calendario.</div>'
+        : Object.keys(grupos).sort().reverse().map(k => `<div class="vis-grupo"><div class="kicker vis-gh">${tituloDia(k)} · ${grupos[k].length} visita${grupos[k].length === 1 ? '' : 's'}</div>${grupos[k].map(fila).join('')}</div>`).join('')
+        || '<div class="empty" style="padding:24px">No hay visitas en este periodo.</div>'}
+    </section>`;
+  if (enfocado) { const i = $('#visBusca'); i.focus(); i.setSelectionRange(i.value.length, i.value.length); }
+}
+async function visSalida(id, nombre) {
+  if (!confirm('¿Marcar la salida de ' + nombre + ' ahora?\n\nLe llegará un mensaje para que califique su visita.')) return;
+  const r = await api('adminSalida', { id }); if (!r.ok) return toast(r.error);
+  toast('Salida registrada ✓ · le pedimos que califique su visita' + (r.correo ? ' (también por correo)' : ''));
+  const vb = $('#vb_' + id); if (vb) vb.innerHTML = '🔴 <b>Salida registrada</b> a las ' + horaMx(Date.now()) + '. Le pedimos que califique su visita.';
+  if ($('#visBody')) cargarVisitas(true);
+}
+async function visNota(id, nota) {
+  const r = await api('adminVisitaNota', { id, nota }); if (!r.ok) return toast(r.error);
+  toast('Nota guardada ✓');
+  if (VIS.data) [...VIS.data.dentro, ...VIS.data.visitas].forEach(v => { if (v.id === id) v.Nota = nota; });
+}
+/* ---------- el cliente califica su visita (1 a 5 estrellas) ---------- */
+const CAL_TXT = ['', 'Mala 😕', 'Regular 😐', 'Buena 🙂', 'Muy buena 😄', '¡Increíble! 🤩'];
+async function openCalificar(id, pre) {
+  if (!id) return;
+  const r = await api('miVisita', { id }); if (!r.ok) return toast(r.error);
+  const v = r.visita;
+  if (!v.Salida) return toast('Podrás calificar tu visita cuando salgas de Cineteca Trikles.');
+  let est = pre || v.Estrellas || 0;
+  openModal(`<form class="pad cal-form" id="calForm">
+    <div class="kicker">Tu visita a Cineteca Trikles</div>
+    <h3 class="disp" style="font-size:36px">¿Qué te pareció?</h3>
+    <div class="mute" style="font-size:13px">${new Date(v.Entrada).toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' })} · ${horaMx(v.Entrada)} a ${horaMx(v.Salida)}${v.Sede ? ' · ' + esc(v.Sede) : ''}</div>
+    <div class="star-in cal-stars" id="calStars">${[1, 2, 3, 4, 5].map(n => `<button type="button" data-n="${n}" aria-label="${n} estrellas">★</button>`).join('')}</div>
+    <div class="cal-txt" id="calTxt"></div>
+    <textarea id="calCom" rows="3" maxlength="500" placeholder="Cuéntanos (opcional): ¿qué te gustó?, ¿qué mejorarías?">${esc(v.Comentario || '')}</textarea>
+    <button class="btn btn-accent btn-block" type="submit" id="calBtn">${v.Estrellas ? 'Actualizar mi calificación' : 'Enviar calificación'}</button>
+    <button type="button" class="btn-link" onclick="lsSet('tu_calif_skip_${v.id}',true);closeModal()">Ahora no</button>
+  </form>`, true);
+  const pinta = () => { $$('#calStars button').forEach(b => b.classList.toggle('on', +b.dataset.n <= est)); $('#calTxt').textContent = CAL_TXT[est] || 'Toca las estrellas'; };
+  $$('#calStars button').forEach(b => b.onclick = () => { est = +b.dataset.n; pinta(); if (navigator.vibrate) navigator.vibrate(10); });
+  pinta();
+  $('#calForm').onsubmit = async e => {
+    e.preventDefault(); if (!est) return toast('Elige de 1 a 5 estrellas');
+    const r2 = await busy($('#calBtn'), 'Enviando…', () => api('calificarVisita', { id: v.id, estrellas: est, comentario: $('#calCom').value.trim() }));
+    if (!r2.ok) return toast(r2.error || 'No se pudo enviar');
+    lsSet('tu_calif_skip_' + v.id, true); if (S.data) S.data.porCalificar = null;
+    openModal(`<div class="pad" style="text-align:center;align-items:center"><div style="font-size:54px">💛</div><h3 class="disp" style="font-size:34px">¡Gracias!</h3><p>Tu opinión nos ayuda a que cada visita a Cineteca Trikles sea mejor.</p><button class="btn btn-ghost btn-block" onclick="closeModal()">Listo</button></div>`, true);
+  };
 }
 /* galería en el formulario del panel */
 const galLeer = () => { try { const g = JSON.parse($('#admForm').elements.Galeria.value || '[]'); return Array.isArray(g) ? g : []; } catch (_) { return []; } };
