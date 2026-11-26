@@ -761,6 +761,36 @@ footer{border-top:2px solid var(--ink)}
 .emb-link{display:block;padding:8px 12px;font-size:12px;font-weight:700;background:var(--bg3);color:var(--text);text-decoration:none}
 .reel-v .emb-ig,.reel-v .emb-fb{background:#fff}
 .o-paso{display:grid;gap:14px}
+/* ---------- edificio: inicio, visitante, credencial naranja ---------- */
+.modo-step{display:grid;gap:14px}
+.modo-btn{display:flex;gap:16px;align-items:center;text-align:left;padding:22px 20px;border:2px solid var(--text);background:var(--bg2);color:var(--text);min-height:96px;transition:transform .12s,background .15s;cursor:pointer}
+.modo-btn:hover{background:var(--bg3)}.modo-btn:active{transform:scale(.98)}
+.modo-btn b{display:block;font-size:20px;line-height:1.15}.modo-btn small{display:block;font-size:13px;color:var(--mute);margin-top:4px}
+.modo-btn.visit{border-color:#FF4D1C}.modo-btn.visit b{color:#FF4D1C}
+.modo-ico{font-size:34px;flex:none}
+.btn-xl{min-height:58px;font-size:15px}
+.vis-foto{display:flex;gap:16px;align-items:center}
+.vis-foto-prev{width:104px;height:104px;flex:none;border-radius:50%;overflow:hidden;display:grid;place-items:center;font-size:34px;background:var(--bg3);border:2px dashed var(--mute)}
+.vis-foto-prev img{width:100%;height:100%;object-fit:cover}
+.vis-foto-btns{display:grid;gap:8px}
+.org.vis,.acc-tag.t-visit,.vis-tipo.t-visit{background:#FF4D1C;color:#fff;border-color:#FF4D1C}
+.org.vis{display:inline-block;padding:4px 10px;font-size:11px;font-weight:800;letter-spacing:.08em}
+.cred-visitante{background:#FF4D1C;color:#fff;border:2px solid #ffb59e;box-shadow:0 10px 30px rgba(255,77,28,.4)}
+.cred-visitante .cred-qr{background:#fff}
+.cred-ribbon.vis{background:#fff;color:#FF4D1C;font-size:14px;letter-spacing:.3em}
+.cred-dep{font-size:16px;font-weight:800;margin-top:6px;background:rgba(0,0,0,.18);display:inline-block;padding:4px 10px;border-radius:8px}
+.acc-yo{display:flex;gap:14px;align-items:center;margin-bottom:14px}
+.acc-sec .st-box{margin-bottom:12px}
+.dep-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(220px,100%),1fr));gap:10px;margin:10px 0 14px;width:100%}
+.dep-btn{display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:16px;min-height:64px;border:2px solid var(--line);background:var(--bg2);color:var(--text);text-align:left;font-size:16px;cursor:pointer}
+.dep-btn.on{border-color:#FF4D1C;background:rgba(255,77,28,.12)}
+.dep-btn:disabled{opacity:.45;cursor:not-allowed}.dep-btn small{width:100%;font-size:12px;color:var(--mute)}
+.dep-ico{font-size:24px}
+.ed-filtros{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.ed-filtros input,.ed-filtros select{width:auto}
+.acc.ed-ok{border-color:#1f8a4c}.acc.ed-ya{border-color:var(--spray)}.acc.ed-ya .acc-banda{background:var(--spray);color:#000}
+.acc.ed-no{border-color:#d42a1e}.acc.ed-no .acc-banda{background:#d42a1e}
+.ed-foto{border-color:#FF4D1C!important}
+.aviso-txt h4{font-weight:800;margin-top:6px;color:var(--spray)}.aviso-txt ul{padding-left:18px;display:grid;gap:6px}.aviso-txt p,.aviso-txt li{font-size:14px;line-height:1.55}
 /* ---------- cursos ---------- */
 .ins.cur{background:rgba(0,209,255,.12);color:var(--cian)}
 .acc-tag.t-curso{color:var(--cian)}
@@ -835,15 +865,35 @@ footer{border-top:2px solid var(--ink)}
   </div>
   <div class="gate-form">
     <div>
-      <div class="kicker">Acceso para miembros</div>
+      <div class="kicker">Cineteca Trikles · Tri-Urban</div>
       <h2 class="disp" style="font-size:44px;margin-top:8px">Bienvenido <span class="it" style="color:var(--gold)">a casa</span></h2>
     </div>
+    <!-- Paso 0: ¿comunidad o visitante? (el dispositivo lo recuerda) -->
+    <div id="modoStep" class="modo-step" hidden>
+      <button type="button" class="modo-btn" onclick="elegirModo('comunidad')"><span class="modo-ico">🔑</span><span><b>Soy de la Comunidad Trikles</b><small>Entro con la llave Trikles</small></span></button>
+      <button type="button" class="modo-btn visit" onclick="elegirModo('visitante')"><span class="modo-ico">👋</span><span><b>Soy visitante o acompañante</b><small>Vengo a un departamento del edificio o a la Cineteca</small></span></button>
+      <button type="button" class="btn-link" onclick="openAviso()">Aviso de privacidad</button>
+    </div>
+    <!-- Visitante: perfil sin llave -->
+    <form id="fVisit" class="field" style="gap:14px" hidden novalidate>
+      <div class="kicker">Visitante · se hace una sola vez</div>
+      <div class="vis-foto"><div class="vis-foto-prev" id="vfPrev">📷</div>
+        <div class="vis-foto-btns"><label class="btn btn-accent btn-sm" style="cursor:pointer">📷 Tomar foto<input type="file" accept="image/*" capture="user" hidden onchange="fotoVisitante(this)"></label>
+          <label class="btn btn-ghost btn-sm" style="cursor:pointer">🖼️ Subir foto<input type="file" accept="image/*" hidden onchange="fotoVisitante(this)"></label></div></div>
+      <div class="field"><label for="vNombre">Nombre completo</label><input id="vNombre" maxlength="60" autocomplete="name" placeholder="Nombre y apellido"></div>
+      <div class="field"><label for="vEdad">Edad</label><input id="vEdad" type="number" inputmode="numeric" min="1" max="110" placeholder="Años"></div>
+      <label class="toggle"><input type="checkbox" id="vAviso"> <span>Acepto el <a href="#" onclick="event.preventDefault();openAviso()">aviso de privacidad</a></span></label>
+      <div class="err" id="vErr"></div>
+      <button class="btn btn-accent btn-block btn-xl" type="submit" id="vBtn">Crear mi acceso</button>
+      <button type="button" class="btn-link" onclick="elegirModo('')">← Volver</button>
+    </form>
     <!-- Paso 1: la llave Trikles se pide en cada visita -->
     <form id="fLlave" class="field" style="gap:14px" autocomplete="off">
       <div class="lock-note">🔑 <span>Esta es una comunidad privada. Escribe la <b style="color:var(--text)">llave Trikles</b> para entrar.</span></div>
       <div class="field"><label for="kLlave">Llave Trikles</label><input id="kLlave" type="password" required autocomplete="off" spellcheck="false" autocapitalize="characters"></div>
       <div class="err" id="kErr"></div>
       <button class="btn btn-solid btn-block" type="submit">Abrir</button>
+      <button type="button" class="btn-link" onclick="elegirModo('')">← No soy de la comunidad</button>
     </form>
     <!-- Paso 2: cuenta (solo si no hay sesión) -->
     <div id="authStep" hidden style="display:flex;flex-direction:column;gap:22px">
@@ -1449,8 +1499,56 @@ const Demo = (() => {
   A.miQR = (d, m) => {
     if (!m.Foto) return { ok: false, error: 'FOTO' };
     if (!m.QR_Token || d.regenerar) { m.QR_Token = 'tq' + Array.from(crypto.getRandomValues(new Uint8Array(16)), b => b.toString(16).padStart(2, '0')).join(''); save(); }
-    return { ok: true, qr: 'TRIKLES-' + m.QR_Token, tipo: tipoDemo(m), perfil: perfilDemo(m) };
+    const dep = m.Acceso_Hasta > Date.now() ? deptosD().find(x => x.id === m.Acceso_Depto) : null;
+    return { ok: true, qr: 'TRIKLES-' + m.QR_Token, tipo: ROLES_EDIF.includes(m.Rol) ? m.Rol : tipoDemo(m), perfil: { ...perfilDemo(m), Edad: m.Edad || 0 }, depto: dep ? dep.Nombre : '', deptoHasta: dep ? m.Acceso_Hasta : 0 };
   };
+  /* ---- edificio (demo) ---- */
+  db.deptos = db.deptos || []; db.edif = db.edif || [];
+  function deptosD() { if (!db.deptos.some(x => x.Es_Cineteca)) { db.deptos.push({ id: 'dcineteca', Nombre: 'Cineteca Trikles', Inquilino_ID: '', Es_Cineteca: true, Activo: true }); save(); } return db.deptos; }
+  const restrD = r => !!r && ROLES_EDIF.includes(r.Rol);
+  const pubE = m => ({ ...pub(m), Edad: m.Edad || 0, Depto_ID: m.Depto_ID || '', Acceso_Depto: m.Acceso_Hasta > Date.now() ? m.Acceso_Depto || '' : '', Acceso_Hasta: m.Acceso_Hasta || 0 });
+  const puedeD = m => m.Rol === 'admin' || m.Rol === 'casero' || (m.Rol === 'inquilino' && !!m.Depto_ID);
+  A.registroVisitante = d => {
+    const nombre = String(d.nombre || '').trim(), edad = Math.floor(+d.edad || 0);
+    if (nombre.split(/\s+/).length < 2) return { ok: false, error: 'Escribe tu nombre completo (nombre y apellido).' };
+    if (edad < 1 || edad > 110) return { ok: false, error: 'Escribe tu edad.' }; if (!d.aviso) return { ok: false, error: 'Para continuar acepta el aviso de privacidad.' };
+    const m = { id: uid('v'), Nombre: nombre, Email: '', Rol: 'visitante', Foto: 'data:' + d.mime + ';base64,' + d.data, Edad: edad, Activo: true, Fecha: Date.now() };
+    db.miembros.push(m); const t = uid('t'); db.sesiones[t] = m.id; save(); return { ok: true, token: t, me: pubE(m) };
+  };
+  A.deptos = () => ({ ok: true, deptos: deptosD().filter(x => x.Activo !== false).sort((a, b) => (b.Es_Cineteca ? 1 : 0) - (a.Es_Cineteca ? 1 : 0) || a.Nombre.localeCompare(b.Nombre, 'es', { numeric: true })) });
+  A.miAcceso = (d, m) => { const dep = deptosD().find(x => x.id === d.depto && x.Activo !== false); if (!dep) return { ok: false, error: 'Elige un departamento de la lista.' };
+    if (dep.Es_Cineteca && restrD(m) && m.Edad && m.Edad < 18) return { ok: false, error: 'MENOR' };
+    m.Acceso_Depto = dep.id; m.Acceso_Hasta = Date.now() + 24 * 3600e3; save(); return { ok: true, me: pubE(m), depto: dep.Nombre }; };
+  A.guardarVisitante = (d, m) => { if (!restrD(m)) return { ok: false, error: 'Solo para cuentas de visitante.' }; const n = String(d.nombre || '').trim(), e = Math.floor(+d.edad || 0);
+    if (n.split(/\s+/).length < 2) return { ok: false, error: 'Escribe tu nombre completo (nombre y apellido).' }; if (e < 1 || e > 110) return { ok: false, error: 'Escribe tu edad.' };
+    m.Nombre = n; m.Edad = e; save(); return { ok: true, me: pubE(m) }; };
+  A.miDepto = (d, m) => { if (m.Rol !== 'inquilino') return { ok: false, error: 'Solo los inquilinos registran su departamento.' }; const n = String(d.nombre || '').trim(); if (n.length < 2) return { ok: false, error: 'Escribe el nombre o número de tu departamento.' };
+    if (deptosD().some(x => x.id !== m.Depto_ID && x.Nombre.toLowerCase() === n.toLowerCase())) return { ok: false, error: 'Ya existe un departamento con ese nombre.' };
+    let x = db.deptos.find(k => k.id === m.Depto_ID); if (x) x.Nombre = n; else { x = { id: uid('d'), Nombre: n, Inquilino_ID: m.id, Es_Cineteca: false, Activo: true }; db.deptos.push(x); m.Depto_ID = x.id; } save(); return { ok: true, depto: x }; };
+  function escD(d, m) {
+    const tok = (String(d.codigo || '').match(/tq[0-9a-f]{32}/i) || [])[0], r = tok && db.miembros.find(x => x.QR_Token === tok.toLowerCase());
+    if (!r) return { ok: true, existe: false };
+    const restr = restrD(r), cine = deptosD().find(x => x.Es_Cineteca);
+    let depId = d.depto || (restr ? (r.Acceso_Hasta > Date.now() ? r.Acceso_Depto : '') : cine.id); if (!depId && m.Rol === 'inquilino') depId = m.Depto_ID;
+    const dep = db.deptos.find(x => x.id === depId && x.Activo !== false);
+    const base = { ok: true, existe: true, edificio: true, activo: r.Activo !== false, persona: { Nombre: r.Nombre, Foto: r.Foto || '', Edad: r.Edad || 0, Tipo: restr ? r.Rol : 'comunidad' }, depto: dep || null };
+    if (!base.activo) return { ...base, estado: 'inactivo' };
+    if (!dep) return { ...base, estado: 'sinDepto', deptos: db.deptos.filter(x => x.Activo !== false) };
+    if (m.Rol === 'inquilino' && dep.id !== m.Depto_ID) return { ...base, estado: 'otroDepto' };
+    if (dep.Es_Cineteca && restr && r.Edad && r.Edad < 18) return { ...base, estado: 'menor' };
+    const ab = db.edif.filter(e => e.Persona_ID === r.id && !e.Salida && e.Entrada > Date.now() - 18 * 3600e3).pop();
+    if (ab) return { ...base, estado: 'yaDentro', entrada: ab };
+    const e = { id: uid('e'), Persona_ID: r.id, Nombre: r.Nombre, Edad: r.Edad || 0, Tipo: base.persona.Tipo, Depto_ID: dep.id, Depto: dep.Nombre, Entrada: Date.now(), Salida: 0, Registro: m.Nombre, Registro_Rol: m.Rol, Salida_Por: '' };
+    db.edif.push(e); save(); return { ...base, estado: 'registrado', entrada: e };
+  }
+  A.edEscanear = (d, m) => puedeD(m) ? escD(d, m) : { ok: false, error: m.Rol === 'inquilino' ? 'Primero da de alta tu departamento.' : 'No tienes permiso para escanear.' };
+  A.edBitacora = (d, m) => { if (!puedeD(m)) return { ok: false, error: 'No tienes permiso.' };
+    const mio = m.Rol === 'inquilino' ? m.Depto_ID : '', f = mio || d.depto || '', fotos = {}; db.miembros.forEach(r => fotos[r.id] = r.Foto || '');
+    const t = db.edif.filter(e => !f || e.Depto_ID === f).map(e => ({ ...e, Foto: fotos[e.Persona_ID] || '' }));
+    return { ok: true, ahora: Date.now(), deptos: deptosD().filter(x => !mio || x.id === mio), dentro: t.filter(e => !e.Salida), entradas: t.filter(e => e.Entrada >= +d.desde && e.Entrada < +d.hasta).sort((a, b) => b.Entrada - a.Entrada) }; };
+  A.edSalida = (d, m) => { const e = db.edif.find(x => x.id === d.id); if (!e) return { ok: false, error: 'Registro no encontrado' };
+    if (m.Rol === 'inquilino' && e.Depto_ID !== m.Depto_ID) return { ok: false, error: 'Solo puedes marcar la salida de tus visitas.' }; if (e.Salida) return { ok: false, error: 'Ya tenía su salida registrada.' };
+    e.Salida = Date.now(); e.Salida_Por = m.Nombre; save(); return { ok: true }; };
   A.misPedidos = (d, m) => ({ ok: true, pedidos: db.pedidos.filter(p => p.Miembro_ID === m.id).slice().reverse(), config: db.config });
   /* ---- administración ---- */
   const TAB = { Productos: 'productos', Artistas: 'artistas', Subastas: 'subastas', Opiniones: 'opiniones', Comentarios: 'comentarios' };
@@ -1459,6 +1557,7 @@ const Demo = (() => {
       const tok = (String(d.codigo || '').match(/tq[0-9a-f]{32}/i) || [])[0];
       const r = tok && db.miembros.find(x => x.QR_Token === tok.toLowerCase());
       if (!r) return { ok: true, existe: false };
+      if (restrD(r)) return escD(d, m);
       db.accesos = db.accesos || [];
       const previos = db.accesos.filter(a => a.Miembro_ID === r.id && a.Resultado === 'Permitido'), activo = r.Activo !== false, tipo = tipoDemo(r);
       const art = r.Artista_ID ? db.artistas.find(a => a.id === r.Artista_ID) : null;
@@ -1476,6 +1575,9 @@ const Demo = (() => {
         pedidos: db.pedidos.slice().reverse().map(p => ({ ...p, Nombre: (db.miembros.find(x => x.id === p.Miembro_ID) || {}).Nombre || p.Nombre || '', Email: (db.miembros.find(x => x.id === p.Miembro_ID) || {}).Email || '' })),
         miembros: db.miembros.map(m => ({ ...pub(m), Activo: m.Activo !== false })), config: db.config, seguimiento: segDemo(null, true) };
     },
+    adminDeptos() { return { ok: true, deptos: deptosD().map(x => ({ ...x, Inquilino: (db.miembros.find(r => r.id === x.Inquilino_ID) || {}).Nombre || '' })), edificio: db.miembros.filter(restrD).map(r => ({ id: r.id, Nombre: r.Nombre, Rol: r.Rol, Foto: r.Foto || '', Edad: r.Edad || 0, Depto_ID: r.Depto_ID || '', Activo: r.Activo !== false, Fecha: r.Fecha || 0 })) }; },
+    adminDeptoSave(d) { const n = String(d.Nombre || '').trim(); if (n.length < 2) return { ok: false, error: 'Escribe el nombre del departamento.' };
+      let x = d.id && db.deptos.find(k => k.id === d.id); if (x) { x.Nombre = n; x.Activo = d.Activo !== false; } else { x = { id: uid('d'), Nombre: n, Inquilino_ID: '', Es_Cineteca: false, Activo: true }; db.deptos.push(x); } save(); return { ok: true, id: x.id }; },
     adminCursos() {
       return { ok: true, cursos: db.cursos.map(c => ({ Activo: true, ...c })), inscripciones: db.insc.filter(i => i.Estado !== 'Baja').map(i => { const r = perD(i.Miembro_ID) || {}; return { ...i, Nombre: r.Nombre || '—', Foto: r.Foto || '', Email: r.Email || '' }; }) };
     },
@@ -1537,6 +1639,7 @@ const Demo = (() => {
     adminMiembro(d, m) {
       const x = db.miembros.find(y => y.id === d.id); if (!x) return { ok: false };
       if (d.id === m.id && ((d.Rol && d.Rol !== 'admin') || d.Activo === false)) return { ok: false, error: 'No puedes quitarte tu propio acceso de administrador.' };
+      if (d.Rol !== undefined && restrD(x) !== ROLES_EDIF.includes(d.Rol)) return { ok: false, error: restrD(x) ? 'Esta cuenta es de visitante: solo puede ser visitante, casero o inquilino.' : 'Los roles del edificio son para cuentas de visitante.' };
       ['Rol', 'Artista_ID', 'Activo', 'Puesto', 'Equipo_Estado', 'Foto'].forEach(k => { if (d[k] !== undefined) x[k] = d[k]; }); save(); return { ok: true };
     },
     adminConfig(d) { Object.assign(db.config, d.config || {}); save(); return { ok: true }; },
@@ -1561,9 +1664,14 @@ const Demo = (() => {
   return {
     run(action, d, token) {
       const fn = A[action]; if (!fn) return { ok: false, error: 'Acción desconocida' };
-      if (['register', 'login', 'olvide', 'restablecer'].includes(action)) return fn(d);
+      if (['register', 'login', 'olvide', 'restablecer', 'registroVisitante'].includes(action)) return fn(d);
       if (action === 'llave') return fn({ ...d, token });
       const m = who(token); if (!m) { logout(true); return { ok: false, error: 'SESION' }; }
+      if (ROLES_EDIF.includes(m.Rol) && !['me', 'logout', 'catalog', 'artista', 'subasta', 'pujar', 'pedido', 'misPedidos', 'miQR', 'subirMiFoto', 'deptos', 'miAcceso', 'guardarVisitante', 'edEscanear', 'edBitacora', 'edSalida', 'miDepto'].includes(action))
+        return { ok: false, error: 'Esta sección es solo para la Comunidad Trikles.' };
+      if (action === 'me') return { ok: true, me: pubE(m) };
+      if (action === 'catalog' && ROLES_EDIF.includes(m.Rol)) { const c = fn(d, m, token); return { ...c, vivos: [], avisos: [], porCalificar: null, artistas: c.artistas.map(a => ({ ...a, Perfil_ID: '' })) }; }
+      if (action === 'artista' && ROLES_EDIF.includes(m.Rol)) { const c = fn(d, m, token); return c.ok ? { ...c, opiniones: [], artista: { ...c.artista, Perfil_ID: '' } } : c; }
       return fn(d, m, token);
     }
   };
@@ -1574,17 +1682,41 @@ const Demo = (() => {
    ===================================================================== */
 // La llave Trikles se pide en cada carga de la página (vive solo en memoria, nunca se guarda).
 let llaveAbierta = false;
+const MODO_K = 'tu_modo'; // 'comunidad' | 'visitante' | '' (este dispositivo recuerda la elección)
+const ROLES_EDIF = ['visitante', 'casero', 'inquilino'];
+const esRestr = () => !!S.me && ROLES_EDIF.includes(S.me.Rol);
+function elegirModo(m) { lsSet(MODO_K, m); showGate(); }
 function showGate() {
-  $('#gate').hidden = false; $('#app').hidden = true; $('#demoHint').hidden = !DEMO;
-  $('#fLlave').hidden = llaveAbierta; $('#authStep').hidden = !llaveAbierta;
-  setTimeout(() => (llaveAbierta ? $('#lEmail') : $('#kLlave')).focus(), 50);
+  const modo = lsGet(MODO_K, '');
+  $('#gate').hidden = false; $('#app').hidden = true; $('#demoHint').hidden = !DEMO || modo !== 'comunidad';
+  $('#modoStep').hidden = !!modo; $('#fVisit').hidden = modo !== 'visitante';
+  $('#fLlave').hidden = modo !== 'comunidad' || llaveAbierta; $('#authStep').hidden = modo !== 'comunidad' || !llaveAbierta;
+  if (modo === 'comunidad') setTimeout(() => (llaveAbierta ? $('#lEmail') : $('#kLlave')).focus(), 50);
 }
+/* ---------- visitante: alta sin llave ---------- */
+let fotoVis = null;
+async function fotoVisitante(inp) {
+  const file = inp.files[0]; inp.value = ''; if (!file) return;
+  try { const f = await recortarFoto(file); if (!f) return; fotoVis = f; $('#vfPrev').innerHTML = `<img src="data:${f.mime};base64,${f.data}" alt="Tu foto">`; $('#vErr').textContent = ''; }
+  catch (e) { toast(e && e.message === 'formato' ? MSG_FORMATO : 'No se pudo leer la foto. Prueba con otra.'); }
+}
+$('#fVisit').onsubmit = async e => {
+  e.preventDefault(); const err = $('#vErr'); err.textContent = '';
+  const nombre = $('#vNombre').value.trim().replace(/\s+/g, ' '), edad = Math.floor(+$('#vEdad').value || 0);
+  const falta = !fotoVis ? 'Toma o sube tu foto (se usa para reconocerte en la entrada).' : nombre.split(' ').length < 2 ? 'Escribe tu nombre completo (nombre y apellido).'
+    : edad < 1 || edad > 110 ? 'Escribe tu edad.' : !$('#vAviso').checked ? 'Para continuar acepta el aviso de privacidad.' : '';
+  if (falta) { err.textContent = falta; return; }
+  const j = await busy($('#vBtn'), 'Creando…', () => api('registroVisitante', { nombre, edad, data: fotoVis.data, mime: fotoVis.mime, aviso: true }));
+  if (!j.ok) { err.textContent = j.error || 'No se pudo crear tu acceso. Intenta de nuevo.'; return; }
+  S.token = j.token; S.me = j.me; lsSet(LS.token, j.token); fotoVis = null;
+  toast('¡Listo, ' + nombre.split(' ')[0] + '! Ya tienes tu acceso.'); location.hash = '#acceso'; enterApp();
+};
 $('#fLlave').onsubmit = async e => {
   e.preventDefault(); $('#kErr').textContent = '';
   const clave = $('#kLlave').value;
   const j = await busy(e.submitter || $('#fLlave button'), 'Abriendo…', () => api('llave', { clave }));
   if (!j.ok) { $('#kErr').textContent = j.error; $('#kLlave').select(); return; }
-  llaveAbierta = true; $('#kLlave').value = ''; $('#rClave').value = clave;
+  llaveAbierta = true; $('#kLlave').value = ''; $('#rClave').value = clave; lsSet(MODO_K, 'comunidad');
   if (j.me) { S.me = j.me; return enterApp(); } // ya tenía sesión: entra directo
   if (S.token) { S.token = ''; lsSet(LS.token, ''); }   // sesión vencida
   showGate();
@@ -1592,11 +1724,13 @@ $('#fLlave').onsubmit = async e => {
 async function enterApp() {
   $('#gate').hidden = true; $('#app').hidden = false;
   pintarMeBtn();
-  revisarMensajes(); clearInterval(msgTimer); msgTimer = setInterval(revisarMensajes, 30000);
+  $('#msgBtn').hidden = esRestr(); clearInterval(msgTimer);
+  if (!esRestr()) { revisarMensajes(); msgTimer = setInterval(revisarMensajes, 30000); }
   if (DEMO && !$('.demo-flag')) document.body.insertAdjacentHTML('beforeend', '<div class="demo-flag">Demo</div>');
   await loadCatalog();
   route();
   const nuevo = S.recienLlegado; S.recienLlegado = null;
+  if (esRestr()) return; // visitantes, casero e inquilinos: sin bienvenida de la comunidad
   if (nuevo || (!S.me.Foto && !lsGet('tu_onb_' + S.me.id, false))) setTimeout(() => openBienvenida(nuevo ? nuevo.artista : false), 350);
   else { const pc = S.data && S.data.porCalificar; if (pc && !lsGet('tu_calif_skip_' + pc.id, false) && $('#modal').hidden) setTimeout(() => openCalificar(pc.id), 700); }
 }
@@ -1605,8 +1739,12 @@ async function loadCatalog() {
   if (j.ok) S.data = j;
 }
 function logout(silent) {
+  const restr = esRestr();
+  if (!silent && restr && !confirm('Si cierras sesión tendrás que crear tu acceso de nuevo (tu cuenta de visitante no tiene contraseña). ¿Cerrar sesión?')) return;
   if (!silent && S.token) api('logout').catch(() => {});
-  S.token = ''; S.me = null; lsSet(LS.token, ''); stopTimers(); clearInterval(msgTimer); closeModal(); showGate();
+  S.token = ''; S.me = null; lsSet(LS.token, ''); stopTimers(); clearInterval(msgTimer); closeModal();
+  if (restr && !silent) lsSet(MODO_K, '');
+  showGate();
 }
 $$('[data-gtab]').forEach(b => b.onclick = () => {
   $$('[data-gtab]').forEach(x => x.classList.toggle('on', x === b));
@@ -1673,15 +1811,19 @@ const SECCIONES = [
   ['inicio', 'Inicio', '◐'], ['feed', 'Feed', '▦'], ['tienda', 'Tri-Urban', '▲'], ['colabs', 'Arte × Urban', '✦'],
   ['galeria', 'Galería', '▣'], ['subastas', 'Subastas', '⚑'], ['artistas', 'Artistas', '☺'], ['comunidad', 'Comunidad', '◎'], ['vivo', 'En vivo', '●'], ['cursos', 'Cursos', '🎓'], ['pedidos', 'Pedidos', '📦'],
 ];
-const SIN_TABBAR = ['galeria', 'pedidos', 'subastas', 'cursos']; // en el celular se llega desde Inicio y el menú
+const SIN_TABBAR = ['galeria', 'pedidos', 'subastas', 'cursos'];
+// Lo que ven las cuentas del edificio (sin llave): ventas, artistas y su acceso. El servidor bloquea todo lo demás.
+const SEC_EDIF = [['acceso', 'Mi acceso', '🎟️'], ['tienda', 'Tri-Urban', '▲'], ['colabs', 'Arte × Urban', '✦'], ['galeria', 'Galería', '▣'], ['subastas', 'Subastas', '⚑'], ['artistas', 'Artistas', '☺'], ['pedidos', 'Pedidos', '📦']];
+const secciones = () => !esRestr() ? SECCIONES : S.me.Rol === 'visitante' ? SEC_EDIF : [['edificio', 'Edificio', '🏢'], ...SEC_EDIF];
+CORTO['Mi acceso'] = 'Acceso'; // en el celular se llega desde Inicio y el menú
 let timers = [];
 var reelObs = null;
 function stopTimers() { timers.forEach(clearInterval); timers = []; if (typeof pararCamara === 'function') pararCamara(); if (reelObs) { reelObs.disconnect(); reelObs = null; } }
 function renderNav(cur) {
   const live = (S.data?.vivos || []).some(v => v.Estado === 'envivo');
-  $('#nav').innerHTML = SECCIONES.map(([k, l]) => `<a href="#${k}" class="${k === cur ? 'on' : ''}">${l}${k === 'vivo' && live ? '<span class="dot"></span>' : ''}</a>`).join('') + (S.me.Rol === 'admin' ? `<a href="#admin" class="${cur === 'admin' ? 'on' : ''}">⚙ Panel</a>` : '');
+  $('#nav').innerHTML = secciones().map(([k, l]) => `<a href="#${k}" class="${k === cur ? 'on' : ''}">${l}${k === 'vivo' && live ? '<span class="dot"></span>' : ''}</a>`).join('') + (S.me.Rol === 'admin' ? `<a href="#admin" class="${cur === 'admin' ? 'on' : ''}">⚙ Panel</a>` : '');
   const adm = S.me.Rol === 'admin';
-  $('#tabbar').innerHTML = SECCIONES.filter(s => !SIN_TABBAR.includes(s[0]) && !(adm && s[0] === 'inicio')).map(([k, l, i]) => `<a href="#${k}" class="${k === cur ? 'on' : ''}"><i>${k === 'vivo' && live ? '🔴' : i}</i>${CORTO[l] || l}</a>`).join('')
+  $('#tabbar').innerHTML = secciones().filter(s => !SIN_TABBAR.includes(s[0]) && !(adm && s[0] === 'inicio')).map(([k, l, i]) => `<a href="#${k}" class="${k === cur ? 'on' : ''}"><i>${k === 'vivo' && live ? '🔴' : i}</i>${CORTO[l] || l}</a>`).join('')
     + (adm ? `<a href="#admin" class="${cur === 'admin' ? 'on' : ''}"><i>⚙</i>Panel</a>` : '');
 }
 function route() {
@@ -1695,9 +1837,9 @@ function route() {
     return route();
   }
   const esAdmin = S.me.Rol === 'admin' && sec === 'admin';
-  const k = esAdmin ? 'admin' : SECCIONES.some(s => s[0] === sec) ? sec : 'inicio';
+  const k = esAdmin ? 'admin' : secciones().some(s => s[0] === sec) ? sec : secciones()[0][0];
   renderNav(k);
-  const V = { inicio: vInicio, feed: vFeed, tienda: vTienda, colabs: vColabs, galeria: vGaleria, subastas: vSubastas, artistas: vArtistas, vivo: vVivo, admin: vAdmin, comunidad: vComunidad, pedidos: vPedidos, cursos: vCursos }[k];
+  const V = { inicio: vInicio, feed: vFeed, tienda: vTienda, colabs: vColabs, galeria: vGaleria, subastas: vSubastas, artistas: vArtistas, vivo: vVivo, admin: vAdmin, comunidad: vComunidad, pedidos: vPedidos, cursos: vCursos, acceso: vAcceso, edificio: vEdificio }[k];
   $('#view').innerHTML = V(arg) + footer();
   window.scrollTo(0, 0);
   tickCountdowns(); timers.push(setInterval(tickCountdowns, 1000));
@@ -1709,7 +1851,7 @@ function route() {
 }
 window.addEventListener('hashchange', route);
 function footer() {
-  return `<footer><span>TRI—URBAN × Cineteca Trikles · San Pedro Muñoztla, Tlaxcala</span><span>Comunidad privada — lo que pasa aquí, se queda aquí.</span></footer>`;
+  return `<footer><span>TRI—URBAN × Cineteca Trikles · San Pedro Muñoztla, Tlaxcala</span><span>${esRestr() ? '' : 'Comunidad privada — lo que pasa aquí, se queda aquí. · '}<a href="#" onclick="event.preventDefault();openAviso()">Aviso de privacidad</a></span></footer>`;
 }
 
 /* ---------- helpers de datos ---------- */
@@ -2012,6 +2154,7 @@ async function openArtista(id) {
       <div>${j.opiniones.map(o => `<div class="review"><div class="h"><span><b>${esc(o.Nombre)}</b> ${stars(o.Estrellas)}</span><span class="mute">${new Date(+o.Fecha).toLocaleDateString('es-MX', { day: 'numeric', month: 'short' })}${S.me.Rol === 'admin' ? ` <button class="mod-x" title="Borrar opinión" onclick="admBorrarOpinion('${o.id}','${a.id}')">✕</button>` : ''}</span></div>
         ${o.Texto ? `<p style="margin-top:6px">${esc(o.Texto)}</p>` : ''}${o.Recomienda ? '<div class="rec" style="margin-top:6px">✓ Lo recomienda</div>' : ''}</div>`).join('') || '<div class="mute">Aún no hay opiniones. ¡Sé el primero!</div>'}</div>
     </div>`);
+  if (esRestr()) { const op = $('#opForm'); if (op) op.closest('.pad').remove(); return; } // visitantes: sin opiniones de la comunidad
   if (a.Perfil_ID) pintarGridPerfil('artPosts', a.Perfil_ID);
   $$('#starIn button').forEach(b => b.onclick = () => { est = +b.dataset.n; $$('#starIn button').forEach(x => x.classList.toggle('on', +x.dataset.n <= est)); });
   $('#opForm').onsubmit = async e => {
@@ -2104,7 +2247,16 @@ async function checkout(btn) {
   route();
 }
 $('#cartBtn').onclick = openCart;
-$('#meBtn').onclick = () => openModal(`<div class="pad">${avatarHtml(S.me, 64)}
+$('#meBtn').onclick = () => esRestr() ? openModal(`<div class="pad">${avatarHtml(S.me, 64)}
+  <h3 class="it" style="font-size:30px">${esc(S.me.Nombre)}</h3>
+  <div><span class="org vis">${(TIPO_ACC[S.me.Rol] || TIPO_ACC.visitante)[1]}</span>${S.me.Edad ? ` <span class="mute">${S.me.Edad} años</span>` : ''}</div>
+  <a class="btn btn-accent btn-block" href="#acceso" onclick="closeModal()">🎟️ Mi acceso (QR)</a>
+  ${S.me.Rol !== 'visitante' ? '<a class="btn btn-gold btn-block" href="#edificio" onclick="closeModal()">🏢 Edificio: escanear y bitácora</a>' : ''}
+  <button class="btn btn-ghost btn-block" onclick="openMisDatos()">✏️ Mis datos y foto</button>
+  <button class="btn btn-solid btn-block" onclick="openMisPedidos()">Mis pedidos</button>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%"><a class="btn btn-ghost" href="#subastas" onclick="closeModal()">⚑ Subastas</a><a class="btn btn-ghost" href="#galeria" onclick="closeModal()">▣ Galería</a></div>
+  <button class="btn-link" onclick="openAviso()">Aviso de privacidad</button>
+  <button class="btn btn-ghost btn-block" onclick="logout()">Cerrar sesión</button></div>`, true) : openModal(`<div class="pad">${avatarHtml(S.me, 64)}
   <h3 class="it" style="font-size:30px">${esc(S.me.Nombre)}</h3><div class="mute">${esc(S.me.Email)}</div>
   ${S.me.Equipo_Estado === 'Aprobado' ? `<div class="insignias">${insignias({ Equipo: true, Puesto: S.me.Puesto })}</div>` : ''}
   <button class="btn btn-accent btn-block" onclick="openMiQR()">🎟️ Generar mi QR de acceso</button>
@@ -2860,7 +3012,7 @@ async function openMiArtista() {
    PANEL DE ADMINISTRACIÓN (#admin) — el backend valida Rol = admin
    ===================================================================== */
 let ADM = null, admTab = 'pedidos', pedFiltro = 'Pendiente';
-const ADM_TABS = [['escanear', '📷 Escanear QR'], ['visitas', '🚪 Visitas'], ['cursos', '🎓 Cursos'], ['pedidos', 'Pedidos'], ['seguimiento', '📦 Seguimiento'], ['colabs', '✦ Colabs'], ['productos', 'Productos'], ['artistas', 'Artistas'], ['subastas', 'Subastas'], ['miembros', 'Miembros'], ['ajustes', 'Pagos']];
+const ADM_TABS = [['escanear', '📷 Escanear QR'], ['visitas', '🚪 Visitas'], ['edificio', '🏢 Edificio'], ['cursos', '🎓 Cursos'], ['pedidos', 'Pedidos'], ['seguimiento', '📦 Seguimiento'], ['colabs', '✦ Colabs'], ['productos', 'Productos'], ['artistas', 'Artistas'], ['subastas', 'Subastas'], ['miembros', 'Miembros'], ['ajustes', 'Pagos']];
 const FORMS = {
   Productos: [
     ['Tipo', 'Tipo', 'select', [['prenda', 'Prenda Tri-Urban'], ['colab', 'Arte × Urban (colab)'], ['obra', 'Obra de galería']]],
@@ -2923,7 +3075,8 @@ function renderAdmin() {
   $$('#admTabs .tab-dot').forEach(d => { const n = { artistas: pendArt, pedidos: pendPed, miembros: pendEq }[d.dataset.tab] || 0; d.textContent = n || ''; d.hidden = !n; });
   if (admTab !== 'escanear' || camAbierta) pararCamara();
   if (admTab !== 'visitas') clearInterval(visTimer);
-  const R = { escanear: admEscanear, visitas: admVisitas, cursos: admCursos, pedidos: admPedidos, seguimiento: admSeguimiento, colabs: admColabs, productos: admProductos, artistas: admArtistas, subastas: admSubastas, miembros: admMiembros, ajustes: admAjustes }[admTab];
+  if (admTab !== 'edificio') clearInterval(edTimer);
+  const R = { escanear: admEscanear, visitas: admVisitas, edificio: admEdificio, cursos: admCursos, pedidos: admPedidos, seguimiento: admSeguimiento, colabs: admColabs, productos: admProductos, artistas: admArtistas, subastas: admSubastas, miembros: admMiembros, ajustes: admAjustes }[admTab];
   $('#admBody').innerHTML = R(); tickCountdowns();
 }
 const nombreArtista = id => (ADM.artistas.find(a => a.id === id) || {}).Nombre || '—';
@@ -3082,7 +3235,8 @@ const BORRADORES = {};
 /* =====================================================================
    ACCESO A CINETECA TRIKLES: QR único por miembro + escáner (admins)
    ===================================================================== */
-const TIPO_ACC = { equipo: ['⭐', 'Equipo Trikles', 'Acceso premium'], artista: ['🎨', 'Artista Trikles', 'Acceso de artista'], miembro: ['◐', 'Comunidad Trikles', 'Acceso de miembro'] };
+const TIPO_ACC = { equipo: ['⭐', 'Equipo Trikles', 'Acceso premium'], artista: ['🎨', 'Artista Trikles', 'Acceso de artista'], miembro: ['◐', 'Comunidad Trikles', 'Acceso de miembro'],
+  visitante: ['👋', 'Visitante', 'Acceso de visitante'], casero: ['🏢', 'Administración del edificio', 'Acceso del edificio'], inquilino: ['🏠', 'Inquilino', 'Acceso de inquilino'], comunidad: ['◐', 'Comunidad Trikles', 'Va a la Cineteca'] };
 const cargarScript = src => new Promise((ok, bad) => {
   if (document.querySelector(`script[src="${src}"]`) && (src.includes('qrcode@') ? window.QRCode : window.Html5Qrcode)) return ok();
   const s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = () => bad(new Error('lib')); document.head.appendChild(s);
@@ -3096,6 +3250,7 @@ async function openMiQR(regenerar) {
     <button class="btn btn-accent btn-block" onclick="openMiPerfil()">📷 Subir mi foto</button></div>`, true);
   if (!j.ok) return toast(j.error || 'No se pudo generar tu QR');
   try { await cargarScript('https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.js'); } catch (_) { return toast('No se pudo cargar el generador de QR. Revisa tu internet.'); }
+  if (ROLES_EDIF.includes(j.tipo)) return credVisitante(j);
   const gold = j.tipo === 'equipo', [ico, nom, sub] = TIPO_ACC[j.tipo] || TIPO_ACC.miembro, p = j.perfil;
   const png = await QRCode.toDataURL(j.qr, { width: 560, margin: 1, errorCorrectionLevel: 'M', color: gold ? { dark: '#4a3206', light: '#fff6dc' } : { dark: '#0e0e0d', light: '#ffffff' } });
   openModal(`<div class="pad cred-pad"><div class="cred cred-${j.tipo}">
@@ -3109,11 +3264,193 @@ async function openMiQR(regenerar) {
     <p class="mute" style="font-size:13px;text-align:center">📸 Toma captura de pantalla para tenerlo a la mano. Al escanearlo, el equipo verá tu foto y tu nombre.</p>
     <button class="btn btn-ghost btn-block btn-sm" onclick="openMiQR(true)">Generar un QR nuevo (si compartiste o perdiste el actual)</button></div>`, true);
 }
+/* ---------- credencial naranja de visitante ---------- */
+async function credVisitante(j) {
+  if (j.tipo === 'visitante' && !j.depto) { toast('Primero elige a qué departamento vas'); closeModal(); location.hash = '#acceso'; return; }
+  const p = j.perfil, png = await QRCode.toDataURL(j.qr, { width: 560, margin: 1, errorCorrectionLevel: 'M', color: { dark: '#0e0e0d', light: '#ffffff' } });
+  const etiqueta = { visitante: 'VISITANTE', casero: 'EDIFICIO', inquilino: 'INQUILINO' }[j.tipo] || 'VISITANTE';
+  openModal(`<div class="pad cred-pad"><div class="cred cred-visitante">
+      <div class="cred-ribbon vis">${etiqueta}</div>
+      <div class="cred-top"><span>TRIKLES PUEBLA</span><span>EDIFICIO</span></div>
+      <div class="cred-who"><div class="cred-foto"><img src="${esc(imgUrl(p.Foto))}" alt=""></div>
+        <div style="min-width:0"><div class="cred-nombre">${esc(p.Nombre)}</div>${p.Edad ? `<div class="cred-tipo">${p.Edad} años</div>` : ''}${j.depto ? `<div class="cred-dep">→ ${esc(j.depto)}</div>` : ''}</div></div>
+      <div class="cred-qr"><img src="${png}" alt="Tu código QR de acceso"></div>
+      <div class="cred-foot">${j.deptoHasta ? 'Válido hasta ' + hastaTxt(j.deptoHasta) + ' · ' : ''}personal e intransferible</div>
+    </div>
+    <p class="mute" style="font-size:13px;text-align:center">📸 Toma captura de pantalla. En la entrada escanean tu QR y ven tu foto, tu nombre, tu edad y a dónde vas.</p>
+    ${j.tipo === 'visitante' ? '<a class="btn btn-ghost btn-block" href="#acceso" onclick="closeModal()">Cambiar a dónde voy</a>' : ''}</div>`, true);
+}
+/* ---------- Mi acceso (visitante): elegir departamento y mostrar QR ---------- */
+let DEPTOS = [];
+const hastaTxt = ms => (diaKey(ms) === diaKey(Date.now()) ? 'hoy a las ' : 'mañana a las ') + horaMx(ms);
+function vAcceso() {
+  setTimeout(pintarAcceso, 0);
+  return `<section class="sec acc-sec"><div class="sec-head"><h2 class="disp">Mi acceso</h2><p>Elige a dónde vas y muestra tu QR en la entrada del edificio.</p></div><div id="accBody"><div class="mute">Cargando…</div></div></section>`;
+}
+async function pintarAcceso() {
+  const r = await api('deptos'); const el = $('#accBody'); if (!el) return;
+  if (!r.ok) { el.innerHTML = `<div class="empty">${esc(r.error)}</div>`; return; }
+  DEPTOS = r.deptos;
+  const me = S.me, menor = me.Edad && me.Edad < 18, actual = me.Acceso_Depto && me.Acceso_Hasta > Date.now() ? DEPTOS.find(x => x.id === me.Acceso_Depto) : null;
+  el.innerHTML = `<div class="acc-yo">${avatarHtml(me, 60)}<div style="flex:1;min-width:0"><b>${esc(me.Nombre)}</b><div class="mute" style="font-size:13px">${me.Edad ? me.Edad + ' años · ' : ''}${(TIPO_ACC[me.Rol] || TIPO_ACC.visitante)[1]}</div></div><button class="btn btn-ghost btn-sm" onclick="openMisDatos()">Editar</button></div>
+    ${actual ? `<div class="st-box ok">🏢 <span>Vas a <b>${esc(actual.Nombre)}</b> · válido hasta ${hastaTxt(me.Acceso_Hasta)}</span></div>
+      <button class="btn btn-accent btn-block btn-xl" onclick="openMiQR()">🎟️ Mostrar mi QR</button><div class="kicker" style="margin-top:8px">¿Vas a otro lugar?</div>` : '<div class="kicker">¿A dónde vas?</div>'}
+    <div class="dep-list">${DEPTOS.map(dp => { const bloq = dp.Es_Cineteca && menor; return `<button class="dep-btn ${actual && actual.id === dp.id ? 'on' : ''}" ${bloq ? 'disabled' : ''} onclick="elegirDepto('${dp.id}')"><span class="dep-ico">${dp.Es_Cineteca ? '🎬' : '🏠'}</span><b>${esc(dp.Nombre)}</b>${bloq ? '<small>Solo mayores de 18</small>' : ''}</button>`; }).join('')}</div>
+    ${menor ? '<div class="st-box pend">🔞 <span>Eres menor de 18: <b>no puedes entrar a la Cineteca Trikles</b> (ahí se vende alcohol). Sí puedes registrarte como visita de otro departamento.</span></div>' : ''}`;
+}
+async function elegirDepto(id) {
+  const r = await api('miAcceso', { depto: id });
+  if (!r.ok) return toast(r.error === 'MENOR' ? 'Eres menor de 18: no puedes entrar a la Cineteca Trikles.' : r.error);
+  S.me = { ...S.me, ...r.me }; pintarAcceso(); openMiQR();
+}
+function openMisDatos() {
+  const me = S.me;
+  openModal(`<form class="pad" id="mdForm">
+    <div class="kicker">Mis datos</div>
+    <div class="vis-foto"><div class="vis-foto-prev" id="mdPrev">${me.Foto ? `<img src="${esc(imgUrl(me.Foto))}" alt="">` : '📷'}</div>
+      <div class="vis-foto-btns"><label class="btn btn-accent btn-sm" style="cursor:pointer">📷 Tomar foto<input type="file" accept="image/*" capture="user" hidden onchange="cambiarFotoVis(this)"></label>
+        <label class="btn btn-ghost btn-sm" style="cursor:pointer">🖼️ Subir foto<input type="file" accept="image/*" hidden onchange="cambiarFotoVis(this)"></label></div></div>
+    <div class="field"><label>Nombre completo</label><input name="nombre" maxlength="60" value="${esc(me.Nombre)}"></div>
+    <div class="field"><label>Edad</label><input name="edad" type="number" inputmode="numeric" min="1" max="110" value="${me.Edad || ''}"></div>
+    <button class="btn btn-accent btn-block" id="mdBtn">Guardar</button>
+  </form>`, true);
+  $('#mdForm').onsubmit = async e => {
+    e.preventDefault(); const el = e.target.elements;
+    const r = await busy($('#mdBtn'), 'Guardando…', () => api('guardarVisitante', { nombre: el.nombre.value.trim().replace(/\s+/g, ' '), edad: +el.edad.value }));
+    if (!r.ok) return toast(r.error);
+    S.me = { ...S.me, ...r.me }; pintarMeBtn(); closeModal(); toast('Datos guardados ✓'); if ($('#accBody')) pintarAcceso();
+  };
+}
+async function cambiarFotoVis(inp) {
+  const file = inp.files[0]; inp.value = ''; if (!file) return;
+  try {
+    const f = await recortarFoto(file); if (!f) return;
+    const r = await api('subirMiFoto', { data: f.data, mime: f.mime, name: 'visitante.jpg', para: 'perfil' });
+    if (!r.ok) return toast(r.error || 'No se pudo subir la foto');
+    S.me.Foto = r.url; pintarMeBtn(); const pv = $('#mdPrev'); if (pv) pv.innerHTML = `<img src="data:${f.mime};base64,${f.data}" alt="">`; toast('Foto actualizada ✓');
+  } catch (e) { toast(e && e.message === 'formato' ? MSG_FORMATO : 'No se pudo leer la foto.'); }
+}
+/* ---------- Edificio: escanear (casero / inquilino / admin) y bitácora ---------- */
+let scanModo = 'admin', ED = { fecha: '', depto: '', data: null }, edTimer = null;
+function vEdificio() {
+  scanModo = 'edificio';
+  if (S.me.Rol === 'inquilino' && !S.me.Depto_ID) return `<section class="sec"><div class="sec-head"><h2 class="disp">Tu departamento</h2><p>Antes de recibir visitas, da de alta tu departamento. Así aparecerá en la lista de los visitantes.</p></div>
+    <form class="field" style="gap:12px;max-width:420px" onsubmit="event.preventDefault();altaDepto(this)"><label>Nombre o número del departamento</label><input name="nombre" maxlength="60" placeholder="Ej. Depto 203" required><button class="btn btn-accent btn-block btn-xl">Dar de alta</button></form></section>`;
+  setTimeout(() => cargarEdif(), 0);
+  return `<section class="sec"><div class="sec-head"><h2 class="disp">Edificio</h2><p>${S.me.Rol === 'inquilino' ? 'Escanea el QR de tus visitas para registrar su entrada.' : 'Escanea el QR de quien entra al edificio.'}</p></div>
+    ${scannerHtml()}
+    <div id="edBita" style="margin-top:30px"></div></section>`;
+}
+function scannerHtml() {
+  return `<div class="scan-wrap"><button class="btn btn-accent btn-block btn-xl" id="bCam" onclick="toggleCamara()">📷 Abrir cámara</button><div id="lector"></div>
+    <form class="scan-manual" onsubmit="event.preventDefault();consultarQR($('#qrManual').value)"><input id="qrManual" placeholder="o pega aquí el código del QR" autocomplete="off"><button class="btn btn-ghost" type="submit">Buscar</button></form>
+    <div id="scanRes"></div></div>`;
+}
+async function altaDepto(f) {
+  const r = await api('miDepto', { nombre: f.nombre.value.trim() }); if (!r.ok) return toast(r.error);
+  S.me.Depto_ID = r.depto.id; toast('Departamento dado de alta ✓'); route();
+}
+function edRango() { const k = ED.fecha || diaKey(Date.now()), [y, m, d] = k.split('-').map(Number), ini = new Date(y, m - 1, d).getTime(); return [ini, ini + 864e5]; }
+async function cargarEdif(silencio) {
+  const [desde, hasta] = edRango();
+  const r = await (silencio ? apiReal : api)('edBitacora', { desde, hasta, depto: ED.depto });
+  if (!$('#edBita')) return;
+  if (!r.ok) { if (!silencio) $('#edBita').innerHTML = `<div class="empty">${esc(r.error)}</div>`; return; }
+  ED.data = r; pintarEdif();
+  clearInterval(edTimer); edTimer = setInterval(() => { if ($('#edBita') && !document.hidden) cargarEdif(true); else if (!$('#edBita')) clearInterval(edTimer); }, 20000);
+}
+function pintarEdif() {
+  const D = ED.data, el = $('#edBita'); if (!el || !D) return;
+  const ahora = D.ahora + (Date.now() - (D._t || (D._t = Date.now()))), inq = S.me.Rol === 'inquilino';
+  const ava = e => avatarHtml({ id: e.Persona_ID, Nombre: e.Nombre, Foto: e.Foto }, 44);
+  const tipo = e => e.Tipo === 'comunidad' ? '<span class="vis-tipo">Comunidad Trikles</span>' : `<span class="vis-tipo t-visit">${(TIPO_ACC[e.Tipo] || TIPO_ACC.visitante)[1].toUpperCase()}</span>`;
+  const fila = e => `<div class="vis-fila">${ava(e)}<div style="min-width:0;flex:1"><b>${esc(e.Nombre)}</b> ${tipo(e)}${e.Edad ? ` <span class="mute" style="font-size:12px">${e.Edad} años</span>` : ''}
+      <div class="vis-meta">🏢 ${esc(e.Depto)} · 🟢 ${horaMx(e.Entrada)} → ${e.Salida ? '🔴 ' + horaMx(e.Salida) + ' · ' + fmtDur(e.Salida - e.Entrada) : '<b>sigue dentro</b> · ' + fmtDur(ahora - e.Entrada)}</div>
+      <div class="vis-meta">Registró <b>${esc(e.Registro || '—')}</b>${e.Registro_Rol ? ' (' + esc({ admin: 'Trikles', casero: 'casero', inquilino: 'inquilino' }[e.Registro_Rol] || e.Registro_Rol) + ')' : ''}${e.Salida_Por ? ' · salida por <b>' + esc(e.Salida_Por) + '</b>' : ''}</div></div>
+      ${e.Salida ? '' : `<button class="btn btn-solid btn-sm" onclick="edSalida('${e.id}','${esc(String(e.Nombre).replace(/'/g, ''))}')">Marcar salida</button>`}</div>`;
+  el.innerHTML = `<div class="vis-tools"><div class="ed-filtros"><label class="kicker">Día</label><input type="date" value="${ED.fecha || diaKey(Date.now())}" onchange="ED.fecha=this.value;cargarEdif()">
+      ${inq ? '' : `<label class="kicker">Departamento</label><select onchange="ED.depto=this.value;cargarEdif()"><option value="">Todo el edificio</option>${D.deptos.map(x => `<option value="${x.id}" ${x.id === ED.depto ? 'selected' : ''}>${esc(x.Nombre)}</option>`).join('')}</select>`}</div></div>
+    <section class="vis-sec"><h3 class="disp vis-h">Dentro ahora <span class="vis-n">${D.dentro.length}</span></h3>${D.dentro.map(fila).join('') || '<div class="empty" style="padding:24px">Nadie registrado dentro.</div>'}</section>
+    <section class="vis-sec"><h3 class="disp vis-h">Entradas del día <span class="vis-n" style="background:var(--line)">${D.entradas.length}</span></h3>${D.entradas.map(fila).join('') || '<div class="empty" style="padding:24px">Sin entradas este día.</div>'}</section>`;
+}
+async function edSalida(id, nombre) {
+  if (!confirm('¿Marcar la salida de ' + nombre + '?')) return;
+  const r = await api('edSalida', { id }); if (!r.ok) return toast(r.error);
+  toast('Salida registrada ✓'); const b = $('#ebx_' + id); if (b) b.innerHTML = '🔴 <b>Salida registrada</b> a las ' + horaMx(Date.now());
+  if ($('#edBita')) cargarEdif(true);
+}
+function tarjetaEdif(r, codigo) {
+  const p = r.persona, u = imgUrl(p.Foto), dep = r.depto, otro = '<button class="btn btn-accent btn-block" onclick="abrirLector()">📷 Escanear otro</button>';
+  const est = { registrado: ['ok', '✅ ENTRADA REGISTRADA', (dep ? dep.Nombre : '') + ' · ' + (r.entrada ? horaMx(r.entrada.Entrada) : '')],
+    yaDentro: ['ya', '🟢 YA ESTÁ DENTRO', 'Entró a las ' + (r.entrada ? horaMx(r.entrada.Entrada) : '') + (r.entrada && r.entrada.Registro ? ' · registró ' + r.entrada.Registro : '')],
+    otroDepto: ['no', '↪ VA A OTRO DEPARTAMENTO', 'Va a ' + (dep ? dep.Nombre : '—') + ': no es tu departamento. No se registró.'],
+    menor: ['no', '🔞 MENOR DE 18', 'No puede entrar a la Cineteca Trikles (se vende alcohol).'],
+    inactivo: ['no', '⛔ CUENTA DESACTIVADA', 'No permitir el acceso'],
+    sinDepto: ['ya', '🏢 ¿A QUÉ DEPARTAMENTO VA?', 'No eligió departamento. Elígelo para registrar su entrada:'] }[r.estado] || ['no', '⚠', ''];
+  return `<div class="acc ed-${est[0]}" ${r.entrada ? `id="ebx_${r.entrada.id}"` : ''}>
+    <div class="acc-banda">${est[1]}<small>${esc(est[2])}</small></div>
+    <div class="acc-body">
+      <div class="acc-foto ed-foto">${u ? `<img src="${esc(u)}" alt="Foto de ${esc(p.Nombre)}">` : '<div class="acc-sinfoto">Sin foto</div>'}</div>
+      <div class="acc-nombre">${esc(p.Nombre)}</div>
+      <div class="acc-tags">${p.Tipo === 'comunidad' ? '<span class="acc-tag">◐ Comunidad Trikles → Cineteca</span>' : `<span class="acc-tag t-visit">${(TIPO_ACC[p.Tipo] || TIPO_ACC.visitante)[1].toUpperCase()}</span>`}${p.Edad ? `<span class="acc-tag">${p.Edad} años</span>` : ''}${dep ? `<span class="acc-tag">🏢 ${esc(dep.Nombre)}</span>` : ''}</div>
+      ${r.estado === 'sinDepto' ? `<div class="dep-list">${(r.deptos || []).map(x => `<button class="dep-btn" onclick="consultarQR('${esc(codigo)}','${x.id}')"><span class="dep-ico">${x.Es_Cineteca ? '🎬' : '🏠'}</span><b>${esc(x.Nombre)}</b></button>`).join('')}</div>` : ''}
+      ${r.estado === 'yaDentro' && r.entrada ? `<button class="btn btn-solid btn-block" onclick="edSalida('${r.entrada.id}','${esc(String(p.Nombre).replace(/'/g, ''))}')">🚪 Marcar su salida</button>` : ''}
+      ${otro}</div></div>`;
+}
+/* ---------- Panel → 🏢 Edificio (admin Trikles) ---------- */
+let EDA = null;
+function admEdificio() {
+  scanModo = 'admin'; setTimeout(async () => { const r = await api('adminDeptos'); if (!r.ok) return toast(r.error); EDA = r; pintarEdifAdm(); cargarEdif(); }, 0);
+  return `<div id="edAdm"><div class="mute">Cargando…</div></div><div id="edBita" style="margin-top:30px"></div>`;
+}
+function pintarEdifAdm() {
+  const el = $('#edAdm'); if (!el || !EDA) return;
+  const rol = [['visitante', 'Visitante'], ['casero', 'Casero (todo el edificio)'], ['inquilino', 'Inquilino (su depto)']];
+  el.innerHTML = `<div class="lock-note">🏢 <span>Las cuentas del edificio se crean como <b style="color:var(--text)">visitante</b> (sin llave Trikles) y aquí las conviertes en <b style="color:var(--text)">casero</b> o <b style="color:var(--text)">inquilino</b>. El inquilino da de alta su departamento al entrar. Para escanear usa la pestaña 📷 Escanear QR.</span></div>
+    <h3 class="disp vis-h" style="margin-top:18px">Departamentos</h3>
+    <form class="vis-nota" style="max-width:420px;margin-bottom:10px" onsubmit="event.preventDefault();guardarDepto('',this.n.value,true)"><input name="n" maxlength="60" placeholder="Nuevo departamento (ej. Depto 101)"><button class="btn btn-solid btn-sm">+ Agregar</button></form>
+    <div class="adm-list">${EDA.deptos.map(x => `<div class="adm-row ${x.Activo ? '' : 'off'}" style="grid-template-columns:1fr auto">
+      <div style="min-width:0"><b>${x.Es_Cineteca ? '🎬' : '🏠'} ${esc(x.Nombre)}</b><div class="mute" style="font-size:12px">${x.Inquilino ? 'Inquilino: ' + esc(x.Inquilino) : x.Es_Cineteca ? 'Cineteca Trikles' : 'Sin inquilino asignado'}</div></div>
+      <div class="adm-act">${x.Es_Cineteca ? '' : `<button class="btn btn-ghost btn-sm" onclick="const n=prompt('Nuevo nombre','${esc(String(x.Nombre).replace(/'/g, ''))}');if(n)guardarDepto('${x.id}',n,${x.Activo})">Renombrar</button><label class="toggle"><input type="checkbox" ${x.Activo ? 'checked' : ''} onchange="guardarDepto('${x.id}','${esc(String(x.Nombre).replace(/'/g, ''))}',this.checked)"> Activo</label>`}</div></div>`).join('')}</div>
+    <h3 class="disp vis-h" style="margin-top:22px">Cuentas del edificio</h3>
+    <div class="adm-list">${EDA.edificio.sort((a, b) => (a.Rol === 'visitante') - (b.Rol === 'visitante') || b.Fecha - a.Fecha).map(m => `<div class="adm-row ${m.Activo ? '' : 'off'}" style="grid-template-columns:44px 1fr auto">
+      ${avatarHtml(m, 44)}<div style="min-width:0"><b>${esc(m.Nombre)}</b><div class="mute" style="font-size:12px">${m.Edad ? m.Edad + ' años · ' : ''}${m.Depto_ID ? '🏠 ' + esc((EDA.deptos.find(x => x.id === m.Depto_ID) || {}).Nombre || '') : ''}</div></div>
+      <div class="adm-act"><select onchange="admMiembro('${m.id}',{Rol:this.value}).then(()=>admTab==='edificio'&&renderAdmin())" aria-label="Rol">${rol.map(([v, l]) => `<option value="${v}" ${m.Rol === v ? 'selected' : ''}>${l}</option>`).join('')}</select>
+        <label class="toggle"><input type="checkbox" ${m.Activo ? 'checked' : ''} onchange="admMiembro('${m.id}',{Activo:this.checked})"> Activo</label></div></div>`).join('') || '<div class="mute">Aún no hay cuentas de visitante.</div>'}</div>`;
+}
+async function guardarDepto(id, Nombre, Activo) {
+  const r = await api('adminDeptoSave', { id, Nombre, Activo }); if (!r.ok) return toast(r.error);
+  toast('Guardado ✓'); const x = await api('adminDeptos'); if (x.ok) { EDA = x; pintarEdifAdm(); }
+}
+/* ---------- aviso de privacidad ---------- */
+function openAviso() {
+  openModal(`<div class="pad aviso-txt">
+    <div class="kicker">Aviso de privacidad</div><h3 class="disp" style="font-size:32px">Tus datos, cuidados</h3>
+    <p><b>Cineteca Trikles · La casa del arte</b> (responsable: Germán Solís), con sedes en San Pedro Muñoztla, Tlaxcala, y en Puebla, es responsable de los datos personales que compartes en esta app.</p>
+    <h4>¿Qué datos pedimos?</h4>
+    <ul><li><b>Comunidad Trikles:</b> nombre, correo, fotografía y lo que tú quieras poner en tu perfil.</li>
+      <li><b>Visitantes del edificio de Cineteca Trikles Puebla:</b> fotografía, nombre completo, edad y el departamento al que vas.</li></ul>
+    <h4>¿Para qué los usamos?</h4>
+    <ul><li><b>Control de acceso:</b> reconocerte en la entrada con tu QR y tu foto. Tu QR solo lleva un código aleatorio, sin tus datos.</li>
+      <li><b>Registro de visitantes del edificio:</b> anotamos fecha y hora de entrada y salida, el departamento al que vas y quién registró tu entrada, para la seguridad del edificio.</li>
+      <li><b>Mayoría de edad:</b> en la Cineteca se vende alcohol, así que los menores de 18 no pueden entrar a ella.</li>
+      <li>Para tus compras, pedidos y subastas en la tienda.</li></ul>
+    <h4>¿Quién puede ver los datos de visitantes?</h4>
+    <ul><li><b>El equipo de Cineteca Trikles</b> (administradores): el registro de todo el edificio.</li>
+      <li><b>La administración del edificio (casero):</b> solo tu foto, nombre, edad, departamento y horas de entrada y salida, de todo el edificio.</li>
+      <li><b>El inquilino que te recibe:</b> esos mismos datos, solo de las visitas a su departamento.</li></ul>
+    <p>Nadie más. <b>No vendemos ni compartimos tus datos con terceros.</b> Los visitantes no pueden ver los chats, el feed ni los perfiles de la comunidad, y la comunidad no ve los datos de los visitantes.</p>
+    <h4>¿Cómo pido que borren mis datos?</h4>
+    <p>Puedes pedir en cualquier momento que corrijamos o borremos tus datos (derechos ARCO). Escríbenos por WhatsApp al <b>246 179 4919</b> o pídelo en la entrada de Cineteca Trikles. Lo atendemos en un máximo de 20 días hábiles.</p>
+    <p class="mute" style="font-size:12px">Última actualización: noviembre de 2026.</p>
+    <button class="btn btn-ghost btn-block" onclick="closeModal()">Cerrar</button></div>`, true);
+}
 /* ---------- escáner (solo admins) ---------- */
 let lector = null, camAbierta = false, leyendoQR = false;
 function irEscanear() { closeModal(); admTab = 'escanear'; if (location.hash === '#admin') renderAdmin(); else location.hash = '#admin'; }
 const sedeScan = () => lsGet('tu_sede_scan', 'Tlaxcala');
 function admEscanear() {
+  scanModo = 'admin';
   return `<div class="scan-wrap">
     <div class="vis-sede"><span class="kicker">📍 Estás recibiendo en</span>${['Tlaxcala', 'Puebla'].map(s => `<button class="chip ${s === sedeScan() ? 'on' : ''}" onclick="lsSet('tu_sede_scan','${s}');renderAdmin()">${s}</button>`).join('')}</div>
     <p class="mute">Escanea el QR de acceso de la persona. Verás su foto: compárala con quien tienes enfrente. Al permitirle el paso queda registrada su <b>entrada</b> y que tú lo recibiste.</p>
@@ -3193,13 +3530,15 @@ function pararCamara() {
   const el = $('#lector'); if (el) { const v = el.querySelector('video'); if (v) v.srcObject = null; el.innerHTML = ''; el.classList.remove('on'); }
   const b = $('#bCam'); if (b) { b.textContent = '📷 Abrir cámara'; b.classList.replace('btn-ghost', 'btn-accent'); }
 }
-async function consultarQR(txt) {
+async function consultarQR(txt, depto) {
   txt = String(txt || '').trim(); if (!txt) return;
-  const r = await api('adminEscanear', { codigo: txt, sede: sedeScan() });
+  const r = await api(scanModo === 'edificio' ? 'edEscanear' : 'adminEscanear', { codigo: txt, sede: sedeScan(), depto: depto || '' });
   const box = $('#scanRes'); if (!box) return;
   if (!r.ok) { box.innerHTML = `<div class="acc acc-no"><div class="acc-banda">⚠ ${esc(r.error || 'Error')}</div></div>`; return; }
-  if (navigator.vibrate) navigator.vibrate(r.existe && r.activo ? 120 : [200, 100, 200]);
-  box.innerHTML = tarjetaAcceso(r); $('#qrManual').value = '';
+  const bien = r.existe && r.activo && (!r.edificio || r.estado === 'registrado' || r.estado === 'yaDentro');
+  if (navigator.vibrate) navigator.vibrate(bien ? 120 : [200, 100, 200]);
+  box.innerHTML = r.edificio && r.existe ? tarjetaEdif(r, txt) : tarjetaAcceso(r); $('#qrManual').value = '';
+  if (r.edificio && $('#edBita')) cargarEdif(true);
   box.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 function tarjetaAcceso(r) {
@@ -3673,7 +4012,7 @@ function admMiembros() {
             : m.Equipo_Estado === 'Aprobado' ? `<button class="btn btn-ghost btn-sm" onclick="admMiembro('${m.id}',{Equipo_Estado:''})">Quitar de equipo</button>`
             : `<button class="btn btn-ghost btn-sm" onclick="if(!this.parentNode.querySelector('input').value.trim())return toast('Escribe primero su puesto');admMiembro('${m.id}',{Equipo_Estado:'Aprobado',Puesto:this.parentNode.querySelector('input').value})">Hacer equipo</button>`}</div></div>
       <div class="adm-act">
-        <select onchange="admMiembro('${m.id}',{Rol:this.value})" aria-label="Rol">${[['miembro', 'Miembro'], ['artista', 'Artista'], ['admin', 'Admin']].map(([v, l]) => `<option value="${v}" ${m.Rol === v ? 'selected' : ''}>${l}</option>`).join('')}</select>
+        <select onchange="admMiembro('${m.id}',{Rol:this.value})" aria-label="Rol">${(ROLES_EDIF.includes(m.Rol) ? [['visitante', 'Visitante'], ['casero', 'Casero'], ['inquilino', 'Inquilino']] : [['miembro', 'Miembro'], ['artista', 'Artista'], ['admin', 'Admin']]).map(([v, l]) => `<option value="${v}" ${m.Rol === v ? 'selected' : ''}>${l}</option>`).join('')}</select>
         <select onchange="admMiembro('${m.id}',{Artista_ID:this.value})" aria-label="Perfil de artista"><option value="">Sin perfil</option>${ADM.artistas.map(a => `<option value="${a.id}" ${a.id === m.Artista_ID ? 'selected' : ''}>${esc(a.Nombre)}</option>`).join('')}</select>
         <label class="btn btn-ghost btn-sm" style="cursor:pointer">📷 ${m.Foto ? 'Cambiar foto' : 'Poner foto'}<input type="file" accept="image/*" hidden onchange="admFotoMiembro(this,'${m.id}')"></label>
         <button class="btn btn-ghost btn-sm" onclick="admResetClave('${m.id}')">🔑 Restablecer contraseña</button>
@@ -3713,7 +4052,7 @@ async function admFotoMiembro(inp, id) {
 }
 async function admMiembro(id, patch) {
   const r = await api('adminMiembro', { id, ...patch }); if (!r.ok) { toast(r.error); return loadAdmin(); }
-  toast('Actualizado'); loadAdmin();
+  toast('Actualizado'); if (admTab === 'edificio') { const x = await api('adminDeptos'); if (x.ok) { EDA = x; pintarEdifAdm(); } } else loadAdmin();
 }
 function admAjustes() {
   const c = ADM.config || {}, f = (k, l, ph = '') => `<div class="field"><label>${l}</label><input name="${k}" value="${esc(c[k] || '')}" placeholder="${ph}"></div>`;
@@ -3741,7 +4080,13 @@ async function admBorrarComentario(id, btn) {
    ===================================================================== */
 (async function init() {
   saveCart();
-  showGate(); // siempre empieza pidiendo la llave Trikles; si hay sesión, la llave la reanuda
+  // Visitantes / edificio: su sesión se reanuda sin llave. Miembros: siempre piden la llave Trikles (como antes).
+  if (lsGet(MODO_K, '') === 'visitante' && S.token) {
+    const j = await api('me');
+    if (j.ok && ROLES_EDIF.includes(j.me.Rol)) { S.me = j.me; return enterApp(); }
+    if (j.ok) lsSet(MODO_K, 'comunidad'); // es cuenta de la comunidad: entra con llave
+  }
+  showGate();
 })();
 </script>
 </body>
